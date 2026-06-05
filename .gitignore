@@ -1,1 +1,7 @@
 temp/
+
+# Scanner tool
+scripts/node_modules/
+scripts/dist/
+scripts/scan-result.json
+target-plugin/

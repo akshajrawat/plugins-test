@@ -1,0 +1,14 @@
+{
+	"name": "@joplin/plugin-scanner-tools",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Security scanning pipeline for the Joplin plugin registry PoC",
+	"scripts": {
+		"build": "tsc --project tsconfig.json",
+		"scan": "node dist/runScan.js"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"typescript": "^5.5.0"
+	}
+}
