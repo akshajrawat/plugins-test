@@ -47,7 +47,7 @@ export class GeminiScanner extends LLMScanner {
   readonly toolName = "Gemini 3.1 Pro";
   private static readonly API_BASE =
     "https://generativelanguage.googleapis.com/v1beta/models";
-  private static readonly DEFAULT_MODEL = "gemini-2.5-pro";
+  private static readonly DEFAULT_MODEL = "gemini-2.5-flash";
 
   // Checks if the value passed is a valid GeminiErrorResponse and if yes, reduce the value type to GeminiErrorResponse
   private static isGeminiError(value: unknown): value is GeminiErrorResponse {
