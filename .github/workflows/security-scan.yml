@@ -2,89 +2,354 @@ name: Plugin Security Scan
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
 
-# The scan job only reads code. It must not have write access.
 permissions:
   contents: read
   issues: write
 
 jobs:
   security-scan:
-    # Only run if the issue has "[Plugin Submission]" in the title
     if: contains(github.event.issue.title, '[Plugin Submission]')
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Parse the JSON from the Issue Body
-      #    Writes the body to a temp file first to safely handle
-      #    multi-line content, special characters, and shell escaping.
-      - name: Extract Payload from Issue
-        id: extract
+      # ──────────────────────────────────────────────────────────────
+      # 1. Parse the issue body (raw JSON)
+      #    Extracts plugin_name, repository_url, commit_hash.
+      #    On failure → sets ERROR_MESSAGE for the final step.
+      # ──────────────────────────────────────────────────────────────
+      - name: Parse Issue Body
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           # Write body to a temp file to avoid shell escaping issues
           printf '%s' "$ISSUE_BODY" > /tmp/issue_body.txt
 
-          # Extract the text between the ```json and ``` markers
-          JSON_PAYLOAD=$(awk '/```json/{flag=1; next} /```/{flag=0} flag' /tmp/issue_body.txt)
+          # Try parsing the entire body as JSON directly
+          if ! jq -e '.' /tmp/issue_body.txt > /dev/null 2>&1; then
+            # Fallback: try extracting from ```json ... ``` fences
+            FENCED=$(awk '/```json/{flag=1; next} /```/{flag=0} flag' /tmp/issue_body.txt)
+            if [ -z "$FENCED" ] || ! echo "$FENCED" | jq -e '.' > /dev/null 2>&1; then
+              {
+                echo "ERROR_MESSAGE<<ERRMSG_EOF"
+                echo "❌ **Malformed Submission**"
+                echo ""
+                echo "The issue body could not be parsed as JSON."
+                echo ""
+                echo "Expected format:"
+                echo '```json'
+                echo '{'
+                echo '  "plugin_name": "your.plugin.id",'
+                echo '  "repository_url": "https://github.com/owner/repo",'
+                echo '  "commit_hash": "full-commit-sha"'
+                echo '}'
+                echo '```'
+                echo "ERRMSG_EOF"
+              } >> "$GITHUB_ENV"
+              exit 1
+            fi
+            # Fenced JSON extracted successfully
+            echo "$FENCED" > /tmp/issue_body.txt
+          fi
 
-          # Validate that we actually extracted something
-          if [ -z "$JSON_PAYLOAD" ]; then
-            echo "::error::Could not extract JSON payload from issue body."
+          # Extract fields
+          PLUGIN_NAME=$(jq -r '.plugin_name // empty' /tmp/issue_body.txt)
+          REPO_URL=$(jq -r '.repository_url // empty' /tmp/issue_body.txt)
+          COMMIT_HASH=$(jq -r '.commit_hash // empty' /tmp/issue_body.txt)
+
+          # Validate all three required fields are present
+          MISSING=""
+          [ -z "$PLUGIN_NAME" ] && MISSING="${MISSING} \`plugin_name\`"
+          [ -z "$REPO_URL" ] && MISSING="${MISSING} \`repository_url\`"
+          [ -z "$COMMIT_HASH" ] && MISSING="${MISSING} \`commit_hash\`"
+
+          if [ -n "$MISSING" ]; then
+            {
+              echo "ERROR_MESSAGE<<ERRMSG_EOF"
+              echo "❌ **Missing Required Fields**"
+              echo ""
+              echo "The following fields are missing from the submission:${MISSING}"
+              echo "ERRMSG_EOF"
+            } >> "$GITHUB_ENV"
             exit 1
           fi
 
-          # Parse individual fields with jq
-          REPO_URL=$(echo "$JSON_PAYLOAD" | jq -r '.repository_url // empty')
-          COMMIT_HASH=$(echo "$JSON_PAYLOAD" | jq -r '.commit_hash // empty')
-
-          # Validate required fields
-          if [ -z "$REPO_URL" ] || [ -z "$COMMIT_HASH" ]; then
-            echo "::error::Missing required fields: repository_url or commit_hash."
-            exit 1
-          fi
-
-          # actions/checkout expects "owner/repo", not a full URL.
-          # Strip the https://github.com/ prefix and any trailing .git
-          REPO_OWNER_NAME=$(echo "$REPO_URL" | sed -E 's|^https?://github\.com/||' | sed 's|\.git$||' | sed 's|/$||')
+          # Normalize repository URL
+          # Full normalized: github.com/owner/repo
+          REPO_NORMALIZED=$(echo "$REPO_URL" | sed -E 's|^https?://||' | sed 's|\.git$||' | sed 's|/$||')
+          # Owner/repo only (needed by actions/checkout)
+          REPO_OWNER_NAME=$(echo "$REPO_URL" | sed -E 's|^https?://github\.com/||' | sed 's|\.git$||' | sed 's|/$||' | cut -d'/' -f1-2)
 
           # Validate that the result looks like "owner/repo"
           if ! echo "$REPO_OWNER_NAME" | grep -qE '^[^/]+/[^/]+$'; then
-            echo "::error::repository_url does not resolve to a valid owner/repo format: '$REPO_OWNER_NAME'"
+            {
+              echo "ERROR_MESSAGE<<ERRMSG_EOF"
+              echo "❌ **Invalid Repository URL**"
+              echo ""
+              echo "The \`repository_url\` does not resolve to a valid GitHub repository:"
+              echo "\`$REPO_URL\`"
+              echo ""
+              echo "Expected format: \`https://github.com/owner/repo\`"
+              echo "ERRMSG_EOF"
+            } >> "$GITHUB_ENV"
             exit 1
           fi
 
+          # Export to env for subsequent steps
+          echo "PLUGIN_NAME=$PLUGIN_NAME" >> "$GITHUB_ENV"
           echo "REPO_URL=$REPO_URL" >> "$GITHUB_ENV"
           echo "COMMIT_HASH=$COMMIT_HASH" >> "$GITHUB_ENV"
+          echo "REPO_NORMALIZED=$REPO_NORMALIZED" >> "$GITHUB_ENV"
           echo "REPO_OWNER_NAME=$REPO_OWNER_NAME" >> "$GITHUB_ENV"
 
-          echo "### Extracted Payload" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Parsed Submission" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Plugin:** $PLUGIN_NAME" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Repository:** $REPO_OWNER_NAME" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Commit:** $COMMIT_HASH" >> "$GITHUB_STEP_SUMMARY"
 
-      # 2. Checkout YOUR scanner tools (plugins-test repo)
+      # ──────────────────────────────────────────────────────────────
+      # 2. Checkout this repo (scanner tools + manifests.json)
+      # ──────────────────────────────────────────────────────────────
       - name: Checkout Scanner Tools
         uses: actions/checkout@v4
         with:
-          path: 'scanner-tools'
+          path: scanner-tools
 
-      # 3. Checkout THEIR plugin code at the exact commit hash
+      # ──────────────────────────────────────────────────────────────
+      # 3. Check manifests.json — new plugin or update?
+      #    If plugin_name exists with a DIFFERENT repo URL → reject.
+      # ──────────────────────────────────────────────────────────────
+      - name: Check Plugin Registry
+        run: |
+          MANIFESTS="scanner-tools/manifests.json"
+
+          # Check if plugin_name exists as a key in manifests.json
+          HAS_KEY=$(jq -r --arg id "$PLUGIN_NAME" 'if has($id) then "found" else "not_found" end' "$MANIFESTS")
+
+          if [ "$HAS_KEY" = "not_found" ]; then
+            echo "SUBMISSION_TYPE=new" >> "$GITHUB_ENV"
+            echo "✅ Plugin '$PLUGIN_NAME' not found in registry — NEW plugin submission."
+            echo "- **Type:** 🆕 New Plugin" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Plugin exists — extract and normalize the registered URL
+          REGISTERED_URL=$(jq -r --arg id "$PLUGIN_NAME" '.[$id].repository_url // empty' "$MANIFESTS")
+
+          # If the registered URL is empty, allow the update (no URL on record)
+          if [ -z "$REGISTERED_URL" ]; then
+            echo "SUBMISSION_TYPE=update" >> "$GITHUB_ENV"
+            echo "✅ Plugin '$PLUGIN_NAME' found (no URL on record) — UPDATE submission."
+            echo "- **Type:** 🔄 Plugin Update" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Normalize the registered URL to owner/repo for comparison
+          # Handles monorepo paths like github.com/user/repo/tree/dev/packages/...
+          REGISTERED_OWNER_REPO=$(echo "$REGISTERED_URL" \
+            | sed -E 's|^https?://github\.com/||' \
+            | sed 's|\.git$||' \
+            | sed 's|/$||' \
+            | cut -d'/' -f1-2)
+
+          echo "Registered: $REGISTERED_OWNER_REPO"
+          echo "Submitted:  $REPO_OWNER_NAME"
+
+          if [ "$REGISTERED_OWNER_REPO" = "$REPO_OWNER_NAME" ]; then
+            echo "SUBMISSION_TYPE=update" >> "$GITHUB_ENV"
+            echo "✅ Plugin '$PLUGIN_NAME' found. URLs match — UPDATE submission."
+            echo "- **Type:** 🔄 Plugin Update" >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "ERROR_MESSAGE<<ERRMSG_EOF"
+              echo "🚫 **Plugin ID Already Registered**"
+              echo ""
+              echo "The plugin ID \`$PLUGIN_NAME\` is already registered to a different repository."
+              echo ""
+              echo "| | Repository |"
+              echo "|---|---|"
+              echo "| **Registered** | \`$REGISTERED_OWNER_REPO\` |"
+              echo "| **Submitted** | \`$REPO_OWNER_NAME\` |"
+              echo ""
+              echo "If you are the original author and have moved your repository, please contact a maintainer."
+              echo "ERRMSG_EOF"
+            } >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      # ──────────────────────────────────────────────────────────────
+      # 4. Checkout the target plugin at the exact commit
+      #    Uses continue-on-error so we can post a clear message
+      #    instead of the default checkout error.
+      # ──────────────────────────────────────────────────────────────
       - name: Checkout Target Plugin
+        id: checkout-target
         uses: actions/checkout@v4
+        continue-on-error: true
         with:
           repository: ${{ env.REPO_OWNER_NAME }}
           ref: ${{ env.COMMIT_HASH }}
-          path: 'target-plugin'
+          path: target-plugin
 
-      # 4. Verify the checkout landed on the expected commit
-      - name: Verify Checkout Integrity
+      - name: Validate Target Checkout
+        if: steps.checkout-target.outcome == 'failure'
+        run: |
+          {
+            echo "ERROR_MESSAGE<<ERRMSG_EOF"
+            echo "❌ **Checkout Failed**"
+            echo ""
+            echo "Could not checkout commit \`$COMMIT_HASH\` from repository \`$REPO_OWNER_NAME\`."
+            echo ""
+            echo "Please verify:"
+            echo "- The repository exists and is **public**"
+            echo "- The commit hash is correct and exists on the remote"
+            echo "ERRMSG_EOF"
+          } >> "$GITHUB_ENV"
+          exit 1
+
+      # ──────────────────────────────────────────────────────────────
+      # 5. Verify the checkout landed on the expected commit
+      # ──────────────────────────────────────────────────────────────
+      - name: Verify Commit Integrity
         working-directory: target-plugin
         run: |
           ACTUAL_HASH=$(git rev-parse HEAD)
-          if [ "$ACTUAL_HASH" != "${{ env.COMMIT_HASH }}" ]; then
-            echo "::error::Checkout integrity failed. Expected ${{ env.COMMIT_HASH }}, got $ACTUAL_HASH"
+          if [ "$ACTUAL_HASH" != "$COMMIT_HASH" ]; then
+            {
+              echo "ERROR_MESSAGE<<ERRMSG_EOF"
+              echo "❌ **Checkout Integrity Failed**"
+              echo ""
+              echo "| | Commit |"
+              echo "|---|---|"
+              echo "| **Expected** | \`$COMMIT_HASH\` |"
+              echo "| **Actual** | \`$ACTUAL_HASH\` |"
+              echo "ERRMSG_EOF"
+            } >> "$GITHUB_ENV"
             exit 1
           fi
-          echo "Checkout verified: $ACTUAL_HASH"
+          echo "✅ Checkout verified: $ACTUAL_HASH"
+
+      # ──────────────────────────────────────────────────────────────
+      # 6. Setup Node.js
+      # ──────────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ──────────────────────────────────────────────────────────────
+      # 7. Install dependencies and build the scanner
+      # ──────────────────────────────────────────────────────────────
+      - name: Install & Build Scanner
+        working-directory: scanner-tools/scripts
+        run: |
+          npm ci
+          npm run build
+
+      # ──────────────────────────────────────────────────────────────
+      # 8. Run the security scan against the target plugin
+      #    Reads src/, package.json, package-lock.json from the
+      #    target plugin and sends the data to the Gemini API.
+      #    Outputs scan-result.json.
+      # ──────────────────────────────────────────────────────────────
+      - name: Run Security Scan
+        working-directory: scanner-tools/scripts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node dist/runScan.js ../../target-plugin
+
+      # ──────────────────────────────────────────────────────────────
+      # 9. Post result — runs ALWAYS
+      #    Three cases:
+      #      A) Validation error   → post ERROR_MESSAGE + close issue
+      #      B) Scan result exists → post full report
+      #      C) Scan crashed       → post failure notice
+      # ──────────────────────────────────────────────────────────────
+      - name: Post Result
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          REPO="${{ github.repository }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          # ── Helper: post a comment on the issue ─────────────────
+          post_comment() {
+            jq -n --arg body "$1" '{"body": $body}' | \
+              gh api --method POST "/repos/$REPO/issues/$ISSUE_NUMBER/comments" --input -
+          }
+
+          # ── Helper: close the issue ─────────────────────────────
+          close_issue() {
+            gh api --method PATCH "/repos/$REPO/issues/$ISSUE_NUMBER" \
+              -f state=closed
+          }
+
+          # ── Case A: Validation error ────────────────────────────
+          if [ -n "$ERROR_MESSAGE" ]; then
+            COMMENT="${ERROR_MESSAGE}
+
+          ---
+          <sub>🤖 Automated by [Plugin Security Scan]($RUN_URL)</sub>"
+
+            post_comment "$COMMENT"
+            close_issue
+            echo "::error::Validation failed — issue #$ISSUE_NUMBER closed."
+            exit 0
+          fi
+
+          # ── Case B: Scan produced a result ──────────────────────
+          RESULT_FILE="scanner-tools/scripts/scan-result.json"
+          if [ -f "$RESULT_FILE" ]; then
+            REPORT=$(jq -r '.markdownReport' "$RESULT_FILE")
+            VERDICT=$(jq -r '.verdict' "$RESULT_FILE")
+
+            # Header based on submission type
+            if [ "$SUBMISSION_TYPE" = "new" ]; then
+              TYPE_BADGE="🆕 **New Plugin Submission**"
+            else
+              TYPE_BADGE="🔄 **Plugin Update**"
+            fi
+
+            COMMENT="${TYPE_BADGE} — \`${PLUGIN_NAME}\`
+
+          ${REPORT}
+
+          ---
+          <sub>🔗 Repository: \`${REPO_OWNER_NAME}\` | Commit: \`${COMMIT_HASH:0:7}\` | [Workflow Run]($RUN_URL)</sub>"
+
+            post_comment "$COMMENT"
+
+            echo "### Scan Complete" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Type:** $SUBMISSION_TYPE" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Verdict:** $VERDICT" >> "$GITHUB_STEP_SUMMARY"
+            echo "- **Issue:** #$ISSUE_NUMBER" >> "$GITHUB_STEP_SUMMARY"
+
+            if [ "$VERDICT" = "fail" ]; then
+              echo "::warning::Security scan verdict: FAIL"
+            fi
+            exit 0
+          fi
+
+          # ── Case C: Scan crashed — no result file ───────────────
+          COMMENT="## ❌ Security Scan Failed
+
+          The scanner did not produce a result file. This is likely an internal error.
+
+          | | Detail |
+          |---|---|
+          | **Plugin** | \`${PLUGIN_NAME:-unknown}\` |
+          | **Repository** | \`${REPO_OWNER_NAME:-unknown}\` |
+          | **Commit** | \`${COMMIT_HASH:-unknown}\` |
+
+          Check the [workflow run]($RUN_URL) for details.
+
+          ---
+          <sub>🤖 Automated by [Plugin Security Scan]($RUN_URL)</sub>"
+
+          post_comment "$COMMENT"
+          echo "::error::Scan failed — no result file produced."
+          exit 1
