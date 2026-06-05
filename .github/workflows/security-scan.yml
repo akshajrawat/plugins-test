@@ -109,7 +109,40 @@ jobs:
           echo "- **Commit:** $COMMIT_HASH" >> "$GITHUB_STEP_SUMMARY"
 
       # ──────────────────────────────────────────────────────────────
-      # 2. Checkout this repo (scanner tools + manifests.json)
+      # 2. Post an "in progress" comment so the submitter knows
+      #    the scan has started. We save the comment ID so we can
+      #    edit this same comment later with the final result.
+      # ──────────────────────────────────────────────────────────────
+      - name: Post In-Progress Comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          REPO="${{ github.repository }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          BODY="## ⏳ Security Scan In Progress
+
+          Your plugin submission is being scanned. This may take a few minutes.
+
+          | | Detail |
+          |---|---|
+          | **Plugin** | \`${PLUGIN_NAME}\` |
+          | **Repository** | \`${REPO_OWNER_NAME}\` |
+          | **Commit** | \`${COMMIT_HASH:0:7}\` |
+
+          ---
+          <sub>🤖 [View Workflow Run]($RUN_URL)</sub>"
+
+          COMMENT_ID=$(jq -n --arg body "$BODY" '{"body": $body}' | \
+            gh api --method POST "/repos/$REPO/issues/$ISSUE_NUMBER/comments" --input - \
+            --jq '.id')
+
+          echo "PROGRESS_COMMENT_ID=$COMMENT_ID" >> "$GITHUB_ENV"
+          echo "Posted in-progress comment: $COMMENT_ID"
+
+      # ──────────────────────────────────────────────────────────────
+      # 3. Checkout this repo (scanner tools + manifests.json)
       # ──────────────────────────────────────────────────────────────
       - name: Checkout Scanner Tools
         uses: actions/checkout@v4
@@ -117,7 +150,7 @@ jobs:
           path: scanner-tools
 
       # ──────────────────────────────────────────────────────────────
-      # 3. Check manifests.json — new plugin or update?
+      # 4. Check manifests.json — new plugin or update?
       #    If plugin_name exists with a DIFFERENT repo URL → reject.
       # ──────────────────────────────────────────────────────────────
       - name: Check Plugin Registry
@@ -179,7 +212,7 @@ jobs:
           fi
 
       # ──────────────────────────────────────────────────────────────
-      # 4. Checkout the target plugin at the exact commit
+      # 5. Checkout the target plugin at the exact commit
       #    Uses continue-on-error so we can post a clear message
       #    instead of the default checkout error.
       # ──────────────────────────────────────────────────────────────
@@ -209,7 +242,7 @@ jobs:
           exit 1
 
       # ──────────────────────────────────────────────────────────────
-      # 5. Verify the checkout landed on the expected commit
+      # 6. Verify the checkout landed on the expected commit
       # ──────────────────────────────────────────────────────────────
       - name: Verify Commit Integrity
         working-directory: target-plugin
@@ -231,7 +264,7 @@ jobs:
           echo "✅ Checkout verified: $ACTUAL_HASH"
 
       # ──────────────────────────────────────────────────────────────
-      # 6. Setup Node.js
+      # 7. Setup Node.js
       # ──────────────────────────────────────────────────────────────
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -239,7 +272,7 @@ jobs:
           node-version: '20'
 
       # ──────────────────────────────────────────────────────────────
-      # 7. Install dependencies and build the scanner
+      # 8. Install dependencies and build the scanner
       # ──────────────────────────────────────────────────────────────
       - name: Install & Build Scanner
         working-directory: scanner-tools/scripts
@@ -248,7 +281,7 @@ jobs:
           npm run build
 
       # ──────────────────────────────────────────────────────────────
-      # 8. Run the security scan against the target plugin
+      # 9. Run the security scan against the target plugin
       #    Reads src/, package.json, package-lock.json from the
       #    target plugin and sends the data to the Gemini API.
       #    Outputs scan-result.json.
@@ -261,11 +294,14 @@ jobs:
           node dist/runScan.js ../../target-plugin
 
       # ──────────────────────────────────────────────────────────────
-      # 9. Post result — runs ALWAYS
-      #    Three cases:
-      #      A) Validation error   → post ERROR_MESSAGE + close issue
-      #      B) Scan result exists → post full report
-      #      C) Scan crashed       → post failure notice
+      # 10. Post result — runs ALWAYS
+      #     Edits the in-progress comment with the final result.
+      #     If the in-progress comment was never created (early
+      #     parse failure), falls back to posting a new comment.
+      #     Three cases:
+      #       A) Validation error   → edit/post ERROR_MESSAGE + close
+      #       B) Scan result exists → edit with full report
+      #       C) Scan crashed       → edit with failure notice
       # ──────────────────────────────────────────────────────────────
       - name: Post Result
         if: always()
@@ -276,10 +312,16 @@ jobs:
           REPO="${{ github.repository }}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
-          # ── Helper: post a comment on the issue ─────────────────
-          post_comment() {
-            jq -n --arg body "$1" '{"body": $body}' | \
-              gh api --method POST "/repos/$REPO/issues/$ISSUE_NUMBER/comments" --input -
+          # ── Helper: post or edit a comment on the issue ─────────
+          # If PROGRESS_COMMENT_ID exists, edit it. Otherwise post new.
+          post_or_edit_comment() {
+            if [ -n "$PROGRESS_COMMENT_ID" ]; then
+              jq -n --arg body "$1" '{"body": $body}' | \
+                gh api --method PATCH "/repos/$REPO/issues/comments/$PROGRESS_COMMENT_ID" --input -
+            else
+              jq -n --arg body "$1" '{"body": $body}' | \
+                gh api --method POST "/repos/$REPO/issues/$ISSUE_NUMBER/comments" --input -
+            fi
           }
 
           # ── Helper: close the issue ─────────────────────────────
@@ -295,7 +337,7 @@ jobs:
           ---
           <sub>🤖 Automated by [Plugin Security Scan]($RUN_URL)</sub>"
 
-            post_comment "$COMMENT"
+            post_or_edit_comment "$COMMENT"
             close_issue
             echo "::error::Validation failed — issue #$ISSUE_NUMBER closed."
             exit 0
@@ -321,7 +363,7 @@ jobs:
           ---
           <sub>🔗 Repository: \`${REPO_OWNER_NAME}\` | Commit: \`${COMMIT_HASH:0:7}\` | [Workflow Run]($RUN_URL)</sub>"
 
-            post_comment "$COMMENT"
+            post_or_edit_comment "$COMMENT"
 
             echo "### Scan Complete" >> "$GITHUB_STEP_SUMMARY"
             echo "- **Type:** $SUBMISSION_TYPE" >> "$GITHUB_STEP_SUMMARY"
@@ -350,6 +392,6 @@ jobs:
           ---
           <sub>🤖 Automated by [Plugin Security Scan]($RUN_URL)</sub>"
 
-          post_comment "$COMMENT"
+          post_or_edit_comment "$COMMENT"
           echo "::error::Scan failed — no result file produced."
           exit 1
