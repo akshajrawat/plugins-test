@@ -1,0 +1,19 @@
+{
+	"manifest_version": 1,
+	"id": "joplin.hyongew.hide-notebooks",
+	"app_min_version": "3.2",
+	"version": "1.0.2",
+	"name": "Hide Notebooks",
+	"description": "Hide notebooks for a cleaner sidebar.",
+	"author": "hyongew",
+	"homepage_url": "",
+	"repository_url": "https://github.com/hyongew/joplin-hide-notebooks",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"_publish_hash": "sha256:6215b4420bfc25f415aeda3239974fb2d0443a0b9816b27440338db53269ff3a",
+	"_publish_commit": "main:dd36ebf0670171ef402d47a29c55b9c0eb3d3694",
+	"_npm_package_name": "joplin-plugin-hide-notebooks"
+}
