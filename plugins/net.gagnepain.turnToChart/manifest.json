@@ -1,0 +1,22 @@
+{
+	"manifest_version": 1,
+	"id": "net.gagnepain.turnToChart",
+	"app_min_version": "2.8",
+	"version": "1.9.3",
+	"name": "turnToChart",
+	"description": "Transforms a markdown or csv table into an HTML chart",
+	"author": "Samuel Gagnepain",
+	"homepage_url": "https://github.com/Winbee/joplin-turn-to-chart",
+	"repository_url": "https://github.com/Winbee/joplin-turn-to-chart",
+	"keywords": [
+		"joplin",
+		"table",
+		"graph",
+		"chart",
+		"ui"
+	],
+	"categories": [],
+	"_publish_hash": "sha256:0670a88c93bf0cd8e1492b22e99968eef39ae4c299c3c33767b8b1ac150ae4dc",
+	"_publish_commit": "master:7de30963333688d5b8471320c0584e254e967879",
+	"_npm_package_name": "joplin-plugin-turn-to-chart"
+}
