@@ -1,0 +1,20 @@
+{
+	"manifest_version": 1,
+	"id": "jl15988.JoplinAlertsPerfectPlugin",
+	"app_min_version": "2.8",
+	"version": "1.0.1",
+	"name": "AlertsPerfect",
+	"description": "Use blockquote syntax to display the perfect hint block.",
+	"author": "jl15988",
+	"homepage_url": "https://github.com/jl15988/joplin-plugin-alerts-perfect",
+	"repository_url": "https://github.com/jl15988/joplin-plugin-alerts-perfect",
+	"keywords": [
+		"joplin-plugin",
+		"alertsPerfect",
+		"alerts perfect"
+	],
+	"categories": [],
+	"_publish_hash": "sha256:ae927205779ecb19946d9dec0f2d7086480c0edfae2748ff18a2be72d4fdd2bc",
+	"_publish_commit": "main:8bc2904867f66406096bf46fcd93f3d0e9d00a04",
+	"_npm_package_name": "joplin-plugin-alerts-perfect"
+}
