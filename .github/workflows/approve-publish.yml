@@ -97,10 +97,9 @@ jobs:
 
       - name: Build CLI (Fast)
         run: |
-          # Isolate the CLI package to break Lerna workspace links for instant install
-          cp -r joplin-source/packages/plugin-repo-cli ./custom-cli
-          cd custom-cli
+          cd joplin-source
           npm install --ignore-scripts
+          cd packages/plugin-repo-cli
           npm run dist
 
       - name: Download Compiled Artifact
@@ -115,14 +114,14 @@ jobs:
           JSON_FILE=$(find plugin-publish-dir -name "*.json" | head -n 1)
           JPL_FILE=$(find plugin-publish-dir -name "*.jpl" | head -n 1)
           
-          node custom-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
+          node joplin-source/packages/plugin-repo-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
 
       - name: Upload GitHub Release Asset (update-release)
         env:
           JOPLIN_GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd registry
-          node ../custom-cli/dist/index.js update-release "$(realpath .)"
+          node ../joplin-source/packages/plugin-repo-cli/dist/index.js update-release "$(realpath .)"
 
       - name: Commit and Push to Master
         run: |
