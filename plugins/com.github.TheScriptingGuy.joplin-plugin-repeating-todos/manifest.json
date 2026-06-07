@@ -1,0 +1,29 @@
+{
+	"manifest_version": 1,
+	"id": "com.github.TheScriptingGuy.joplin-plugin-repeating-todos",
+	"app_min_version": "3.4",
+	"version": "2.0.0",
+	"name": "Repeating To-Dos",
+	"description": "A powerful and comprehensive plugin for to-do repetition/recurrence",
+	"author": "The Scripting Guy / BeatLink",
+	"homepage_url": "https://github.com/TheScriptingGuy/Joplin-Repeating-Todos-Plugin",
+	"repository_url": "https://github.com/TheScriptingGuy/Joplin-Repeating-Todos-Plugin",
+	"keywords": [
+		"joplin",
+		"to-do",
+		"repeat",
+		"repeating",
+		"recurring",
+		"reccur"
+	],
+	"platforms": [
+		"desktop",
+		"mobile"
+	],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"_publish_hash": "sha256:720fdb372190378aae59069efa8cbe9881ec37811ac80b4f7ecbe7b63d1dc692",
+	"_publish_commit": "master:96ca29d000f86fcbd30b2b7cf91fef84dd62c2dd",
+	"_npm_package_name": "joplin-plugin-repeating-to-dos-v2"
+}
