@@ -1,0 +1,54 @@
+{
+	"manifest_version": 1,
+	"id": "com.github.alan-null.joplin-plugin-github-alerts",
+	"app_min_version": "3.1.8",
+	"version": "1.0.5",
+	"name": "Github Alerts",
+	"description": "Github Alerts or callouts, are a Markdown extension based on the blockquote syntax that you can use to emphasize critical information. They are displayed with distinctive colors and icons to indicate the significance of the content.",
+	"author": "Alan Płócieniak",
+	"homepage_url": "https://github.com/alan-null/joplin-plugin-github-alerts#readme",
+	"repository_url": "https://github.com/alan-null/joplin-plugin-github-alerts",
+	"platforms": [
+		"desktop",
+		"mobile"
+	],
+	"keywords": [
+		"viewer",
+		"editor",
+		"visual",
+		"github",
+		"alert",
+		"alerts",
+		"callout",
+		"markdown",
+		"github-alerts",
+		"appearance",
+		"note",
+		"tip",
+		"important",
+		"warning",
+		"caution",
+		"info"
+	],
+	"categories": [
+		"appearance",
+		"editor"
+	],
+	"screenshots": [
+		{
+			"src": "images/screenshots/joplin-desktop.png",
+			"label": "Joplin desktop"
+		},
+		{
+			"src": "images/screenshots/joplin-mobile.png",
+			"label": "Joplin mobile"
+		}
+	],
+	"icons": {},
+	"promo_tile": {
+		"src": "images/promo_tile.png"
+	},
+	"_publish_hash": "sha256:f9676bef4aca233d599f6be50a1bd4cfc8efaec0f638452062256a1475a378ec",
+	"_publish_commit": "master:5ff05b60aae43622c7f413e2b3c127ff0af1cc76",
+	"_npm_package_name": "joplin-plugin-github-alerts"
+}
