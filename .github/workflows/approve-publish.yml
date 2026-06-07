@@ -83,30 +83,7 @@ jobs:
         with:
           path: registry
 
-      - name: Checkout Joplin Monorepo (PoC CLI)
-        uses: actions/checkout@v4
-        with:
-          repository: akshajrawat/joplin
-          ref: poc-plugin-registry
-          path: joplin-source
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build CLI (Fast)
-        run: |
-          cd joplin-source
-          
-          # Prune workspaces to ONLY the CLI and its dependencies to prevent unrelated packages from failing
-          jq '.workspaces = ["packages/plugin-repo-cli", "packages/lib", "packages/utils", "packages/tools"]' package.json > package.json.tmp && mv package.json.tmp package.json
-          
-          # Install and build instantly
-          yarn install --mode skip-build
-          cd packages/plugin-repo-cli
-          yarn run tsc
-          yarn run dist
 
       - name: Download Compiled Artifact
         uses: actions/download-artifact@v4
@@ -120,14 +97,14 @@ jobs:
           JSON_FILE=$(find plugin-publish-dir -name "*.json" | head -n 1)
           JPL_FILE=$(find plugin-publish-dir -name "*.jpl" | head -n 1)
           
-          node joplin-source/packages/plugin-repo-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
+          npx -y @akshajrawat/plugin-repo-cli publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
 
       - name: Upload GitHub Release Asset (update-release)
         env:
           JOPLIN_GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd registry
-          node ../joplin-source/packages/plugin-repo-cli/dist/index.js update-release "$(realpath .)"
+          npx -y @akshajrawat/plugin-repo-cli update-release "$(realpath .)"
 
       - name: Commit and Push to Master
         run: |
