@@ -1,0 +1,21 @@
+{
+	"manifest_version": 1,
+	"id": "com.hieuthi.joplin.markdown-table-sortable",
+	"app_min_version": "2.2",
+	"version": "1.3.0",
+	"name": "Markdown Table: Sortable",
+	"description": "Sort rendered tables on the fly and apply it to markdown source text. Can recognize simple cases of number, money, date and sort accordingly.",
+	"author": "Hieu-Thi Luong",
+	"homepage_url": "https://github.com/hieuthi/joplin-plugin-markdown-table-sortable",
+	"repository_url": "https://github.com/hieuthi/joplin-plugin-markdown-table-sortable",
+	"keywords": [
+		"joplin-plugin",
+		"markdown",
+		"table",
+		"sorting",
+		"sortable"
+	],
+	"_publish_hash": "sha256:28a1a2d62dcecdd21db4824910df90a81945ff3c7305794ad12729ee7a26d4b9",
+	"_publish_commit": "main:0411065037e2e727b08d2796cc1bc34f6708f876",
+	"_npm_package_name": "joplin-plugin-markdown-table-sortable"
+}
