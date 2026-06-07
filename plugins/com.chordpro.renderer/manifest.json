@@ -1,0 +1,25 @@
+{
+	"manifest_version": 1,
+	"id": "com.chordpro.renderer",
+	"app_min_version": "3.5",
+	"version": "1.0.1",
+	"name": "ChordPro Renderer",
+	"description": "Renders ChordPro song markup with chord diagrams, transposition, capo support, multi-column layout, and dark theme",
+	"author": "Joel Ong",
+	"homepage_url": "https://github.com/ongkahyuan/JoplinChordPro",
+	"repository_url": "https://github.com/ongkahyuan/JoplinChordPro",
+	"keywords": [
+		"ChordPro"
+	],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"platforms": [
+		"desktop",
+		"mobile"
+	],
+	"_publish_hash": "sha256:5c4344878c9760d6455bba2a7dc558469ce6500460b24b44c7ec09ef5873b93b",
+	"_publish_commit": "main:90c325e018e78e24f823e5164d57ba44c4715d49",
+	"_npm_package_name": "joplin-plugin-chordpro-renderer"
+}
