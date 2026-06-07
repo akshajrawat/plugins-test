@@ -98,7 +98,7 @@ jobs:
       - name: Build CLI (Fast)
         run: |
           cd joplin-source
-          npm install --ignore-scripts
+          npm install --ignore-scripts --legacy-peer-deps
           cd packages/plugin-repo-cli
           npm run dist
 
