@@ -1,0 +1,18 @@
+{
+	"manifest_version": 1,
+	"id": "com.zealmayfield.GoogleFontsPlugin",
+	"app_min_version": "2.13",
+	"version": "1.0.0",
+	"name": "Google Fonts Plugin",
+	"description": "Use a font available from Google Fonts to style the text selected in the editor.",
+	"author": "Zeal Jared Mayfield",
+	"homepage_url": "https://github.com/ZealJared/joplin-plugin-google-fonts",
+	"repository_url": "https://github.com/ZealJared/joplin-plugin-google-fonts",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"_publish_hash": "sha256:2f748403fe08ed44c8a5e77a777af3812e25d3ba4502f7f5551348c0e5c5ffc0",
+	"_publish_commit": "main:b46e3501cf92c1171fb39c56f9e4b5c036ad7fcb",
+	"_npm_package_name": "joplin-plugin-google-fonts"
+}
