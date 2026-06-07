@@ -1,0 +1,20 @@
+{
+	"manifest_version": 1,
+	"id": "com.nhobb.AdvancedJoplinTags",
+	"app_min_version": "2.8",
+	"version": "1.4.0",
+	"name": "Advanced Tagging Rules",
+	"description": "Allow tags to be subsets of other tags, write rules to move tagged notes to a folder",
+	"author": "Nicholas Hobbs",
+	"homepage_url": "https://github.com/nickhobbs94/joplin-plugin-advanced-tags",
+	"repository_url": "https://github.com/nickhobbs94/joplin-plugin-advanced-tags",
+	"keywords": [
+		"automation"
+	],
+	"categories": [
+		"tags"
+	],
+	"_publish_hash": "sha256:0362209f509ea077ac50bac30ba14827a08b4ccb72dd6a0b758333d49d5d649c",
+	"_publish_commit": "main:73bec38d6ce275ffc50a1dafecdb19e58e7807a2",
+	"_npm_package_name": "joplin-plugin-advanced-tagging"
+}
