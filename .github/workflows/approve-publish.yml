@@ -103,7 +103,7 @@ jobs:
           jq '.workspaces = ["packages/plugin-repo-cli", "packages/lib", "packages/utils", "packages/tools"]' package.json > package.json.tmp && mv package.json.tmp package.json
           
           # Install and build instantly
-          yarn install --ignore-scripts
+          yarn install --mode skip-build
           cd packages/plugin-repo-cli
           yarn run tsc
           yarn run dist
