@@ -1,0 +1,16 @@
+{
+	"manifest_version": 1,
+	"id": "joplin-plugin-search-and-replace",
+	"app_min_version": "2.8",
+	"version": "2.2.0",
+	"name": "Search & Replace",
+	"description": "Adds a search and replace panel to the Markdown editor.",
+	"author": "FelisDiligens",
+	"homepage_url": "https://github.com/FelisDiligens/joplin-plugin-search-and-replace",
+	"repository_url": "https://github.com/FelisDiligens/joplin-plugin-search-and-replace",
+	"keywords": [],
+	"categories": [],
+	"_publish_hash": "sha256:b3d1d1d041353e35a337ad783b3000eb3a3f5979b66932cc6bfb1395bd5f6773",
+	"_publish_commit": "master:0f6cf4d016eaac1aec45a3ad06e1206b14de0eb4",
+	"_npm_package_name": "joplin-plugin-search-and-replace"
+}
