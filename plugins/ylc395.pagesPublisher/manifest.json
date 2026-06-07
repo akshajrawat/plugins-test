@@ -1,0 +1,18 @@
+{
+	"manifest_version": 1,
+	"id": "ylc395.pagesPublisher",
+	"app_min_version": "2.0",
+	"version": "1.7.1",
+	"name": "Pages Publisher",
+	"description": "Generate static blog website from your picked Joplin notes, and publish to Github Pages, with a few mouse clicks. Support preview in local",
+	"author": "ylc395",
+	"homepage_url": "https://github.com/ylc395/joplin-plugin-pages-publisher",
+	"repository_url": "https://github.com/ylc395/joplin-plugin-pages-publisher",
+	"keywords": [
+		"site generator",
+		"github pages"
+	],
+	"_publish_hash": "sha256:7bae94e23d0f47fc17cd022846528c91e3794dde44708e49fc2f3f902a176145",
+	"_publish_commit": "main:fc700d34477d35eedc7cd394be7463979b958d14",
+	"_npm_package_name": "joplin-plugin-pages-publisher"
+}
