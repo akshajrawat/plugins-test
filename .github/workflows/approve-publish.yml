@@ -98,6 +98,10 @@ jobs:
       - name: Build CLI (Fast)
         run: |
           cd joplin-source
+          
+          # Prune workspaces to ONLY the CLI and its dependencies to prevent unrelated packages from failing
+          jq '.workspaces = ["packages/plugin-repo-cli", "packages/lib", "packages/utils", "packages/tools"]' package.json > package.json.tmp && mv package.json.tmp package.json
+          
           npm install --ignore-scripts --legacy-peer-deps
           cd packages/plugin-repo-cli
           npm run dist
