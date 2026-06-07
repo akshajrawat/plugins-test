@@ -1,0 +1,34 @@
+{
+	"manifest_version": 1,
+	"id": "io.github.jackgruber.combine-notes",
+	"app_min_version": "1.8.1",
+	"version": "1.2.3",
+	"name": "Combine notes",
+	"description": "Combine one or more notes",
+	"author": "JackGruber",
+	"homepage_url": "https://github.com/JackGruber/joplin-plugin-combine-notes/blob/master/README.md",
+	"repository_url": "https://github.com/JackGruber/joplin-plugin-combine-notes",
+	"keywords": [
+		"combine",
+		"merge"
+	],
+	"categories": [
+		"productivity"
+	],
+	"screenshots": [
+		{
+			"src": "img/main.png",
+			"label": "Screenshot: Showing the Combine menue"
+		},
+		{
+			"src": "img/showcase1.png",
+			"label": "Screenshot: Showing the settings"
+		}
+	],
+	"icons": {
+		"256": "img/icon_256.png"
+	},
+	"_publish_hash": "sha256:0429b0ea13b5bb41117b9d2570ad59d1a11dee80a0006c3f286a2e64fa5d5bfb",
+	"_publish_commit": "master:039543b0740d9141a12bce4d856fccffb5b9a729",
+	"_npm_package_name": "joplin-plugin-combine-notes"
+}
