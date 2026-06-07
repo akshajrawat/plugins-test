@@ -14,11 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ──────────────────────────────────────────────────────────────
-      # 1. Parse the issue body (raw JSON)
-      #    Extracts plugin_name, repository_url, commit_hash.
-      #    On failure → sets ERROR_MESSAGE for the final step.
-      # ──────────────────────────────────────────────────────────────
+
+      # Parse the issue body (raw JSON)
+      # Extracts plugin_name, repository_url, commit_hash.
+      # On failure → sets ERROR_MESSAGE for the final step.
       - name: Parse Issue Body
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -108,11 +107,10 @@ jobs:
           echo "- **Repository:** $REPO_OWNER_NAME" >> "$GITHUB_STEP_SUMMARY"
           echo "- **Commit:** $COMMIT_HASH" >> "$GITHUB_STEP_SUMMARY"
 
-      # ──────────────────────────────────────────────────────────────
-      # 2. Post an "in progress" comment so the submitter knows
-      #    the scan has started. We save the comment ID so we can
-      #    edit this same comment later with the final result.
-      # ──────────────────────────────────────────────────────────────
+      # Post an "in progress" comment so the submitter knows
+      # the scan has started. We save the comment ID so we can
+      # edit this same comment later with the final result.
+
       - name: Post In-Progress Comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -141,18 +139,14 @@ jobs:
           echo "PROGRESS_COMMENT_ID=$COMMENT_ID" >> "$GITHUB_ENV"
           echo "Posted in-progress comment: $COMMENT_ID"
 
-      # ──────────────────────────────────────────────────────────────
       # 3. Checkout this repo (scanner tools + manifests.json)
-      # ──────────────────────────────────────────────────────────────
       - name: Checkout Scanner Tools
         uses: actions/checkout@v4
         with:
           path: scanner-tools
 
-      # ──────────────────────────────────────────────────────────────
-      # 4. Check manifests.json — new plugin or update?
-      #    If plugin_name exists with a DIFFERENT repo URL → reject.
-      # ──────────────────────────────────────────────────────────────
+      # Check manifests.json — new plugin or update?
+      # If plugin_name exists with a DIFFERENT repo URL → reject.
       - name: Check Plugin Registry
         run: |
           MANIFESTS="scanner-tools/manifests.json"
@@ -211,11 +205,8 @@ jobs:
             exit 1
           fi
 
-      # ──────────────────────────────────────────────────────────────
-      # 5. Checkout the target plugin at the exact commit
-      #    Uses continue-on-error so we can post a clear message
-      #    instead of the default checkout error.
-      # ──────────────────────────────────────────────────────────────
+      # Checkout the target plugin at the exact commit
+      # Uses continue-on-error so we can post a clear message instead of the default checkout error.
       - name: Checkout Target Plugin
         id: checkout-target
         uses: actions/checkout@v4
@@ -241,9 +232,7 @@ jobs:
           } >> "$GITHUB_ENV"
           exit 1
 
-      # ──────────────────────────────────────────────────────────────
-      # 6. Verify the checkout landed on the expected commit
-      # ──────────────────────────────────────────────────────────────
+      # Verify the checkout landed on the expected commit
       - name: Verify Commit Integrity
         working-directory: target-plugin
         run: |
@@ -263,29 +252,23 @@ jobs:
           fi
           echo "✅ Checkout verified: $ACTUAL_HASH"
 
-      # ──────────────────────────────────────────────────────────────
-      # 7. Setup Node.js
-      # ──────────────────────────────────────────────────────────────
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # ──────────────────────────────────────────────────────────────
-      # 8. Install dependencies and build the scanner
-      # ──────────────────────────────────────────────────────────────
+      # Install dependencies and build the scanner
       - name: Install & Build Scanner
         working-directory: scanner-tools/scripts
         run: |
           npm ci
           npm run build
 
-      # ──────────────────────────────────────────────────────────────
-      # 9. Run the security scan against the target plugin
-      #    Reads src/, package.json, package-lock.json from the
-      #    target plugin and sends the data to the Gemini API.
-      #    Outputs scan-result.json.
-      # ──────────────────────────────────────────────────────────────
+      # Run the security scan against the target plugin
+      # Reads src/, package.json, package-lock.json from the
+      # target plugin and sends the data to the Gemini API.
+      # Outputs scan-result.json.
       - name: Run Security Scan
         working-directory: scanner-tools/scripts
         env:
@@ -293,16 +276,13 @@ jobs:
         run: |
           node dist/runScan.js ../../target-plugin
 
-      # ──────────────────────────────────────────────────────────────
-      # 10. Post result — runs ALWAYS
-      #     Edits the in-progress comment with the final result.
-      #     If the in-progress comment was never created (early
-      #     parse failure), falls back to posting a new comment.
-      #     Three cases:
-      #       A) Validation error   → edit/post ERROR_MESSAGE + close
-      #       B) Scan result exists → edit with full report
-      #       C) Scan crashed       → edit with failure notice
-      # ──────────────────────────────────────────────────────────────
+      # Post result : runs ALWAYS
+      # Edits the in-progress comment with the final result.
+      # If the in-progress comment was never created, falls back to posting a new comment.
+      # Three cases:
+      #       Validation error   → edit/post ERROR_MESSAGE + close the issue
+      #       Scan result exists → edit with full report
+      #       Scan crashed       → edit with failure notice
       - name: Post Result
         if: always()
         env:

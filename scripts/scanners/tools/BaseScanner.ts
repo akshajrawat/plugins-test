@@ -24,7 +24,7 @@ export abstract class BaseScanner {
 	// Run the security scan against a plugin checked out at `targetDir`.
 	abstract scan(targetDir: string): Promise<ScanResult>;
 
-	// Writes the scan result in `outhputPath` (scan-result.json.. etc) 
+	// Writes the scan result in `outputPath` (scan-result.json.. etc) 
 	public exportToJson(result: ScanResult, outputPath: string): void {
 		const outputDir = path.dirname(outputPath);
 		if (!fs.existsSync(outputDir)) {
