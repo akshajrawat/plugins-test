@@ -95,15 +95,17 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build CLI (Fast)
+      - name: Build CLI (Standalone Bypass)
         run: |
-          cd joplin-source
+          # Copy CLI entirely out of the monorepo
+          cp -r joplin-source/packages/plugin-repo-cli ./custom-cli
+          cd custom-cli
           
-          # Prune workspaces to ONLY the CLI and its dependencies to prevent unrelated packages from failing
-          jq '.workspaces = ["packages/plugin-repo-cli", "packages/lib", "packages/utils", "packages/tools"]' package.json > package.json.tmp && mv package.json.tmp package.json
+          # Change ~3.7 dependencies to "latest" so it downloads the published ~3.6.3 versions from the internet instead of crashing
+          sed -i 's/"~3.7"/"latest"/g' package.json
           
+          # Install and build instantly
           yarn install --ignore-scripts
-          cd packages/plugin-repo-cli
           yarn run dist
 
       - name: Download Compiled Artifact
@@ -118,14 +120,14 @@ jobs:
           JSON_FILE=$(find plugin-publish-dir -name "*.json" | head -n 1)
           JPL_FILE=$(find plugin-publish-dir -name "*.jpl" | head -n 1)
           
-          node joplin-source/packages/plugin-repo-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
+          node custom-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
 
       - name: Upload GitHub Release Asset (update-release)
         env:
           JOPLIN_GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd registry
-          node ../joplin-source/packages/plugin-repo-cli/dist/index.js update-release "$(realpath .)"
+          node ../custom-cli/dist/index.js update-release "$(realpath .)"
 
       - name: Commit and Push to Master
         run: |
