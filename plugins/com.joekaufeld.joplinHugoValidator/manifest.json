@@ -1,0 +1,19 @@
+{
+	"manifest_version": 1,
+	"id": "com.joekaufeld.joplinHugoValidator",
+	"app_min_version": "3.5",
+	"version": "1.0.3",
+	"name": "Hugo Content Validator",
+	"description": "One-click validation to ensure the current note will build as content in Hugo, the markdown-powered static site generator.",
+	"author": "Joe Kaufeld",
+	"homepage_url": "",
+	"repository_url": "https://github.com/itsthejoker/joplin-hugo-validator",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"_publish_hash": "sha256:a337a55fbf8ed95c76f9ab0dd42e0973355112173a82daaa134fb94ce230e5ef",
+	"_publish_commit": "main:3e46cbffd4ed5e8494ff8ee413b9d5e233b1d99a",
+	"_npm_package_name": "joplin-plugin-hugo-content-validator"
+}
