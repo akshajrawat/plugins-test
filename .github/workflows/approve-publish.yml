@@ -1,0 +1,157 @@
+name: Approve and Publish Plugin
+
+on:
+  issues:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue Number to process'
+        required: true
+
+concurrency:
+  group: global-joplin-registry-mutation
+  cancel-in-progress: false
+
+jobs:
+  build-plugin:
+    if: github.event.label.name == 'status: approved' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      repository: ${{ steps.fetch.outputs.repository }}
+      commit: ${{ steps.fetch.outputs.commit }}
+    steps:
+      - name: Parse Issue Payload
+        uses: actions/github-script@v7
+        id: fetch
+        with:
+          script: |
+            const issue_number = context.payload.issue ? context.payload.issue.number : parseInt(context.payload.inputs.issue_number);
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number
+            });
+            
+            // Try to find the JSON block in the markdown body
+            const match = issue.body.match(/```json\s*(\{[\s\S]*?\})\s*```/);
+            if (!match) throw new Error("No JSON payload found in issue body.");
+            const payload = JSON.parse(match[1]);
+            
+            // Normalize repo URL to owner/repo format for checkout action
+            let repoPath = payload.repository_url;
+            repoPath = repoPath.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
+            
+            core.setOutput('repository', repoPath);
+            core.setOutput('commit', payload.commit);
+
+      - name: Checkout Target Plugin Source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.fetch.outputs.repository }}
+          ref: ${{ steps.fetch.outputs.commit }}
+          path: plugin-source
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Plugin (Untrusted Execution)
+        run: |
+          cd plugin-source
+          npm ci
+          npm run dist
+
+      - name: Upload Compiled Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-build
+          path: plugin-source/publish/
+
+  publish-plugin:
+    needs: build-plugin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Checkout Plugins Test Registry
+        uses: actions/checkout@v4
+        with:
+          path: registry
+
+      - name: Checkout Joplin Monorepo (PoC CLI)
+        uses: actions/checkout@v4
+        with:
+          repository: akshajrawat/joplin
+          ref: poc-plugin-registry
+          path: joplin-source
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build CLI (Fast)
+        run: |
+          # Isolate the CLI package to break Lerna workspace links for instant install
+          cp -r joplin-source/packages/plugin-repo-cli ./custom-cli
+          cd custom-cli
+          npm install --ignore-scripts
+          npm run dist
+
+      - name: Download Compiled Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-build
+          path: plugin-publish-dir
+
+      - name: Mutate Registry & README (publish-plugin)
+        run: |
+          # Find the generated JSON and JPL files
+          JSON_FILE=$(find plugin-publish-dir -name "*.json" | head -n 1)
+          JPL_FILE=$(find plugin-publish-dir -name "*.jpl" | head -n 1)
+          
+          node custom-cli/dist/index.js publish-plugin "$(realpath registry)" "$(realpath $JSON_FILE)" "$(realpath $JPL_FILE)"
+
+      - name: Upload GitHub Release Asset (update-release)
+        env:
+          JOPLIN_GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd registry
+          node ../custom-cli/dist/index.js update-release "$(realpath .)"
+
+      - name: Commit and Push to Master
+        run: |
+          cd registry
+          git config --global user.name "joplinbot"
+          git config --global user.email "bot@joplinapp.org"
+          git add manifests.json README.md stats.json plugins/
+          
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(registry): update registry for approved plugin submission"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+
+      - name: Close Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.issue ? context.payload.issue.number : parseInt(context.payload.inputs.issue_number);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              body: '✅ Plugin successfully built and published to the registry! Closing issue.'
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number,
+              state: 'closed'
+            });
