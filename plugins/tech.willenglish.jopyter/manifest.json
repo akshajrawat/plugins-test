@@ -1,0 +1,19 @@
+{
+	"manifest_version": 1,
+	"id": "tech.willenglish.jopyter",
+	"app_min_version": "3.3",
+	"version": "1.0.0",
+	"name": "Jopyter Notebook",
+	"description": "Add runnable Python code blocks to your notes!",
+	"author": "William English",
+	"homepage_url": "https://willenglish.tech/",
+	"repository_url": "https://github.com/Dubascudes/JopyterPlugin",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"_publish_hash": "sha256:b32445784014218bbd5216046bfd1968909f76f18d26f2fe646cd03cb99ec4c5",
+	"_publish_commit": "main:718af781dfe739b099ece40e243d4898ad11a63c",
+	"_npm_package_name": "joplin-plugin-jopyter"
+}
