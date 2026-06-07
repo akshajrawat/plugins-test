@@ -1,0 +1,18 @@
+{
+	"manifest_version": 1,
+	"id": "org.joplinapp.plugins.test",
+	"app_min_version": "3.7",
+	"version": "1.0.0",
+	"name": "test",
+	"description": "test",
+	"author": "test",
+	"homepage_url": "test",
+	"repository_url": "https://github.com/akshajrawat/joplin-test-plugin-",
+	"keywords": [],
+	"categories": [],
+	"screenshots": [],
+	"icons": {},
+	"promo_tile": {},
+	"_publish_hash": "sha256:7ab78df4347db188e50ab252c842b871fc034032d7beb7c79bffdb806a127360",
+	"_publish_commit": "master:75af28a1b5e17b4c5d8071aa57b72f589c37ce91"
+}
