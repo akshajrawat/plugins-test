@@ -45,7 +45,7 @@ jobs:
             repoPath = repoPath.replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/$/, '');
             
             core.setOutput('repository', repoPath);
-            core.setOutput('commit', payload.commit);
+            core.setOutput('commit', payload.commit_hash || payload.commit);
 
       - name: Checkout Target Plugin Source
         uses: actions/checkout@v4
