@@ -106,6 +106,7 @@ jobs:
           
           # Install and build instantly
           yarn install --ignore-scripts
+          yarn run tsc
           yarn run dist
 
       - name: Download Compiled Artifact
