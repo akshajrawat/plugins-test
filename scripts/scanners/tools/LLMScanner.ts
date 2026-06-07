@@ -79,6 +79,9 @@ export abstract class LLMScanner extends BaseScanner {
     return `CODE:\n${codeSection}\n\nDEPENDENCIES:\n${depsSection}`;
   }
 
+  private normalizeFilePath(fullPath: string, rootDir: string): string {
+    return path.relative(rootDir, fullPath).split(path.sep).join("/");
+  }
   // Read all files from the `src/` dir and return them as a single string with file-path separators
   private harvestSourceFiles(targetDir: string): string {
     const collectedChunks: string[] = [];
@@ -119,6 +122,7 @@ export abstract class LLMScanner extends BaseScanner {
       if (entry.isSymbolicLink()) continue;
 
       const fullPath = path.join(dirPath, entry.name);
+      const normalized = this.normalizeFilePath(fullPath, rootDir);
 
       if (entry.isDirectory()) {
         if (entry.name === "node_modules" || entry.name === ".git") continue;
@@ -129,16 +133,19 @@ export abstract class LLMScanner extends BaseScanner {
       if (!entry.isFile()) continue;
       if (!SOURCE_EXTENSIONS.has(path.extname(entry.name))) continue;
 
+      const stat = fs.statSync(fullPath);
+      if (stat.size > 512 * 1024) {
+        output.push(`\n--- FILE: ${normalized} --- [SKIPPED: ${stat.size} bytes exceeds limit]\n`);
+        continue;
+      }
+
       try {
         const content = fs.readFileSync(fullPath, "utf-8");
-        const relativePath = path.relative(rootDir, fullPath);
-        
-        const normalized = relativePath.split(path.sep).join("/");
+
         output.push(`\n--- FILE: ${normalized} ---\n${content}`);
+
       } catch {
-        // Unreadable file – note it but keep going.
-        const relativePath = path.relative(rootDir, fullPath);
-        output.push(`\n--- FILE: ${relativePath} --- [READ ERROR]\n`);
+        output.push(`\n--- FILE: ${normalized} --- [READ ERROR]\n`);
       }
     }
   }
@@ -202,7 +209,7 @@ export abstract class LLMScanner extends BaseScanner {
     );
     if (installScriptFlags.length > 0) {
       for (const f of installScriptFlags) {
-        sections.push(`- ${f.name}@${f.version ?? "unknown"}(Source: ${f.resolved ?? "registry"})`);
+        sections.push(`- ${f.name}@${f.version ?? "unknown"} (Source: ${f.resolved ?? "registry"})`);
       }
     } else {
       sections.push("(none detected)");
@@ -345,7 +352,7 @@ export abstract class LLMScanner extends BaseScanner {
       return `${header}\n(none)`;
     }
 
-    const dangerousHooks = ["postinstall", "preinstall", "install"] as const;
+    const dangerousHooks = ["postinstall", "preinstall", "install", "prepare"] as const;
     const lines: string[] = [];
 
     for (const [name, command] of Object.entries(scripts)) {

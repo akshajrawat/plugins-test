@@ -6,10 +6,8 @@ import { GeminiScanner } from './scanners';
  *
  * Requires:
  *   KEY – set as a GitHub Actions secret.
- *   LLM MODEL   – optional override
- *
- * Outputs:
- *   - scan-result.json   in the current working directory.
+ * 
+ * @returns scan-result.json in the current working directory.
  */
 async function main(): Promise<void> {
 	const targetDir = process.argv[2];
