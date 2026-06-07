@@ -44,7 +44,10 @@ interface GeminiErrorResponse {
  * to the Google Gemini generative AI API for security analysis.
  */
 export class GeminiScanner extends LLMScanner {
-  readonly toolName = "Gemini 3.1 Pro";
+  get toolName(): string {
+    return `Gemini (${process.env.GEMINI_MODEL ?? GeminiScanner.DEFAULT_MODEL})`;
+  }
+
   private static readonly API_BASE =
     "https://generativelanguage.googleapis.com/v1beta/models";
   private static readonly DEFAULT_MODEL = "gemini-2.5-pro";
@@ -75,7 +78,7 @@ export class GeminiScanner extends LLMScanner {
     if (!apiKey) {
       throw new Error(
         "GEMINI_API_KEY environment variable is not set. " +
-          "Add it as a repository secret in GitHub Actions.",
+        "Add it as a repository secret in GitHub Actions.",
       );
     }
 
@@ -128,43 +131,71 @@ export class GeminiScanner extends LLMScanner {
       ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 10000,
       },
     };
 
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const MAX_RETRIES = 3;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Gemini API returned HTTP ${response.status}: ${errorText}`,
-      );
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      // retry on transient errors
+      if (response.status === 503 || response.status === 429) {
+        if (attempt === MAX_RETRIES) {
+          throw new Error(`Gemini API unavailable after ${MAX_RETRIES} attempts.`);
+        }
+        console.log(`[GeminiScanner] ${response.status} — retrying (${attempt}/${MAX_RETRIES})...`);
+        await new Promise(r => setTimeout(r, 5000));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Gemini API returned HTTP ${response.status}: ${errorText}`,
+        );
+      }
+
+      const data: unknown = await response.json();
+
+      // log token usage for cost tracking
+      if ("usageMetadata" in (data as object)) {
+        const usage = (data as any).usageMetadata;
+        console.log(`[GeminiScanner] Tokens — prompt: ${usage.promptTokenCount}, output: ${usage.candidatesTokenCount}`);
+      }
+
+      if (GeminiScanner.isGeminiError(data)) {
+        throw new Error(
+          `Gemini API error [${data.error.code}/${data.error.status}]: ${data.error.message}`,
+        );
+      }
+
+      if (!GeminiScanner.isGeminiSuccess(data)) {
+        throw new Error(
+          "Unexpected Gemini API response shape — no candidates returned.",
+        );
+      }
+
+      // check if response was truncated
+      const finishReason = data.candidates[0].finishReason;
+      if (finishReason === "MAX_TOKENS") {
+        console.warn("[GeminiScanner] Response truncated — consider increasing maxOutputTokens.");
+      }
+
+      const parts = data.candidates[0].content.parts;
+      if (!parts || parts.length === 0) {
+        throw new Error("Gemini API returned an empty response (no parts).");
+      }
+
+      return parts.map((p) => p.text).join("");
     }
 
-    const data: unknown = await response.json();
-
-    if (GeminiScanner.isGeminiError(data)) {
-      throw new Error(
-        `Gemini API error [${data.error.code}/${data.error.status}]: ${data.error.message}`,
-      );
-    }
-
-    if (!GeminiScanner.isGeminiSuccess(data)) {
-      throw new Error(
-        "Unexpected Gemini API response shape — no candidates returned.",
-      );
-    }
-
-    const parts = data.candidates[0].content.parts;
-    if (!parts || parts.length === 0) {
-      throw new Error("Gemini API returned an empty response (no parts).");
-    }
-
-    return parts.map((p) => p.text).join("");
+    throw new Error("Gemini API call failed after all retries.");
   }
 
   /**
@@ -176,7 +207,7 @@ export class GeminiScanner extends LLMScanner {
     if (!match) {
       console.warn(
         "[GeminiScanner] Could not parse VERDICT from LLM response. " +
-          "Defaulting to manual_review.",
+        "Defaulting to manual_review.",
       );
       return "manual_review";
     }
@@ -217,13 +248,11 @@ export class GeminiScanner extends LLMScanner {
       `**Verdict** : ${verdict.toUpperCase()} ${verdictEmoji}`,
       `**Timestamp** : ${timestamp}`,
       "",
-      "---",
       "",
       "## Findings",
       "",
       findingsTable || "_No findings._",
       "",
-      "---",
       "",
       "## Summary",
       "",
