@@ -7901,5 +7901,30 @@
 		"_publish_hash": "sha256:eff600c5a37ffd1adee352958371ca6a7d83e94d0dc1a56a406582a191bb68bf",
 		"_publish_commit": "main:2353f0053e956c35c0e0d2f30a269b19cbfbad85",
 		"_npm_package_name": "joplin-plugin-gpt-assistant"
+	},
+	"com.victorwiebe.joplin.plugin.gtd-calendar": {
+		"manifest_version": 1,
+		"id": "com.victorwiebe.joplin.plugin.gtd-calendar",
+		"app_min_version": "2.7",
+		"version": "0.3.2",
+		"name": "GTD Calendar",
+		"description": "Day, week, and month calendars populated by your notes and to-dos, with click-through to the source note. Configure with simple YAML blocks. A GTD-friendly fork of Event Calendar by Franco Speziali.",
+		"author": "Victor Wiebe",
+		"homepage_url": "https://gitea.skeletonworks.online/vwiebe/joplin-plugin-gtd-calendar",
+		"repository_url": "https://gitea.skeletonworks.online/vwiebe/joplin-plugin-gtd-calendar",
+		"keywords": [
+			"calendar",
+			"gtd",
+			"todo",
+			"agenda",
+			"schedule"
+		],
+		"categories": [
+			"productivity",
+			"viewer"
+		],
+		"_publish_hash": "sha256:fd041714215017cc3772be878d150a1f657f4c4d54171b6b90458f54bf457abb",
+		"_publish_commit": "master:1cc6f184f06f982a7781a433f8109f3627adfb01",
+		"_npm_package_name": "joplin-plugin-gtd-calendar"
 	}
 }
