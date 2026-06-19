@@ -3,7 +3,7 @@ import * as fs from 'fs';
 const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, phases: Record<number, string> | null) => {
     let base = `# 🛡️Security Scan Report
 
-**Target:** [${repoUrl}/tree/${commitHash}](${repoUrl}/tree/${commitHash})
+**Target:** [${repoUrl}/commit/${commitHash}](${repoUrl}/commit/${commitHash})
 **Workflow Run:** [View Logs](${runUrl})
 `;
     if (phases) {
@@ -163,9 +163,9 @@ export async function updatePhase({ github, context }: Partial<GithubContext>, c
     });
 
     let body = comment.data.body;
-    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/tree\//);
+    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/commit\//);
     const repoUrl = repoUrlMatch ? repoUrlMatch[1] : '';
-    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/tree\/([^\]]+)\]/);
+    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/commit\/([^\]]+)\]/);
     const commitHash = commitHashMatch ? commitHashMatch[1] : '';
     const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
     const runUrl = runUrlMatch ? runUrlMatch[1] : '';

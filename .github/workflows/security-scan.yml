@@ -83,7 +83,7 @@ jobs:
         with:
           languages: javascript
           source-root: target-plugin
-          queries: ./plugins-test/.github/codeql/custom-javascript.qls
+          queries: ./plugins-test/.github/codeql/codeql_rules/combined-threats.qls
 
       - name: Phase 4 - SAST Analysis (Taint Tracking & Data Flow)
         if: success() && steps.init.outputs.should_proceed == 'true'
