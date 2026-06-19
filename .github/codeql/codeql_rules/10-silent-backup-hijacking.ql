@@ -57,4 +57,4 @@ where
   isExportModuleRegistration(reg) and
   (sendsToNetwork(dangerousCall) or writesToFileSystem(dangerousCall)) and
   isExportModuleCallback(dangerousCall.getEnclosingFunction())
-select dangerousCall, "Silent Backup Hijacking: network or file write inside a $@ callback. Requires human review.", reg, "registerExportModule"
+select dangerousCall, "Silent Backup Hijacking: network or file write inside a registerExportModule callback. Requires human review."

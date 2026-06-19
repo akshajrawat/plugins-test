@@ -18,17 +18,20 @@ class CommandExecutionConfig extends TaintTracking::Configuration {
     source = Joplin::data().getAMethodCall("get") or
     exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
     source = Joplin::workspace().getAMethodCall("onNoteChange").getArgument(0).(DataFlow::FunctionNode).getParameter(0) or
+    source = Joplin::workspace().getAMethodCall("onNoteContentChange").getArgument(0).(DataFlow::FunctionNode).getParameter(0) or
     source instanceof DataFlow::ParameterNode or
-    source.asExpr() instanceof StringLiteral or
-    source.asExpr() instanceof TemplateLiteral
+    exists(source.getStringValue())
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call |
-      call = DataFlow::moduleMember("child_process", "exec").getACall() or
-      call = DataFlow::moduleMember("child_process", "execSync").getACall() or
-      call = DataFlow::moduleMember("child_process", "spawn").getACall() or
-      call = DataFlow::moduleMember("child_process", "execFile").getACall()
+    exists(DataFlow::CallNode call, string moduleName, string methodName |
+      (moduleName = "child_process" or moduleName = "node:child_process") and
+      (
+        methodName = "exec" or methodName = "execFile" or methodName = "spawn" or
+        methodName = "execSync" or methodName = "execFileSync" or methodName = "spawnSync" or
+        methodName = "fork"
+      ) and
+      call = DataFlow::moduleMember(moduleName, methodName).getACall()
     |
       sink = call.getArgument(0)
     )

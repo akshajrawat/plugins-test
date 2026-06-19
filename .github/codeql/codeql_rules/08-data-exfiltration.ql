@@ -37,4 +37,4 @@ where
   sendsToNetwork(networkCall) and
   enclosingFn = networkCall.getEnclosingFunction() and
   enclosingFn = dataRead.getEnclosingFunction()
-select networkCall, "Data exfiltration: Joplin data read via $@ is sent to a network call in the same function.", dataRead, dataRead.toString()
+select networkCall, "Data exfiltration: Joplin data read is sent to a network call in the same function."

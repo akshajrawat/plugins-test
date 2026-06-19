@@ -16,8 +16,7 @@ class ClipboardHijackingConfig extends TaintTracking::Configuration {
   override predicate isSource(DataFlow::Node source) {
     source = Joplin::clipboard().getAMethodCall("readText") or
     exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
-    source.asExpr() instanceof StringLiteral or
-    source.asExpr() instanceof TemplateLiteral
+    exists(source.getStringValue())
   }
 
   override predicate isSink(DataFlow::Node sink) {

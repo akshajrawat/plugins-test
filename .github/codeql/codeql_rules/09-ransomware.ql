@@ -45,4 +45,4 @@ where
   f = readCall.getFile() and
   f = writeCall.getFile() and
   f = cryptoCall.getFile()
-select writeCall, "Ransomware pattern: notes read via $@, encrypted via $@, and overwritten here.", readCall, readCall.toString(), cryptoCall, cryptoCall.toString()
+select writeCall, "Ransomware pattern: notes read, encrypted, and overwritten here."
