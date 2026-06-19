@@ -1,1 +1,14 @@
 temp/
+
+# CodeQL test artifacts
+*.actual
+.testproj
+test-db/
+results.csv
+codeql-results/
+*.sarif
+
+# Node.js and compiled scripts
+node_modules/
+scripts/**/*.js
+scripts/*.js

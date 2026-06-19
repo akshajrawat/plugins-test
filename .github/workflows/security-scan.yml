@@ -1,0 +1,103 @@
+name: Plugin Security Scan
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  scan:
+    if: contains(github.event.issue.title, '[Plugin Submission]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v4
+        with:
+          path: plugins-test
+
+      - name: Setup Node.js and TypeScript
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Compile TypeScript Script
+        run: |
+          npm install -g typescript
+          tsc ./plugins-test/scripts/scan-manager.ts --esModuleInterop --skipLibCheck || true
+
+      - name: Phase 1 - Parse payload and Initial Check
+        id: init
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            return await script.initialize({github, context, core});
+        
+      - name: Phase 2 - Environment Provisioning
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            await script.updatePhase({github, context}, '${{ fromJSON(steps.init.outputs.result).comment_id }}', 2);
+
+      - name: Checkout Target Plugin Repository
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ fromJSON(steps.init.outputs.result).repo_name }}
+          ref: ${{ fromJSON(steps.init.outputs.result).commit_hash }}
+          path: target-plugin
+
+      - name: Phase 3 - CodeQL Initialization (Database Compile)
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            await script.updatePhase({github, context}, '${{ fromJSON(steps.init.outputs.result).comment_id }}', 3);
+
+      - name: Initialize CodeQL
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          source-root: target-plugin
+          queries: ./plugins-test/.github/codeql/custom-javascript.qls
+
+      - name: Phase 4 - SAST Analysis (Taint Tracking & Data Flow)
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            await script.updatePhase({github, context}, '${{ fromJSON(steps.init.outputs.result).comment_id }}', 4);
+
+      - name: Perform CodeQL Analysis
+        if: success() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+          output: codeql-results
+          upload: false
+
+      - name: Phase 5 - Report Generation
+        if: always() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            await script.updatePhase({github, context}, '${{ fromJSON(steps.init.outputs.result).comment_id }}', 5);
+
+      - name: Finalize Report
+        if: always() && fromJSON(steps.init.outputs.result).should_proceed == true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const script = require('./plugins-test/scripts/scan-manager.js');
+            const res = ${{ steps.init.outputs.result }};
+            await script.generateFinalReport({github, context}, res.comment_id, 'codeql-results/javascript.sarif', res.repository_url, res.commit_hash);
+

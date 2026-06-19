@@ -1,0 +1,27 @@
+- description: "Joplin Combined Custom and Standard Security Rules"
+
+- queries: .
+
+- import: codeql-suites/javascript-security-extended.qls
+  from: codeql/javascript-queries
+
+- exclude:
+    id:
+      - "*xss*"
+      - "*ssrf*"
+      - "*dos*"
+      - "*redos*"
+      - "*request-forgery*"
+      - "*url-redirection*"
+      - "*regex-injection*"
+      - "js/bad-tag-filter"
+      - "*useless-regexp-character-escape*"
+      - "js/incomplete-url-substring-sanitization"
+      - "js/double-escaping"
+      - "js/incomplete-multi-character-sanitization"
+      - "*insufficient-password*"
+      - "*weak-crypto*"
+      - "*insecure-download*"
+      - "*http-to-file*"
+      - "*polynomial-redos*"
+

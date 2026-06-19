@@ -1,0 +1,12 @@
+- import: codeql-suites/javascript-code-scanning.qls
+  from: codeql/javascript-queries
+- exclude:
+    id:
+      - js/incomplete-url-substring-sanitization
+      - js/request-forgery
+      - js/server-side-unvalidated-url-redirection
+      - js/bad-tag-filter
+      - js/incomplete-multi-character-sanitization
+      - js/double-escaping
+      - js/xss
+      - js/xss-through-dom

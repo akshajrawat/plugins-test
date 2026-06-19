@@ -1,0 +1,5 @@
+name: joplin/sast-rules
+version: 1.0.0
+dependencies:
+  codeql/javascript-all: "*"
+library: false
