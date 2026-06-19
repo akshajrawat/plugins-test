@@ -7,6 +7,7 @@ on:
 permissions:
   issues: write
   contents: read
+  security-events: write
 
 jobs:
   scan:
@@ -21,7 +22,7 @@ jobs:
       - name: Setup Node.js and TypeScript
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Compile TypeScript Script
         run: |

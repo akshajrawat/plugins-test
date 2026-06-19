@@ -1,18 +1,23 @@
-import * as fs from 'fs';
+const fs = require('fs');
 
-const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, phases: Record<number, string>) => `
-# 🛡️Security Scan Report
+const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, phases: Record<number, string> | null) => {
+    let base = `# 🛡️Security Scan Report
 
 **Target:** [${repoUrl}/tree/${commitHash}](${repoUrl}/tree/${commitHash})
 **Workflow Run:** [View Logs](${runUrl})
-
-# ⏳ Pipeline Status
-* ${phases[1]} **Phase 1: Identity & Uniqueness Check** — *Validating ownership...*
-* ${phases[2]} **Phase 2: Environment Provisioning** — *Setting up workspace...*
-* ${phases[3]} **Phase 3: CodeQL Database Compilation** — *Building database...*
-* ${phases[4]} **Phase 4: SAST Taint Analysis** — *Running queries...*
-* ${phases[5]} **Phase 5: Final Report Generation** — *Formatting results...*
 `;
+    if (phases) {
+        base += `
+# ⏳ Pipeline Status
+* ${phases[1]} **Phase 1: Identity & Uniqueness Check**
+* ${phases[2]} **Phase 2: Environment Provisioning**
+* ${phases[3]} **Phase 3: CodeQL Database Compilation**
+* ${phases[4]} **Phase 4: SAST Taint Analysis**
+* ${phases[5]} **Phase 5: Final Report Generation**
+`;
+    }
+    return base;
+};
 
 function getPhases(currentPhase: number): Record<number, string> {
     const phases: Record<number, string> = {};
@@ -135,11 +140,11 @@ export async function updatePhase({ github, context }: Partial<GithubContext>, c
     });
 
     let body = comment.data.body;
-    const repoUrlMatch = body.match(/\*\*Target:\*\* \[(.*?)\/tree\//);
+    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/tree\//);
     const repoUrl = repoUrlMatch ? repoUrlMatch[1] : '';
-    const commitHashMatch = body.match(/\/tree\/([^)]+)\)/);
+    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/tree\/([^\]]+)\]/);
     const commitHash = commitHashMatch ? commitHashMatch[1] : '';
-    const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[(.*?)\]/);
+    const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
     const runUrl = runUrlMatch ? runUrlMatch[1] : '';
 
     const phases = getPhases(phase);
@@ -155,8 +160,7 @@ export async function updatePhase({ github, context }: Partial<GithubContext>, c
 
 export async function generateFinalReport({ github, context }: Partial<GithubContext>, comment_id: string, sarifPath: string, repoUrl: string, commitHash: string) {
     const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-    const phases = getPhases(6);
-    let body = STATUS_TEMPLATE(repoUrl, commitHash, runUrl, phases) + `\n\n---\n\n# Findings\n\n`;
+    let body = STATUS_TEMPLATE(repoUrl, commitHash, runUrl, null) + `\n\n---\n\n# Findings\n\n`;
 
     if (fs.existsSync(sarifPath)) {
         const sarif = JSON.parse(fs.readFileSync(sarifPath, 'utf8'));
