@@ -197,7 +197,8 @@ export async function generateFinalReport({ github, context }: Partial<GithubCon
         if (results && results.length > 0) {
             results.forEach(result => {
                 const ruleId = result.ruleId;
-                const message = result.message.text;
+                let rawMessage = result.message.text || '';
+                const message = Array.from(new Set(rawMessage.split('\n').map((s: string) => s.trim()))).filter(Boolean).join(' ');
                 const location = result.locations[0].physicalLocation;
                 const file = location.artifactLocation.uri;
                 const line = location.region.startLine;
