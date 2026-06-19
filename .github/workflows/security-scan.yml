@@ -27,6 +27,66 @@ jobs:
             });
             return comment.data.id;
 
+      - name: Pre-flight Metadata Validation
+        id: preflight
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.issue.title;
+            const body = context.payload.issue.body;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const commentId = '${{ steps.ack.outputs.result }}';
+            
+            const fail = async (msg) => {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(commentId),
+                body: `❌ **Security Scan Rejected**\n\n${msg}\n\n**Workflow Run:** [View Logs](${runUrl})`
+              });
+              core.setOutput('handled_failure', 'true');
+              core.setFailed(msg);
+            };
+
+            const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9\.]+.*$/;
+            if (!titleRegex.test(title)) {
+              await fail("Invalid issue title format. Must begin with `[Plugin Submission]` followed by the plugin name and version.");
+              return;
+            }
+
+            const jsonMatch = body.match(/```json\s*([\s\S]*?)\s*```/);
+            if (!jsonMatch) {
+              await fail("Could not find JSON payload in the issue body. Please ensure you included a ` ```json ` block.");
+              return;
+            }
+
+            let payload;
+            try {
+              payload = JSON.parse(jsonMatch[1]);
+            } catch (e) {
+              await fail("Invalid JSON payload. Please check for syntax errors.");
+              return;
+            }
+
+            const { plugin_name, repository_url, commit_hash } = payload;
+            
+            if (!plugin_name || !repository_url || !commit_hash) {
+              await fail("Missing required fields in payload. Ensure `plugin_name`, `repository_url`, and `commit_hash` are provided.");
+              return;
+            }
+
+            const urlRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?\/?$/;
+            if (!urlRegex.test(repository_url)) {
+              await fail(`Invalid repository URL: \`${repository_url}\`. Must be a valid GitHub repository URL.`);
+              return;
+            }
+
+            const hashRegex = /^[a-fA-F0-9]{40}$/;
+            if (!hashRegex.test(commit_hash)) {
+              await fail(`Invalid commit hash: \`${commit_hash}\`. Must be a full 40-character SHA-1 hash.`);
+              return;
+            }
+
       - name: Checkout plugins-test registry
         uses: actions/checkout@v4
         with:
@@ -69,6 +129,12 @@ jobs:
           ref: ${{ steps.init.outputs.commit_hash }}
           path: target-plugin
 
+      - name: Isolate Source Directory
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        run: |
+          cd target-plugin
+          find . -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'package.json' ! -name '.git' -exec rm -rf {} +
+
       - name: Phase 3 - CodeQL Initialization (Database Compile)
         if: success() && steps.init.outputs.should_proceed == 'true'
         uses: actions/github-script@v7
@@ -83,6 +149,7 @@ jobs:
         with:
           languages: javascript
           source-root: target-plugin
+          config-file: ./plugins-test/.github/codeql/codeql-config.yml
           queries: ./plugins-test/.github/codeql/codeql_rules/combined-threats.qls
 
       - name: Phase 4 - SAST Analysis (Taint Tracking & Data Flow)
@@ -118,7 +185,7 @@ jobs:
             await script.generateFinalReport({github, context}, '${{ steps.init.outputs.comment_id }}', 'codeql-results/javascript.sarif', '${{ steps.init.outputs.repository_url }}', '${{ steps.init.outputs.commit_hash }}');
 
       - name: Handle Workflow Failure
-        if: failure() && steps.ack.outputs.result && steps.init.outputs.handled_failure != 'true'
+        if: failure() && steps.ack.outputs.result && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true'
         uses: actions/github-script@v7
         with:
           script: |
