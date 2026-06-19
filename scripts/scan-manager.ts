@@ -1,4 +1,4 @@
-const fs = require('fs');
+import * as fs from 'fs';
 
 const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, phases: Record<number, string> | null) => {
     let base = `# 🛡️Security Scan Report
@@ -46,36 +46,58 @@ export async function initialize({ github, context, core }: GithubContext) {
     const issueBody = context.payload.issue.body;
     const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
+    const initialCommentId = process.env.INITIAL_COMMENT_ID;
+    const failWithComment = async (msg: string) => {
+        if (initialCommentId) {
+            await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(initialCommentId),
+                body: `❌ **Security Scan Failed**\n\n${msg}\n\n**Workflow Run:** [View Logs](${runUrl})`
+            });
+        }
+        core.setOutput('handled_failure', 'true');
+        core.setFailed(msg);
+        return { should_proceed: false };
+    };
+
     const jsonMatch = issueBody.match(/```json\s*([\s\S]*?)\s*```/);
     if (!jsonMatch) {
-        core.setFailed("Could not find JSON payload in the issue body.");
-        return { should_proceed: false };
+        return await failWithComment("Could not find JSON payload in the issue body. Please ensure you included a \`\`\`json block.");
     }
 
     let payload: any;
     try {
         payload = JSON.parse(jsonMatch[1]);
     } catch (e) {
-        core.setFailed("Invalid JSON payload.");
-        return { should_proceed: false };
+        return await failWithComment("Invalid JSON payload. Please check for syntax errors.");
     }
 
     const { plugin_name, repository_url, commit_hash } = payload;
 
     if (!plugin_name || !repository_url || !commit_hash) {
-        core.setFailed("Missing required fields in payload.");
-        return { should_proceed: false };
+        return await failWithComment("Missing required fields in payload. Ensure \`plugin_name\`, \`repository_url\`, and \`commit_hash\` are provided.");
     }
 
     const phases = getPhases(1);
     const commentBody = STATUS_TEMPLATE(repository_url, commit_hash, runUrl, phases);
 
-    const comment = await github.rest.issues.createComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: context.issue.number,
-        body: commentBody
-    });
+    let comment;
+    if (initialCommentId) {
+        comment = await github.rest.issues.updateComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            comment_id: parseInt(initialCommentId),
+            body: commentBody
+        });
+    } else {
+        comment = await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: commentBody
+        });
+    }
 
     const manifestsPath = './plugins-test/manifests.json';
     if (fs.existsSync(manifestsPath)) {
@@ -107,6 +129,7 @@ export async function initialize({ github, context, core }: GithubContext) {
                     issue_number: context.issue.number,
                     state: 'closed'
                 });
+                core.setOutput('handled_failure', 'true');
                 core.setFailed("Ownership mismatch. Issue closed.");
                 return { should_proceed: false };
             }
