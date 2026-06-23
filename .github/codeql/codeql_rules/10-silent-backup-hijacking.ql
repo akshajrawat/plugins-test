@@ -1,60 +1,67 @@
 /**
- * @name Silent Backup Hijacking
- * @description Detects registering an export module and silently stealing data via network or file writes inside callbacks.
- * @kind problem
- * @problem.severity warning
+ * @name Silent Backup Hijacking (Taint)
+ * @description Detects data from an export module flowing into a network, child_process, or unauthorized file system sink.
+ * @kind path-problem
+ * @problem.severity error
  * @tags security joplin-plugin backup-hijacking
  * @id js/joplin/backup-hijacking
  */
 import javascript
 import JoplinSources
+import JoplinSinks
+import JoplinLinks
 
-/**
- * Holds if `reg` is a call to joplin.interop.registerExportModule().
- */
 predicate isExportModuleRegistration(DataFlow::MethodCallNode reg) {
   reg.getMethodName() = "registerExportModule" and
   reg.getReceiver().getALocalSource() = Joplin::interop()
 }
 
-/**
- * Holds if `call` sends data over the network.
- */
-predicate sendsToNetwork(DataFlow::CallNode call) {
-  call.getCalleeName() = "fetch" or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", _) or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request")
-}
-
-/**
- * Holds if `call` writes to the file system.
- */
-predicate writesToFileSystem(DataFlow::CallNode call) {
-  call.getCalleeName() = "writeFile" or
-  call.getCalleeName() = "writeFileSync" or
-  call.getCalleeName() = "appendFile"
-}
-
-/**
- * Holds if `fn` is a callback function nested inside a registerExportModule argument.
- */
-predicate isExportModuleCallback(Function fn) {
-  exists(DataFlow::MethodCallNode reg |
+predicate isExportModuleCallback(DataFlow::FunctionNode fn, string propName) {
+  exists(DataFlow::MethodCallNode reg, ObjectExpr def, Property prop |
     isExportModuleRegistration(reg) and
-    fn.getEnclosingStmt().getParent*() = reg.asExpr().getEnclosingStmt()
-  )
-  or
-  exists(DataFlow::MethodCallNode reg, Expr argExpr |
-    isExportModuleRegistration(reg) and
-    argExpr = reg.getArgument(0).asExpr() and
-    fn.getEnclosingStmt().getParent*() = argExpr.getEnclosingStmt()
+    def = reg.getArgument(0).getALocalSource().asExpr() and
+    prop = def.getAProperty() and
+    propName = prop.getName() and
+    fn.asExpr() = prop.getInit()
   )
 }
 
-from DataFlow::CallNode dangerousCall, DataFlow::MethodCallNode reg
-where
-  isExportModuleRegistration(reg) and
-  (sendsToNetwork(dangerousCall) or writesToFileSystem(dangerousCall)) and
-  isExportModuleCallback(dangerousCall.getEnclosingFunction())
-select dangerousCall, "Silent Backup Hijacking: network or file write inside a registerExportModule callback. Requires human review."
+module ContextTaintConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    source = any(DataFlow::FunctionNode fn | isExportModuleCallback(fn, _)).getParameter(0)
+  }
+  predicate isSink(DataFlow::Node sink) {
+    exists(DataFlow::CallNode call | JoplinSinks::isFileSystemDataSink(call.getArgument(1)) and sink = call.getArgument(0))
+  }
+}
+module ContextTaint = TaintTracking::Global<ContextTaintConfig>;
+
+module BackupHijackingConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    exists(DataFlow::FunctionNode fn, string propName |
+      isExportModuleCallback(fn, propName) |
+      (propName = "onProcessItem" and source = fn.getParameter(2)) or
+      (propName = "onProcessResource" and (source = fn.getParameter(1) or source = fn.getParameter(2))) or
+      ((propName = "onInit" or propName = "onClose" or propName = "onExec") and source = fn.getParameter(0))
+    )
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    JoplinSinks::isNetworkExfiltrationSink(sink) or
+    JoplinSinks::isCommandExecutionSink(sink) or
+    (
+      JoplinSinks::isFileSystemDataSink(sink) and
+      exists(DataFlow::CallNode call | call.getArgument(1) = sink |
+        not ContextTaint::flow(_, call.getArgument(0))
+      )
+    )
+  }
+}
+
+module BackupHijacking = TaintTracking::Global<BackupHijackingConfig>;
+import BackupHijacking::PathGraph
+
+from BackupHijacking::PathNode source, BackupHijacking::PathNode sink
+where BackupHijacking::flowPath(source, sink)
+select sink.getNode(), source, sink, "High Confidence Backup Hijacking: Export data flows into a network, command execution, or unauthorized file system sink. \n" +
+  "Reviewer: verify flagged data is actual note/resource content, not just context metadata."

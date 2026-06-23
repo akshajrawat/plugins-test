@@ -8,6 +8,7 @@
  */
 import javascript
 import DataFlow::PathGraph
+import JoplinSinks
 
 class CryptojackingConfig extends TaintTracking::Configuration {
   CryptojackingConfig() { this = "CryptojackingConfig" }
@@ -18,29 +19,26 @@ class CryptojackingConfig extends TaintTracking::Configuration {
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call, string moduleName, string methodName |
-      (moduleName = "child_process" or moduleName = "node:child_process") and
-      (
-        methodName = "exec" or methodName = "execFile" or methodName = "spawn" or
-        methodName = "execSync" or methodName = "execFileSync" or methodName = "spawnSync" or
-        methodName = "fork"
-      ) and
-      call = DataFlow::moduleMember(moduleName, methodName).getACall()
-    |
-      sink = call.getArgument(0)
-    )
+    JoplinSinks::isCommandExecutionSink(sink)
   }
 }
 
 predicate isElevatedSpawn(DataFlow::Node sink) {
-  exists(DataFlow::CallNode call |
-    sink = call.getArgument(0) and
-    (call = DataFlow::moduleMember("child_process", "spawn").getACall() or
-     call = DataFlow::moduleMember("child_process", "spawnSync").getACall() or
-     call = DataFlow::moduleMember("node:child_process", "spawn").getACall() or
-     call = DataFlow::moduleMember("node:child_process", "spawnSync").getACall()) and
+  exists(DataFlow::CallNode call, DataFlow::Node options |
+    (sink = call.getArgument(0) or sink = call.getArgument(1)) and
+    (
+      call = DataFlow::moduleMember("child_process", "spawn").getACall() or
+      call = DataFlow::moduleMember("child_process", "spawnSync").getACall() or
+      call = DataFlow::moduleMember("node:child_process", "spawn").getACall() or
+      call = DataFlow::moduleMember("node:child_process", "spawnSync").getACall() or
+      call = DataFlow::moduleMember("child_process", "execFile").getACall() or
+      call = DataFlow::moduleMember("child_process", "execFileSync").getACall() or
+      call = DataFlow::moduleMember("node:child_process", "execFile").getACall() or
+      call = DataFlow::moduleMember("node:child_process", "execFileSync").getACall()
+    ) and
+    (options = call.getArgument(1) or options = call.getArgument(2)) and
     exists(Property prop | 
-      prop = call.getArgument(2).getALocalSource().asExpr().(ObjectExpr).getAProperty() and
+      prop = options.getALocalSource().asExpr().(ObjectExpr).getAProperty() and
       prop.getName() = "shell"
     )
   )

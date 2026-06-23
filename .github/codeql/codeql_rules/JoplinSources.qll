@@ -53,4 +53,14 @@ module Joplin {
     result.getReceiver().getALocalSource() = settings() and
     (result.getCalleeName() = "globalValue" or result.getCalleeName() = "globalValues")
   }
+
+  bindingset[setting]
+  predicate isSensitiveSetting(string setting) {
+    setting = "syncInfoCache" or
+    setting = "encryption.masterPassword" or
+    setting = "api.token" or
+    setting = "encryption.cachedPpk" or
+    setting = "encryption.passwordCache" or
+    setting.regexpMatch("sync\\..*\\.password")
+  }
 }

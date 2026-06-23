@@ -22,7 +22,7 @@ class ClipboardHijackingConfig extends TaintTracking::Configuration {
   override predicate isSink(DataFlow::Node sink) {
     exists(DataFlow::MethodCallNode call |
       call.getReceiver().getALocalSource() = Joplin::clipboard() and
-      call.getMethodName() = "writeText"
+      (call.getMethodName() = "writeText" or call.getMethodName() = "writeHtml")
     |
       sink = call.getArgument(0)
     )

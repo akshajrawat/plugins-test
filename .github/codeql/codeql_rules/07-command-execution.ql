@@ -9,35 +9,33 @@
 import javascript
 import DataFlow::PathGraph
 import JoplinSources
+import JoplinSinks
 
 class CommandExecutionConfig extends TaintTracking::Configuration {
   CommandExecutionConfig() { this = "CommandExecutionConfig" }
 
   override predicate isSource(DataFlow::Node source) {
-    source = Joplin::settingsGlobalValue() or
+    exists(DataFlow::CallNode call, Expr argExpr, string settingName |
+      call = Joplin::settingsGlobalValue() and
+      argExpr = call.getArgument(0).asExpr() and
+      (settingName = argExpr.getStringValue() or settingName = argExpr.(ArrayExpr).getAnElement().getStringValue()) and
+      not Joplin::isSensitiveSetting(settingName)
+    | source = call
+    ) or
     source = Joplin::data().getAMethodCall("get") or
-    exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
-    source = Joplin::workspace().getAMethodCall("onNoteChange").getArgument(0).(DataFlow::FunctionNode).getParameter(0) or
-    source = Joplin::workspace().getAMethodCall("onNoteContentChange").getArgument(0).(DataFlow::FunctionNode).getParameter(0) or
+    source = Joplin::workspace().getAMethodCall("selectedNote") or
     source instanceof DataFlow::ParameterNode or
-    exists(source.getStringValue())
+    (
+      exists(source.getStringValue()) and
+      not source.getStringValue().regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp).*")
+    )
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call, string moduleName, string methodName |
-      (moduleName = "child_process" or moduleName = "node:child_process") and
-      (
-        methodName = "exec" or methodName = "execFile" or methodName = "spawn" or
-        methodName = "execSync" or methodName = "execFileSync" or methodName = "spawnSync" or
-        methodName = "fork"
-      ) and
-      call = DataFlow::moduleMember(moduleName, methodName).getACall()
-    |
-      sink = call.getArgument(0)
-    )
+    JoplinSinks::isCommandExecutionSink(sink)
   }
 }
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, CommandExecutionConfig cfg
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, "Execution of a terminal command via child_process. Requires human review."
+select sink.getNode(), source, sink, "Execution of a terminal command via child_process (broad/residual pattern — see Secret Key Theft and Cryptojacking rules for higher-confidence variants of overlapping sources). Requires human review."

@@ -6,30 +6,72 @@
  * @id joplin/ui-phishing
  */
 import javascript
-import DataFlow::PathGraph
 import JoplinSources
+import JoplinSinks
+import JoplinLinks
 
-class UiPhishingConfig extends TaintTracking::Configuration {
-  UiPhishingConfig() { this = "UiPhishingConfig" }
+predicate isPhishingHtml(DataFlow::Node htmlArg) {
+  exists(string s | s = htmlArg.getStringValue() |
+    s.regexpMatch("(?is).*type=[\"']password[\"'].*") or
+    s.regexpMatch("(?is).*(login|password|credentials|authenticate|sign in).*")
+  ) or
+  exists(StringLiteral str |
+    htmlArg.asExpr().getAChildExpr*() = str and
+    (
+      str.getStringValue().regexpMatch("(?is).*type=[\"']password[\"'].*") or 
+      str.getStringValue().regexpMatch("(?is).*(login|password|credentials|authenticate|sign in).*")
+    )
+  )
+}
 
-  override predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::CallNode call |
-      call = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs").getAMethodCall("open") and
-      source = call
+module UiPhishingConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    // Dialogs path
+    exists(DataFlow::CallNode openCall, DataFlow::CallNode setHtmlCall |
+      openCall = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs").getAMethodCall("open") and
+      setHtmlCall = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs").getAMethodCall("setHtml") and
+      (
+        setHtmlCall.getArgument(0).getALocalSource() = openCall.getArgument(0).getALocalSource() or
+        setHtmlCall.getArgument(0).getStringValue() = openCall.getArgument(0).getStringValue()
+      ) and
+      isPhishingHtml(setHtmlCall.getArgument(1)) and
+      source = openCall
+    )
+    or
+    // Panels / Webview path
+    exists(DataFlow::CallNode setHtmlCall |
+      setHtmlCall.getCalleeName() = "setHtml" and
+      (setHtmlCall.getReceiver().getALocalSource() = Joplin::panels() or setHtmlCall.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
+      isPhishingHtml(setHtmlCall.getArgument(1))
+    |
+      exists(DataFlow::MethodCallNode onMessage |
+        onMessage.getMethodName() = "onMessage" and
+        onMessage.getReceiver().getALocalSource() = Joplin::panels() and
+        onMessage.getArgument(0).getALocalSource() = setHtmlCall.getArgument(0).getALocalSource() and
+        source = onMessage.getArgument(1).getALocalSource().(DataFlow::FunctionNode).getParameter(0)
+      )
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode network |
-      network = DataFlow::globalVarRef("fetch").getACall() or
-      network = DataFlow::globalVarRef("axios").getACall() or
-      network = DataFlow::moduleImport("axios").getACall()
-    |
-      sink = network.getArgument(0) or sink = network.getArgument(1)
+  predicate isSink(DataFlow::Node sink) {
+    JoplinSinks::isNetworkExfiltrationSink(sink) or
+    JoplinSinks::isCommandExecutionSink(sink) or
+    JoplinSinks::isFileSystemDataSink(sink)
+  }
+
+  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+    exists(DataFlow::PropRead read |
+      read.getBase() = node1 and
+      read.getPropertyName() = "formData" and
+      node2 = read
     )
   }
 }
 
-from UiPhishingConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
-where config.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, "UI Phishing: Phishing dialog data exfiltrated via network."
+module UiPhishing = TaintTracking::Global<UiPhishingConfig>;
+import UiPhishing::PathGraph
+
+from UiPhishing::PathNode source, UiPhishing::PathNode sink
+where UiPhishing::flowPath(source, sink)
+select sink.getNode(), source, sink, "UI Phishing: Potential spoofed authentication dialog data exfiltrated. \n" +
+  "Reviewer: verify (1) dialog HTML resembles a login/credential form and mimics trusted branding, (2) destination URL is not a known Joplin/trusted endpoint, (3) data sent matches the dialog's actual collected fields rather than incidental metadata."

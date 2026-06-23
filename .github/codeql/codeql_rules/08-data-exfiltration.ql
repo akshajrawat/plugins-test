@@ -1,40 +1,43 @@
 /**
  * @name Data Exfiltration
- * @description Detects bulk-reading notes and piping the data to network requests.
- * @kind problem
- * @problem.severity warning
+ * @description Detects bulk-reading notes or resources and piping the data to network requests.
+ * @kind path-problem
+ * @problem.severity error
  * @tags security joplin-plugin data-exfiltration
  * @id js/joplin/data-exfiltration
  */
 import javascript
 import JoplinSources
+import JoplinSinks
 
-/**
- * Holds if `call` reads Joplin note data via joplin.data.get() or similar.
- */
-predicate readsJoplinData(DataFlow::MethodCallNode call) {
-  call.getMethodName() = "get" and
-  call.getReceiver().getALocalSource() = Joplin::data()
-  or
-  call.getMethodName() = "onNoteChange" and
-  call.getReceiver().getALocalSource() = Joplin::workspace()
+module DataExfilConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    exists(DataFlow::CallNode getCall, DataFlow::ArrayCreationNode pathArg, string typeVal |
+      getCall = Joplin::data().getAMethodCall("get") and
+      pathArg = getCall.getArgument(0).getALocalSource() and
+      typeVal = pathArg.getElement(0).getStringValue() and
+      (typeVal = "notes" or typeVal = "folders" or typeVal = "resources") and
+      pathArg.getSize() = 1 and
+      source = getCall
+    )
+    or
+    exists(DataFlow::MethodCallNode selectedNoteCall |
+      selectedNoteCall.getMethodName() = "selectedNote" and
+      selectedNoteCall.getReceiver().getALocalSource() = Joplin::workspace() and
+      source = selectedNoteCall
+    )
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    JoplinSinks::isNetworkExfiltrationSink(sink)
+  }
 }
 
-/**
- * Holds if `call` sends data over the network via fetch, axios, http, or https.
- */
-predicate sendsToNetwork(DataFlow::CallNode call) {
-  call.getCalleeName() = "fetch" or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", _) or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
-  call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
-  call.getCalleeName() = "postMessage"
-}
+module DataExfil = TaintTracking::Global<DataExfilConfig>;
+import DataExfil::PathGraph
 
-from DataFlow::CallNode networkCall, DataFlow::MethodCallNode dataRead, Function enclosingFn
-where
-  readsJoplinData(dataRead) and
-  sendsToNetwork(networkCall) and
-  enclosingFn = networkCall.getEnclosingFunction() and
-  enclosingFn = dataRead.getEnclosingFunction()
-select networkCall, "Data exfiltration: Joplin data read is sent to a network call in the same function."
+from DataExfil::PathNode source, DataExfil::PathNode sink
+where DataExfil::flowPath(source, sink)
+select sink.getNode(), source, sink, "Data Exfiltration: Bulk data read (or selected note) flows into a network request.\n" +
+  "Reviewer: Note that Backup Hijacking and Secret Key Theft rules also track network sinks, but this rule explicitly tracks general note/resource read sources."
+

@@ -1,11 +1,4 @@
 /**
- * ## **1. RULE 1 :** 
- * **The Sources :** It flags data originating from External network requests : `fetch`, `axios.get`, `http.get`, `https.get`, `node-fetch`, `got`,  `superagent`, `ws` or `socket.io`
- * 
- * **The Sinks :** It watches functions that are capable of running strings as raw code : `eval()`, `new Function()`, `Node's vm.runInNewContext()`, `.setTimeout` , `setInterval`, `vm.compileFunction` and `vm.Script`
- * 
- * **The Link :** It tells the scanner that if a plugin fetches a response and parses it using `.json()`, `.text()`,  `.data`, `.body` , `.blob()` and `JSON.parse(taintedData)` that extracted payload is still considered untrusted.
- * 
  * @name Dynamic Code Execution
  * @description Detects dynamic code execution from remote sources.
  * @kind path-problem
@@ -48,6 +41,8 @@ class DynamicCodeExecutionConfig extends TaintTracking::Configuration {
     sink = DataFlow::globalVarRef("setInterval").getACall().getArgument(0) or
     exists(DataFlow::InvokeNode vmInvoke |
       vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "runInNewContext") or
+      vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "runInThisContext") or
+      vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "runInContext") or
       vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "compileFunction") or
       vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "Script")
     |

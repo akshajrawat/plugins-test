@@ -1,9 +1,4 @@
 /**
- * ## **4. RULE 4 :**
- * **The Sources :** It flags the initialization of various server and socket types: `net.createServer()`, `http.createServer()`, `https.createServer()`, `dgram.createSocket()` (for UDP), `ws.Server()` (for WebSockets), and server framework instances like `express()` or `koa()`, `tls.createServer()`, `fastify()` 
- * 
- * **The Sinks :** It watches methods that bind these servers to the local network: `.listen()` (the standard for TCP/HTTP) and `.bind()` (the standard for UDP), `.start()`
- * 
  * @name Network Backdoor
  * @description Detects opening a listening port on the user's local network.
  * @kind path-problem

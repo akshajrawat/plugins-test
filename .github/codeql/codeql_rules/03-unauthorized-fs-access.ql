@@ -1,9 +1,4 @@
 /**
- * ## **3. RULE 3 :**
- * **The Sources :** It flags filesystem entry points, path-resolving variables, and environment utilities that allow a plugin to determine its location or escape its sandbox: `__dirname`, `__filename`, `process.cwd()`, `app.getPath()`, `os.homedir()`, `path.resolve()`, `path.join()`, `joplin.plugins.dataDir`, and module imports for `fs` or `fs-extra`.
- * 
- * **The Sinks :** It watches file write, manipulation, and permission methods that could be used to overwrite legitimate application files, modify the plugin's own source code, or delete data: `writeFile`, `writeFileSync`, `appendFile`, `appendFileSync`, `rename`, `renameSync`, `copyFile`, `copyFileSync`, `unlink`, `unlinkSync`, `chmod`, `chmodSync`, `mkdir`, `mkdirSync`, `createWriteStream`, `rm`, `rmSync`, `rmdir`, `rmdirSync`, `truncate`, `truncateSync`, `symlink`, `symlinkSync`, `link`, `linkSync`, `remove`, `removeSync`, `move`, `moveSync`, `copy`, `copySync`, `emptyDir`, `emptyDirSync`, `outputFile`, `outputFileSync`, `write`, `writeSync`, `ftruncate`, `ftruncateSync`.
- * 
  * @name Unauthorized FS Access / Self-Modification
  * @description Detects unauthorized file system access or self-modification.
  * @kind path-problem
@@ -14,6 +9,7 @@
 import javascript
 import DataFlow::PathGraph
 import JoplinSources
+import JoplinSinks
 
 class FsAccessConfig extends TaintTracking::Configuration {
   FsAccessConfig() { this = "FsAccessConfig" }
@@ -34,27 +30,7 @@ class FsAccessConfig extends TaintTracking::Configuration {
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call | 
-      call.getCalleeName() in [
-        "writeFile", "writeFileSync", "appendFile", "appendFileSync",
-        "rename", "renameSync", "copyFile", "copyFileSync",
-        "unlink", "unlinkSync",
-        "chmod", "chmodSync",
-        "mkdir", "mkdirSync",
-        "createWriteStream",
-        "rm", "rmSync", "rmdir", "rmdirSync",
-        "truncate", "truncateSync",
-        "symlink", "symlinkSync", "link", "linkSync",
-        "remove", "removeSync",
-        "move", "moveSync",
-        "copy", "copySync",
-        "emptyDir", "emptyDirSync",
-        "outputFile", "outputFileSync",
-        "write", "writeSync", "ftruncate", "ftruncateSync"
-      ]
-    |
-      sink = call.getArgument(0)
-    )
+    JoplinSinks::isFileSystemPathSink(sink)
   }
 }
 

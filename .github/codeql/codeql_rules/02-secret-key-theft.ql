@@ -1,7 +1,4 @@
 /**
- * ## **2. RULE 2 :** 
- * **The Sinks :** It watches functions that are capable of leaking or exposing data : `fetch`, `axios`, `https.request`, `http.request`, `writeFile`, `writeFileSync`, `appendFile`, `createWriteStream`, `child_process` methods, `joplin.data.put`, `setHtml`, `postMessage`, `net.connect`, `tls.connect` and send (WebSockets)
- * 
  * @name Secret and Key Theft
  * @description Detects sensitive settings flowing out to network, fs, child_process, or webview.
  * @kind path-problem
@@ -12,16 +9,8 @@
 import javascript
 import DataFlow::PathGraph
 import JoplinSources
+import JoplinSinks
 
-bindingset[setting]
-predicate isSensitiveSetting(string setting) {
-  setting = "syncInfoCache" or
-  setting = "encryption.masterPassword" or
-  setting = "api.token" or
-  setting = "encryption.cachedPpk" or
-  setting = "encryption.passwordCache" or
-  setting.regexpMatch("sync\\..*\\.password")
-}
 
 class SecretTheftConfig extends TaintTracking::Configuration {
   SecretTheftConfig() { this = "SecretTheftConfig" }
@@ -36,36 +25,17 @@ class SecretTheftConfig extends TaintTracking::Configuration {
         or 
         settingName = argExpr.(ArrayExpr).getAnElement().getStringValue()
       ) and
-      isSensitiveSetting(settingName) |
+      Joplin::isSensitiveSetting(settingName) |
       source = call
     )
   }
 
   override predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call | 
-      // Network
-      call.getCalleeName() = "fetch" or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", _) or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("net", "connect") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("tls", "connect") or
-      call.getCalleeName() = "send" or
-      // File system
-      call.getCalleeName() = "writeFile" or
-      call.getCalleeName() = "writeFileSync" or
-      call.getCalleeName() = "appendFile" or
-      call.getCalleeName() = "createWriteStream" or
-      // Child process
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("child_process", _) or
-      // Joplin Notes
-      (call.getCalleeName() = "put" and call.getReceiver().getALocalSource() = Joplin::data()) or
-      // Webview / External frame
-      (call.getCalleeName() = "setHtml" and call.getReceiver().getALocalSource() = Joplin::panels()) or
-      (call.getCalleeName() = "postMessage")
-    |
-      sink = call.getAnArgument()
-    )
+    JoplinSinks::isNetworkExfiltrationSink(sink) or
+    JoplinSinks::isFileSystemPathSink(sink) or
+    JoplinSinks::isFileSystemDataSink(sink) or
+    JoplinSinks::isCommandExecutionSink(sink) or
+    JoplinSinks::isJoplinSpecificSink(sink)
   }
 
 }
