@@ -23,7 +23,12 @@ module RemoteWebviewConfig implements DataFlow::ConfigSig {
     // environment variables
     (source.asExpr() instanceof PropAccess and source.asExpr().(PropAccess).getBase().(GlobalVarAccess).getName() = "process") or
     // hardcoded external URLs
-    (source.asExpr() instanceof StringLiteral and source.getStringValue().regexpMatch("(?is).*https?://(?!localhost|127\\.|0\\.0\\.0\\.0|::1).*"))
+    exists(string val |
+      (source.asExpr() instanceof StringLiteral or source.asExpr() instanceof TemplateLiteral) and
+      val = source.getStringValue() and
+      val.regexpMatch("(?is).*https?://(?!localhost|127\\.|0\\.0\\.0\\.0|::1).*") and
+      val.regexpMatch("(?is).*(<script|<iframe).*")
+    )
   }
 
   predicate isSink(DataFlow::Node sink) {
@@ -32,14 +37,7 @@ module RemoteWebviewConfig implements DataFlow::ConfigSig {
       (
         call.getCalleeName() = "setHtml" and
         (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
-        sink = call.getArgument(1) and
-        (
-          sink.getStringValue().regexpMatch("(?is).*<(script|iframe)[^>]+src=.*") or
-          exists(StringLiteral str |
-            sink.asExpr().getAChildExpr*() = str and
-            str.getStringValue().regexpMatch("(?is).*(<script|<iframe).*")
-          )
-        )
+        sink = call.getArgument(1)
       )
       or
       // contentScripts.register sink

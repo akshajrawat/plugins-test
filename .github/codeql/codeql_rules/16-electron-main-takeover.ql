@@ -7,8 +7,8 @@
  */
 import javascript
 
-from DataFlow::CallNode requireCall
+from DataFlow::Node remoteAccess
 where
-  requireCall.getCalleeName() = "require" and
-  requireCall.getArgument(0).getStringValue() = "@electron/remote"
-select requireCall, "Usage of @electron/remote is prohibited as it allows main process takeover."
+  remoteAccess = DataFlow::moduleImport("@electron/remote") or
+  remoteAccess = DataFlow::moduleMember("electron", "remote")
+select remoteAccess, "Usage of electron.remote is prohibited as it allows main process takeover."

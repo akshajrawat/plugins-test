@@ -18,10 +18,7 @@ where
     sink = call.getArgument(1) and
     (
       sink.getStringValue().regexpMatch("(?is).*<(script|iframe)[^>]+src=.*") or
-      exists(StringLiteral str |
-        sink.asExpr().getAChildExpr*() = str and
-        str.getStringValue().regexpMatch("(?is).*(<script|<iframe).*")
-      )
+      sink.getStringValue().regexpMatch("(?is).*(<script|<iframe).*")
     )
   )
   or

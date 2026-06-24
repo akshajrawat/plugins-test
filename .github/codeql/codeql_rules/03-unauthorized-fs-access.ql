@@ -23,10 +23,11 @@ class FsAccessConfig extends TaintTracking::Configuration {
     source = DataFlow::moduleMember("path", "resolve").getACall() or
     source = DataFlow::moduleMember("path", "join").getACall() or
     source = Joplin::joplin().getAPropertyRead("plugins").getAPropertyRead("dataDir") or
+    source = Joplin::require("fs") or
     source = Joplin::require("fs-extra") or
     source = DataFlow::moduleImport("fs") or
     source = DataFlow::moduleImport("fs-extra") or
-    (source = DataFlow::globalVarRef("require").getACall() and source.(DataFlow::CallNode).getArgument(0).getStringValue() = "fs")
+    (source = DataFlow::globalVarRef("require").getACall() and source.(DataFlow::CallNode).getArgument(0).getStringValue().regexpMatch("fs(-extra)?"))
   }
 
   override predicate isSink(DataFlow::Node sink) {

