@@ -7,7 +7,6 @@
  * @id joplin/malicious-import
  */
 import javascript
-import DataFlow::PathGraph
 import JoplinSinks
 
 predicate isImportModuleRegistration(DataFlow::MethodCallNode reg) {
@@ -35,10 +34,8 @@ predicate isImportModuleCallback(DataFlow::FunctionNode fn) {
   )
 }
 
-class MaliciousImportConfig extends TaintTracking::Configuration {
-  MaliciousImportConfig() { this = "MaliciousImportConfig" }
-
-  override predicate isSource(DataFlow::Node source) {
+module MaliciousImportConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
     exists(DataFlow::FunctionNode fn |
       isImportModuleCallback(fn) and
       // The first parameter of onExec contains the context/data being imported
@@ -46,12 +43,27 @@ class MaliciousImportConfig extends TaintTracking::Configuration {
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+    exists(DataFlow::CallNode readCall |
+      readCall.getCalleeName() in ["readFile", "readFileSync", "readJSON", "readJSONSync", "readFileString", "read"] and
+      node1 = readCall.getArgument(0) and
+      (
+        node2 = readCall
+        or
+        exists(int i | (i = 1 or i = 2) and node2 = readCall.getArgument(i).getALocalSource().(DataFlow::FunctionNode).getParameter(1))
+      )
+    )
+  }
+
+  predicate isSink(DataFlow::Node sink) {
     JoplinSinks::isNetworkExfiltrationSink(sink) or
     JoplinSinks::isCommandExecutionSink(sink)
   }
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, MaliciousImportConfig cfg
-where cfg.hasFlowPath(source, sink)
+module MaliciousImportFlow = TaintTracking::Global<MaliciousImportConfig>;
+import MaliciousImportFlow::PathGraph
+
+from MaliciousImportFlow::PathNode source, MaliciousImportFlow::PathNode sink
+where MaliciousImportFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Malicious Import: Data from imported file flows to a dangerous sink (network or OS command). Requires human review."

@@ -7,10 +7,9 @@
  */
 import javascript
 
-from DataFlow::CallNode requireCall, string moduleName
+from DataFlow::SourceNode importNode, string moduleName, string baseName
 where
-  requireCall.getCalleeName() = "require" and
-  not requireCall.getReceiver().getALocalSource().toString() = "joplin" and
-  moduleName = requireCall.getArgument(0).getStringValue() and
-  (moduleName = "child_process" or moduleName = "net" or moduleName = "os" or moduleName = "dgram" or moduleName = "fs")
-select requireCall, "Direct import of native module bypasses Joplin API restrictions."
+  importNode = DataFlow::moduleImport(moduleName) and
+  baseName = moduleName.regexpReplaceAll("^node:", "") and
+  baseName in ["child_process", "net", "os", "dgram", "fs", "tls", "http", "https", "sqlite3", "better-sqlite3"]
+select importNode, "Direct import of native module '" + moduleName + "' bypasses Joplin API restrictions."

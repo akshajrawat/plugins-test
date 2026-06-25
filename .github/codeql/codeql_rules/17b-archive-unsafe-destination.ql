@@ -8,9 +8,24 @@
 import javascript
 import JoplinSources
 
+module SafeDestConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    source = Joplin::joplin().getAPropertyRead("plugins").getAMethodCall("dataDir")
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    exists(DataFlow::CallNode extract |
+      extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
+      sink = extract.getArgument(1)
+    )
+  }
+}
+
+module SafeDestFlow = TaintTracking::Global<SafeDestConfig>;
+
 from DataFlow::CallNode extract, DataFlow::Node dest
 where
   extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
   dest = extract.getArgument(1) and
-  not dest.getALocalSource() = Joplin::joplin().getAPropertyRead("plugins").getAMethodCall("dataDir")
-select extract, "Archive extracted to an unsafe destination. Must be restricted to joplin.plugins.dataDir()."
+  not SafeDestFlow::flow(_, dest)
+select extract, "Archive extracted to an unsafe destination. Must be derived from joplin.plugins.dataDir()."

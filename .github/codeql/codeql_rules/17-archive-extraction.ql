@@ -11,13 +11,17 @@ import JoplinSources
 module UntrustedArchiveConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" and source = call) or
-    exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") and source = call)
+    exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") and source = call) or
+    exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("axios") and source = call)
   }
 
   predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode extract |
+    exists(DataFlow::CallNode extract, DataFlow::CallNode write, DataFlow::Node pathNode |
       extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
-      sink = extract.getArgument(0)
+      pathNode = extract.getArgument(0).getALocalSource() and
+      write.getCalleeName() in ["writeFile", "writeFileSync"] and
+      write.getArgument(0).getALocalSource() = pathNode and
+      sink = write.getArgument(1)
     )
   }
 }
@@ -25,6 +29,12 @@ module UntrustedArchiveConfig implements DataFlow::ConfigSig {
 module UntrustedArchiveFlow = TaintTracking::Global<UntrustedArchiveConfig>;
 import UntrustedArchiveFlow::PathGraph
 
-from UntrustedArchiveFlow::PathNode source, UntrustedArchiveFlow::PathNode sink
-where UntrustedArchiveFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Untrusted archive downloaded from network is extracted."
+from UntrustedArchiveFlow::PathNode source, UntrustedArchiveFlow::PathNode sink, DataFlow::CallNode extract, DataFlow::CallNode write, DataFlow::Node pathNode
+where
+  UntrustedArchiveFlow::flowPath(source, sink) and
+  extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
+  pathNode = extract.getArgument(0).getALocalSource() and
+  write.getCalleeName() in ["writeFile", "writeFileSync"] and
+  write.getArgument(0).getALocalSource() = pathNode and
+  sink.getNode() = write.getArgument(1)
+select extract, source, sink, "Untrusted archive downloaded from network is written to disk and then extracted."
