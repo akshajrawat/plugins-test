@@ -73,5 +73,4 @@ import UiPhishing::PathGraph
 
 from UiPhishing::PathNode source, UiPhishing::PathNode sink
 where UiPhishing::flowPath(source, sink)
-select sink.getNode(), source, sink, "UI Phishing: Potential spoofed authentication dialog data exfiltrated. \n" +
-  "Reviewer: verify (1) dialog HTML resembles a login/credential form and mimics trusted branding, (2) destination URL is not a known Joplin/trusted endpoint, (3) data sent matches the dialog's actual collected fields rather than incidental metadata."
+select sink.getNode(), source, sink, "UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. \\n**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection."

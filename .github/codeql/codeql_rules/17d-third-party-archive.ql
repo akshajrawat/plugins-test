@@ -11,4 +11,4 @@ from DataFlow::Node importArchive, string lib
 where
   lib in ["extract-zip", "yauzl", "adm-zip", "tar"] and
   importArchive = DataFlow::moduleImport(lib)
-select importArchive, "Usage of third-party library '" + lib + "' for archive extraction. Validate source and destination paths."
+select importArchive, "Third-Party Extractor Warning: The plugin is using an external library (like `extract-zip`, `adm-zip`, or `tar`) to unpack archives. \\n**Reviewer Action:** Third-party extractors often lack native path validation. Manually audit the extraction flow to ensure the developer has implemented robust source validation and directory traversal prevention."

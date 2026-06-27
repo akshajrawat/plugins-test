@@ -69,4 +69,4 @@ from FsAccessFlow::PathNode source, FsAccessFlow::PathNode sink
 where
   FsAccessFlow::flowPath(source, sink) and
   not SafeFsDestinationFlow::flow(_, sink.getNode())
-select sink.getNode(), source, sink, "Unauthorized FS Access or Self-Modification."
+select sink.getNode(), source, sink, "Unauthorized File System Access: The plugin is using path-revealing variables (like `__dirname` or `process.cwd`) to write, modify, or delete files outside of the safe Joplin sandbox. \\n**Reviewer Action:** Plugins must exclusively use `joplin.plugins.dataDir()` for file storage. Reject this if it is attempting to modify the plugin's own source files or blindly access the user's broader OS file system."

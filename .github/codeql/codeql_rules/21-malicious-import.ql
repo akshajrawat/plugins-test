@@ -66,4 +66,4 @@ import MaliciousImportFlow::PathGraph
 
 from MaliciousImportFlow::PathNode source, MaliciousImportFlow::PathNode sink
 where MaliciousImportFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Malicious Import: Data from imported file flows to a dangerous sink (network or OS command). Requires human review."
+select sink.getNode(), source, sink, "Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration or OS command execution). \\n**Reviewer Action:** Importing a note should only result in note creation. Verify why the plugin needs to execute commands or phone home based on the contents of an imported file. Ensure strict sanitization."

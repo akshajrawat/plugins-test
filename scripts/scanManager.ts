@@ -1,6 +1,8 @@
-import * as fs from 'fs';
+import { existsSync, readFileSync } from 'fs';
 
-const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, phases: Record<number, string> | null) => {
+type PhaseMap = Record<number, string>;
+
+const statusTemplate = (repoUrl: string, commitHash: string, runUrl: string, phases: PhaseMap | null) => {
     let base = `# 🛡️Security Scan Report
 
 **Target:** [${repoUrl}/commit/${commitHash}](${repoUrl}/commit/${commitHash})
@@ -19,8 +21,8 @@ const STATUS_TEMPLATE = (repoUrl: string, commitHash: string, runUrl: string, ph
     return base;
 };
 
-function getPhases(currentPhase: number): Record<number, string> {
-    const phases: Record<number, string> = {};
+const getPhases = (currentPhase: number): PhaseMap => {
+    const phases: PhaseMap = {};
     for (let i = 1; i <= 5; i++) {
         if (i < currentPhase) phases[i] = '✅';
         else if (i === currentPhase) phases[i] = '🔄';
@@ -30,11 +32,11 @@ function getPhases(currentPhase: number): Record<number, string> {
         for (let i = 1; i <= 5; i++) phases[i] = '✅';
     }
     return phases;
-}
+};
 
-function normalizeUrl(url: string): string {
+const normalizeUrl = (url: string): string => {
     return url.replace(/\/$/, '').toLowerCase();
-}
+};
 
 interface GithubContext {
     github: any;
@@ -42,7 +44,7 @@ interface GithubContext {
     core: any;
 }
 
-export async function initialize({ github, context, core }: GithubContext) {
+export const initialize = async ({ github, context, core }: GithubContext) => {
     const issueBody = context.payload.issue.body;
     const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 
@@ -52,7 +54,7 @@ export async function initialize({ github, context, core }: GithubContext) {
             await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                comment_id: parseInt(initialCommentId),
+                comment_id: parseInt(initialCommentId, 10),
                 body: `❌ **Security Scan Failed**\n\n${msg}\n\n**Workflow Run:** [View Logs](${runUrl})`
             });
         }
@@ -80,14 +82,14 @@ export async function initialize({ github, context, core }: GithubContext) {
     }
 
     const phases = getPhases(1);
-    const commentBody = STATUS_TEMPLATE(repository_url, commit_hash, runUrl, phases);
+    const commentBody = statusTemplate(repository_url, commit_hash, runUrl, phases);
 
     let comment;
     if (initialCommentId) {
         comment = await github.rest.issues.updateComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            comment_id: parseInt(initialCommentId),
+            comment_id: parseInt(initialCommentId, 10),
             body: commentBody
         });
     } else {
@@ -100,8 +102,8 @@ export async function initialize({ github, context, core }: GithubContext) {
     }
 
     const manifestsPath = './plugins-test/manifests.json';
-    if (fs.existsSync(manifestsPath)) {
-        const manifests = JSON.parse(fs.readFileSync(manifestsPath, 'utf8'));
+    if (existsSync(manifestsPath)) {
+        const manifests = JSON.parse(readFileSync(manifestsPath, 'utf8'));
 
         let existingPlugin = manifests[plugin_name];
         if (!existingPlugin) {
@@ -153,16 +155,16 @@ export async function initialize({ github, context, core }: GithubContext) {
         comment_id: comment.data.id,
         should_proceed: true
     };
-}
+};
 
-export async function updatePhase({ github, context }: Partial<GithubContext>, comment_id: string, phase: number) {
+export const updatePhase = async ({ github, context }: Partial<GithubContext>, comment_id: string, phase: number) => {
     const comment = await github.rest.issues.getComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        comment_id: parseInt(comment_id)
+        owner: (context as any).repo.owner,
+        repo: (context as any).repo.repo,
+        comment_id: parseInt(comment_id, 10)
     });
 
-    let body = comment.data.body;
+    const body = comment.data.body;
     const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/commit\//);
     const repoUrl = repoUrlMatch ? repoUrlMatch[1] : '';
     const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/commit\/([^\]]+)\]/);
@@ -171,22 +173,22 @@ export async function updatePhase({ github, context }: Partial<GithubContext>, c
     const runUrl = runUrlMatch ? runUrlMatch[1] : '';
 
     const phases = getPhases(phase);
-    const newHeader = STATUS_TEMPLATE(repoUrl, commitHash, runUrl, phases);
+    const newHeader = statusTemplate(repoUrl, commitHash, runUrl, phases);
 
     await github.rest.issues.updateComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        comment_id: parseInt(comment_id),
+        owner: (context as any).repo.owner,
+        repo: (context as any).repo.repo,
+        comment_id: parseInt(comment_id, 10),
         body: newHeader
     });
-}
+};
 
-export async function generateFinalReport({ github, context }: Partial<GithubContext>, comment_id: string, sarifPath: string, repoUrl: string, commitHash: string) {
-    const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-    let body = STATUS_TEMPLATE(repoUrl, commitHash, runUrl, null) + `\n\n---\n\n# Findings\n\n`;
+export const generateFinalReport = async ({ github, context }: Partial<GithubContext>, comment_id: string, sarifPath: string, repoUrl: string, commitHash: string) => {
+    const runUrl = `${(context as any).serverUrl}/${(context as any).repo.owner}/${(context as any).repo.repo}/actions/runs/${(context as any).runId}`;
+    let body = statusTemplate(repoUrl, commitHash, runUrl, null) + `\n\n---\n\n# Findings\n\n`;
 
-    if (fs.existsSync(sarifPath)) {
-        const sarif = JSON.parse(fs.readFileSync(sarifPath, 'utf8'));
+    if (existsSync(sarifPath)) {
+        const sarif = JSON.parse(readFileSync(sarifPath, 'utf8'));
         let results: any[] = [];
         sarif.runs.forEach((run: any) => {
             if (run.results) {
@@ -197,7 +199,7 @@ export async function generateFinalReport({ github, context }: Partial<GithubCon
         if (results && results.length > 0) {
             results.forEach(result => {
                 const ruleId = result.ruleId;
-                let rawMessage = result.message.text || '';
+                const rawMessage = result.message.text || '';
                 const message = Array.from(new Set(rawMessage.split('\n').map((s: string) => s.trim()))).filter(Boolean).join(' ');
                 const location = result.locations[0].physicalLocation;
                 const file = location.artifactLocation.uri;
@@ -228,9 +230,9 @@ export async function generateFinalReport({ github, context }: Partial<GithubCon
     }
 
     await github.rest.issues.updateComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        comment_id: parseInt(comment_id),
+        owner: (context as any).repo.owner,
+        repo: (context as any).repo.repo,
+        comment_id: parseInt(comment_id, 10),
         body: body
     });
-}
+};

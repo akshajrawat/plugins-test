@@ -45,12 +45,14 @@ describe('CodeQL Security Rules Validation', { timeout: 300000 }, () => {
 
     before(() => {
         try {
-            console.log('\n📦 [1/2] Compiling CodeQL Database from mock-test-data.ts...');
+            console.log('\n📦 [1/2] Compiling CodeQL Database from mocks directory...');
             if (fs.existsSync(DB_PATH)) fs.rmSync(DB_PATH, { recursive: true, force: true });
-            execSync(`codeql database create "${DB_PATH}" --language=javascript --source-root="${TESTS_DIR}"`, { stdio: 'pipe' });
+            execSync(`codeql database create "${DB_PATH}" --language=javascript --source-root="${TESTS_DIR}"`, { stdio: 'inherit' });
 
             console.log('🔍 [2/2] Analyzing database against custom rules (This may take a moment)...');
-            execSync(`codeql database analyze "${DB_PATH}" "${CODEQL_RULES_DIR}" --format=sarif-latest --output="${RESULTS_PATH}" --threads=0`, { stdio: 'pipe' });
+            const threadsArgIndex = process.argv.indexOf('--threads');
+            const threads = threadsArgIndex !== -1 && process.argv[threadsArgIndex + 1] ? process.argv[threadsArgIndex + 1] : '0';
+            execSync(`codeql database analyze "${DB_PATH}" "${CODEQL_RULES_DIR}" --format=sarif-latest --output="${RESULTS_PATH}" --threads=${threads}`, { stdio: 'inherit' });
 
             console.log('\n📊 Validating results with node:test...\n');
             if (fs.existsSync(RESULTS_PATH)) {

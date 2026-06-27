@@ -28,4 +28,4 @@ where
   extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
   dest = extract.getArgument(1) and
   not SafeDestFlow::flow(_, dest)
-select extract, "Archive extracted to an unsafe destination. Must be derived from joplin.plugins.dataDir()."
+select extract, "Unsafe Extraction Destination: An archive is being extracted to a path outside of the plugin's isolated data directory. \\n**Reviewer Action:** Extraction paths must be strictly derived from `joplin.plugins.dataDir()`. Reject this if it risks overwriting user configuration files or core Joplin application data."

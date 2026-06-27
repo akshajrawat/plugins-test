@@ -37,4 +37,4 @@ import KeyloggingFlow::PathGraph
 
 from KeyloggingFlow::PathNode source, KeyloggingFlow::PathNode sink
 where KeyloggingFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Keylogging: Hook parameter flows to network exfiltration."
+select sink.getNode(), source, sink, "Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. \\n**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure."

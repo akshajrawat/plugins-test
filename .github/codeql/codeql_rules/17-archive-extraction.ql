@@ -37,4 +37,4 @@ where
   write.getCalleeName() in ["writeFile", "writeFileSync"] and
   write.getArgument(0).getALocalSource() = pathNode and
   sink.getNode() = write.getArgument(1)
-select extract, source, sink, "Untrusted archive downloaded from network is written to disk and then extracted."
+select extract, source, sink, "Unsafe Archive Extraction: An archive downloaded directly from the network is being extracted onto the local disk. \\n**Reviewer Action:** This can lead to arbitrary file overwrites. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping."

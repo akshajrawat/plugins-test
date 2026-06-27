@@ -32,4 +32,4 @@ import ArchiveEntryFlow::PathGraph
 
 from ArchiveEntryFlow::PathNode source, ArchiveEntryFlow::PathNode sink
 where ArchiveEntryFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Unsanitized archive entry name flows to filesystem path."
+select sink.getNode(), source, sink, "Path Traversal Risk (Zip Slip): Unsanitized file names from inside an extracted archive are flowing directly into file system paths. \\n**Reviewer Action:** Ensure the plugin sanitizes archive entry names (e.g., blocking `../` sequences) before writing them to disk to prevent \"Zip Slip\" vulnerabilities from overwriting sensitive files outside the target directory."

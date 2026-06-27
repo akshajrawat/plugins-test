@@ -63,5 +63,4 @@ import BackupHijacking::PathGraph
 
 from BackupHijacking::PathNode source, BackupHijacking::PathNode sink
 where BackupHijacking::flowPath(source, sink)
-select sink.getNode(), source, sink, "High Confidence Backup Hijacking: Export data flows into a network, command execution, or unauthorized file system sink. \n" +
-  "Reviewer: verify flagged data is actual note/resource content, not just context metadata."
+select sink.getNode(), source, sink, "[High Confidence] Backup Hijacking Alert: Export data is confirmed flowing into a network request, terminal command, or unauthorized file path instead of the legitimate export destination. \\n**Reviewer Action:** Verify if the plugin is quietly siphoning off backup data during a user-initiated export. Ensure all exported data strictly writes to the context's designated safe destination path."

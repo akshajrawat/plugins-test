@@ -124,4 +124,4 @@ where
   writesJoplinData(writeCall) and
   sink = writeCall.getAnArgument() and
   isSameNoteCorrelated(source, writeCall)
-select writeCall, "Ransomware pattern: Joplin data is read, encrypted, and overwritten here."
+select writeCall, "Ransomware Pattern Detected: The plugin is reading Joplin notes, passing them through an encryption cipher, and overwriting the original notes. \\n**Reviewer Action:** Unless this plugin is explicitly designed as an end-to-end encryption tool, this behavior mimics ransomware. Verify that the user holds the decryption keys locally and that this action is strictly opt-in."

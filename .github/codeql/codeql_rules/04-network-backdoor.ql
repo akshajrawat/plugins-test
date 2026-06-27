@@ -38,4 +38,4 @@ import NetworkBackdoorFlow::PathGraph
 
 from NetworkBackdoorFlow::PathNode source, NetworkBackdoorFlow::PathNode sink
 where NetworkBackdoorFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Network backdoor detected: opening a listening port."
+select sink.getNode(), source, sink, "Network Backdoor Detected: The plugin is opening a local listening port (via `net`, `http`, or frameworks like `Express`) to accept incoming connections. \\n**Reviewer Action:** Check if the plugin explicitly advertises running a local server (e.g., a companion web app). If this is undocumented, it acts as a backdoor. Verify that the server binds securely (e.g., localhost only) and requires explicit authentication."

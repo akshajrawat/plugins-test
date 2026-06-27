@@ -13,7 +13,7 @@ import JoplinLinks
 
 bindingset[value]
 predicate containsExternalWebviewSrc(string value) {
-  value.regexpMatch("(?is).*<(script|iframe)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*")
+  value.regexpMatch("(?is).*<(script|iframe|img)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*")
 }
 
 predicate hasExternalWebviewSrc(DataFlow::Node html) {
@@ -58,12 +58,70 @@ module RemoteWebviewConfig implements DataFlow::ConfigSig {
   }
 }
 
-module RemoteWebview = TaintTracking::Global<RemoteWebviewConfig>;
-import RemoteWebview::PathGraph
 
-from RemoteWebview::PathNode source, RemoteWebview::PathNode sink
-where RemoteWebview::flowPath(source, sink)
-select sink.getNode(), source, sink, "Remote external URL loaded into Webview. \n" +
-  "Reviewer: verify (1) URL points to attacker-controlled or unexpected domain vs. known-good CDN/docs, \n" +
-  "(2) URL is used as a script/iframe src vs. a harmless link or image, \n" +
-  "(3) content-script registration elsewhere in the plugin also loads remote code."
+
+predicate hasSmuggledUrl(DataFlow::Node html) {
+  exists(StringLiteral str |
+    html.asExpr().getAChildExpr*() = str and
+    str.getStringValue().regexpMatch("(?is).*<(img|iframe|script)\\b[^>]*\\bsrc\\s*=\\s*[\"'].*")
+  )
+}
+
+module UrlSmugglingConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    exists(DataFlow::CallNode getCall |
+      getCall = Joplin::data().getAMethodCall("get") and source = getCall
+    ) or
+    exists(DataFlow::CallNode call |
+      call = Joplin::settingsGlobalValue() and
+      Joplin::isSensitiveSetting(call.getArgument(0).getStringValue()) and
+      source = call
+    ) or
+    exists(DataFlow::MethodCallNode call |
+      call.getMethodName() = "value" and
+      call.getReceiver().getALocalSource() = Joplin::settings() and
+      Joplin::isSensitiveSetting(call.getArgument(0).getStringValue()) and
+      source = call
+    )
+  }
+  predicate isSink(DataFlow::Node sink) {
+    exists(DataFlow::CallNode call |
+      call.getCalleeName() = "setHtml" and
+      (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
+      sink = call.getArgument(1) and
+      hasSmuggledUrl(sink)
+    )
+  }
+}
+
+module CombinedWebviewConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    RemoteWebviewConfig::isSource(source) or UrlSmugglingConfig::isSource(source)
+  }
+  predicate isSink(DataFlow::Node sink) {
+    RemoteWebviewConfig::isSink(sink) or UrlSmugglingConfig::isSink(sink)
+  }
+}
+module CombinedWebview = TaintTracking::Global<CombinedWebviewConfig>;
+import CombinedWebview::PathGraph
+
+
+from CombinedWebview::PathNode source, CombinedWebview::PathNode sink, DataFlow::Node sourceNode, DataFlow::Node sinkNode, string msg
+where 
+  CombinedWebview::flowPath(source, sink) and
+  sourceNode = source.getNode() and
+  sinkNode = sink.getNode() and
+  (
+    (
+      RemoteWebviewConfig::isSource(sourceNode) and
+      RemoteWebviewConfig::isSink(sinkNode) and
+      msg = "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe or script tags) or registering a remote Content Script. \\n**Reviewer Action:** Confirm the URL points to a trusted, known-good domain (like a CDN or official docs). Loading unverified remote scripts allows an attacker to bypass plugin updates and dynamically execute malicious UI code."
+    )
+    or
+    (
+      UrlSmugglingConfig::isSource(sourceNode) and
+      UrlSmugglingConfig::isSink(sinkNode) and
+      msg = "URL Smuggling: Sensitive data flows into Webview URL/HTML."
+    )
+  )
+select sinkNode, source, sink, msg

@@ -11,4 +11,4 @@ from DataFlow::Node remoteAccess
 where
   remoteAccess = DataFlow::moduleImport("@electron/remote") or
   remoteAccess = DataFlow::moduleMember("electron", "remote")
-select remoteAccess, "Usage of electron.remote is prohibited as it allows main process takeover."
+select remoteAccess, "Critical Violation (Main Process Takeover): The plugin is attempting to import or require `@electron/remote` or `electron.remote`. \\n**Reviewer Action:** This completely bypasses the plugin sandbox and grants full control over the Joplin application window and the OS. This must be strictly prohibited and removed before publishing."

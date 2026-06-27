@@ -38,6 +38,5 @@ import DataExfil::PathGraph
 
 from DataExfil::PathNode source, DataExfil::PathNode sink
 where DataExfil::flowPath(source, sink)
-select sink.getNode(), source, sink, "Data Exfiltration: Bulk data read (or selected note) flows into a network request.\n" +
-  "Reviewer: Note that Backup Hijacking and Secret Key Theft rules also track network sinks, but this rule explicitly tracks general note/resource read sources."
+select sink.getNode(), source, sink, "Data Exfiltration Warning: The plugin is executing a bulk-read of notes, folders, or resources, and immediately sending that data to an external network request. \\n**Reviewer Action:** Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload and ensure the destination server is trusted and expected by the user."
 

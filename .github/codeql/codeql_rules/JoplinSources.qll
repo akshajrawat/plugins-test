@@ -56,6 +56,9 @@ module Joplin {
 
   bindingset[setting]
   predicate isSensitiveSetting(string setting) {
+        setting.regexpMatch("sync\\..*\\.auth") or
+    setting.regexpMatch("sync\\..*\\.context") or
+    setting in ["sync.5.username", "sync.6.username", "sync.9.username", "sync.10.username", "sync.10.userEmail", "sync.userId", "clientId"] or
     setting = "syncInfoCache" or
     setting = "encryption.masterPassword" or
     setting = "api.token" or

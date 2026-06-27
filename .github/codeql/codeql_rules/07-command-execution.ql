@@ -40,4 +40,4 @@ import CommandExecFlow::PathGraph
 
 from CommandExecFlow::PathNode source, CommandExecFlow::PathNode sink
 where CommandExecFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Execution of a terminal command via child_process (broad/residual pattern — see Secret Key Theft and Cryptojacking rules for higher-confidence variants of overlapping sources). Requires human review."
+select sink.getNode(), source, sink, "Terminal Command Execution: The plugin is passing generic string data or Joplin settings into a system terminal command (`child_process`). \\n**Reviewer Action:** Note: this is the broadest, lowest-specificity command-execution check — cross-reference with Rule 2 (Secret Theft) and Rule 6 (Cryptojacking) if this same call also appears there. Review the executed command to ensure the inputs are properly sanitized against command injection."

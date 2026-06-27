@@ -44,4 +44,4 @@ import SecretTheftFlow::PathGraph
 
 from SecretTheftFlow::PathNode source, SecretTheftFlow::PathNode sink
 where SecretTheftFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Sensitive data flowing to critical sink."
+select sink.getNode(), source, sink, "Critical Security Alert: Sensitive configuration data (such as a master password, sync cache, encryption keys, or API tokens) is flowing directly to an external or untrusted sink. \\n**Reviewer Action:** This is highly suspicious behavior. Confirm whether the plugin has a legitimate, fully disclosed reason to touch credentials. Ensure this data is never exposed to network logs, user-interface text panels, or unencrypted local cache files."

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Custom CodeQL test harness",
   "scripts": {
-    "test": "node --experimental-strip-types --test tests/codeql.test.ts"
+    "test": "node --experimental-strip-types --test tests/codeql.test.ts -- --threads=0"
   },
   "dependencies": {
     "typescript": "^5.1.6",

@@ -57,7 +57,7 @@ where
     arr = del.getArgument(0).getALocalSource() and
     arr.getElement(0).getStringValue() = "folders" and
     node = del and
-    msg = "Cascading folder deletion detected. This permanently deletes all notes within."
+    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
   )
   or
   // 2. Loop delete
@@ -65,7 +65,7 @@ where
     del = Joplin::data().getAMethodCall("delete") and
     inLoop(del) and
     node = del and
-    msg = "Mass data deletion inside an unbounded loop detected. Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."
+    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
   )
   or
   // 3. Loop put with soft-delete payload
@@ -78,6 +78,6 @@ where
       exists(payload.getAPropertyWrite("is_conflict"))
     ) and
     node = put and
-    msg = "Mass data soft-deletion/conflict creation inside an unbounded loop detected. Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."
+    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
   )
 select node, msg

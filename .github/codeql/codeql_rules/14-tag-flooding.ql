@@ -18,6 +18,26 @@ predicate isTargetPath(DataFlow::Node pathArg) {
   not exists(pathArg.getALocalSource().(DataFlow::ArrayCreationNode))
 }
 
+
+predicate isRecursiveTimeout(DataFlow::FunctionNode fn) {
+  exists(DataFlow::CallNode timer |
+    timer = DataFlow::globalVarRef("setTimeout").getACall() and
+    timer.getContainer() = fn.getFunction() and
+    timer.getArgument(0).getALocalSource() = fn
+  )
+}
+
+predicate isDangerousCall(DataFlow::CallNode call) {
+  (
+    call = Joplin::data().getAMethodCall("post") and
+    isTargetPath(call.getArgument(0))
+  ) or
+  exists(string meth | meth = "writeFile" or meth = "writeFileSync" |
+    call = DataFlow::moduleMember("fs", meth).getACall() or
+    call = DataFlow::moduleMember("fs-extra", meth).getACall()
+  )
+}
+
 predicate isUnboundedInterval(DataFlow::CallNode timer) {
   timer = DataFlow::globalVarRef("setInterval").getACall() and
   not exists(DataFlow::CallNode clear |
@@ -46,12 +66,11 @@ predicate isUnboundedLoop(LoopStmt loop) {
 
 from DataFlow::CallNode post
 where
-  post = Joplin::data().getAMethodCall("post") and
-  isTargetPath(post.getArgument(0)) and
+  isDangerousCall(post) and
   (
     // Inside a setInterval loop (excluding setTimeout, focusing on intervals that aren't cleared)
     exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
-      isUnboundedInterval(timer) and
+      (isUnboundedInterval(timer) or isRecursiveTimeout(callback)) and
       callback = timer.getArgument(0).getALocalSource() and
       post.getContainer() = callback.getFunction()
     )
@@ -62,6 +81,4 @@ where
       post.asExpr().getEnclosingStmt().getParentStmt*() = loop
     )
   )
-select post, "Tag/Note Flooding: High-volume creation of items in a background loop or synchronous loop. \n" +
-  "Reviewer: verify (1) loop/interval is unbounded or has a very high iteration count, (2) items created are uniquely named (index pollution) vs. repeated/idempotent, (3) interval is never cleared, (4) check for synchronous loop variants. \n" +
-  "Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."
+select post, "Resource Exhaustion (Flooding): The plugin is rapidly creating tags, notes, or resources inside an unbounded background interval or synchronous loop. \\n**Reviewer Action:** This can destroy Joplin's search index and exhaust storage quotas. Confirm the loop is strictly bounded by a finite limit (e.g., iterating only over user-selected notes) and is not infinite."
