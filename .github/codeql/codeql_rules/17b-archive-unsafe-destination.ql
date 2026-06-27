@@ -2,7 +2,7 @@
  * @name Unsafe Archive Extraction Destination
  * @description Extracting archives to paths outside the plugin's data directory can overwrite sensitive files.
  * @kind problem
- * @problem.severity warning
+ * @problem.severity error
  * @id joplin/archive-unsafe-destination
  */
 import javascript

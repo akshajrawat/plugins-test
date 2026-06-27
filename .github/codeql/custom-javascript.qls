@@ -3,6 +3,8 @@
 - exclude:
     id:
       - js/incomplete-url-substring-sanitization
+      - js/incomplete-sanitization
+      - js/useless-regexp-character-escape
       - js/request-forgery
       - js/server-side-unvalidated-url-redirection
       - js/bad-tag-filter

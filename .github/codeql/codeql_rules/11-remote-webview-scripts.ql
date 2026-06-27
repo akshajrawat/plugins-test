@@ -11,6 +11,23 @@ import JoplinSources
 import JoplinSinks
 import JoplinLinks
 
+bindingset[value]
+predicate containsExternalWebviewSrc(string value) {
+  value.regexpMatch("(?is).*<(script|iframe)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*")
+}
+
+predicate hasExternalWebviewSrc(DataFlow::Node html) {
+  exists(string value |
+    (value = html.getStringValue() or value = html.getALocalSource().getStringValue()) and
+    containsExternalWebviewSrc(value)
+  )
+  or
+  exists(StringLiteral str |
+    html.asExpr().getAChildExpr*() = str and
+    containsExternalWebviewSrc(str.getStringValue())
+  )
+}
+
 module RemoteWebviewConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     // any fetch response
@@ -26,26 +43,17 @@ module RemoteWebviewConfig implements DataFlow::ConfigSig {
     exists(string val |
       (source.asExpr() instanceof StringLiteral or source.asExpr() instanceof TemplateLiteral) and
       val = source.getStringValue() and
-      val.regexpMatch("(?is).*https?://(?!localhost|127\\.|0\\.0\\.0\\.0|::1).*") and
-      val.regexpMatch("(?is).*(<script|<iframe).*")
+      containsExternalWebviewSrc(val)
     )
   }
 
   predicate isSink(DataFlow::Node sink) {
     exists(DataFlow::CallNode call |
       // setHtml sinks (panels and dialogs)
-      (
-        call.getCalleeName() = "setHtml" and
-        (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
-        sink = call.getArgument(1)
-      )
-      or
-      // contentScripts.register sink
-      (
-        call.getCalleeName() = "register" and
-        call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("contentScripts") and
-        sink = call.getArgument(2)
-      )
+      call.getCalleeName() = "setHtml" and
+      (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
+      sink = call.getArgument(1) and
+      hasExternalWebviewSrc(sink)
     )
   }
 }

@@ -9,18 +9,20 @@
     id:
       - "*xss*"
       - "*ssrf*"
-      - "*dos*"
-      - "*redos*"
+      - js/redos
+      - js/polynomial-redos
       - "*request-forgery*"
       - "*url-redirection*"
       - "*regex-injection*"
-      - "js/bad-tag-filter"
-      - "*useless-regexp-character-escape*"
-      - "js/incomplete-url-substring-sanitization"
-      - "js/double-escaping"
-      - "js/incomplete-multi-character-sanitization"
+      - js/bad-tag-filter
+      - js/useless-regexp-character-escape
+      - js/overly-large-range
+      - js/file-system-race
+      - js/incomplete-url-substring-sanitization
+      - js/incomplete-sanitization
+      - js/double-escaping
+      - js/incomplete-multi-character-sanitization
       - "*insufficient-password*"
       - "*weak-crypto*"
       - "*insecure-download*"
       - "*http-to-file*"
-      - "*polynomial-redos*"

@@ -7,15 +7,14 @@
  * @id js/joplin/secret-key-theft
  */
 import javascript
-import DataFlow::PathGraph
+
 import JoplinSources
 import JoplinSinks
 
 
-class SecretTheftConfig extends TaintTracking::Configuration {
-  SecretTheftConfig() { this = "SecretTheftConfig" }
+module SecretTheftConfig implements DataFlow::ConfigSig {
 
-  override predicate isSource(DataFlow::Node source) {
+  predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call, Expr argExpr, string settingName |
       
       (call.getCalleeName() = "globalValue" or call.getCalleeName() = "globalValues") and
@@ -30,7 +29,7 @@ class SecretTheftConfig extends TaintTracking::Configuration {
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     JoplinSinks::isNetworkExfiltrationSink(sink) or
     JoplinSinks::isFileSystemPathSink(sink) or
     JoplinSinks::isFileSystemDataSink(sink) or
@@ -40,6 +39,9 @@ class SecretTheftConfig extends TaintTracking::Configuration {
 
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, SecretTheftConfig cfg
-where cfg.hasFlowPath(source, sink)
+module SecretTheftFlow = TaintTracking::Global<SecretTheftConfig>;
+import SecretTheftFlow::PathGraph
+
+from SecretTheftFlow::PathNode source, SecretTheftFlow::PathNode sink
+where SecretTheftFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Sensitive data flowing to critical sink."

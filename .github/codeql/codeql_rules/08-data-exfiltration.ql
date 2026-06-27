@@ -2,7 +2,7 @@
  * @name Data Exfiltration
  * @description Detects bulk-reading notes or resources and piping the data to network requests.
  * @kind path-problem
- * @problem.severity error
+ * @problem.severity warning
  * @tags security joplin-plugin data-exfiltration
  * @id js/joplin/data-exfiltration
  */

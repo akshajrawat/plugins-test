@@ -7,18 +7,17 @@
  * @id js/joplin/cryptojacking
  */
 import javascript
-import DataFlow::PathGraph
+
 import JoplinSinks
 
-class CryptojackingConfig extends TaintTracking::Configuration {
-  CryptojackingConfig() { this = "CryptojackingConfig" }
+module CryptojackingConfig implements DataFlow::ConfigSig {
 
-  override predicate isSource(DataFlow::Node source) {
+  predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
     exists(source.getStringValue())
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     JoplinSinks::isCommandExecutionSink(sink)
   }
 }
@@ -44,8 +43,11 @@ predicate isElevatedSpawn(DataFlow::Node sink) {
   )
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, CryptojackingConfig cfg, string msg
-where cfg.hasFlowPath(source, sink) and
+module CryptojackFlow = TaintTracking::Global<CryptojackingConfig>;
+import CryptojackFlow::PathGraph
+
+from CryptojackFlow::PathNode source, CryptojackFlow::PathNode sink, string msg
+where CryptojackFlow::flowPath(source, sink) and
   (
     source.getNode().getStringValue().regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp).*") or
     not exists(source.getNode().getStringValue())

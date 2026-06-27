@@ -2,7 +2,7 @@
  * @name Mass Data Destruction
  * @description Iterating through notes/folders to permanently destroy the database.
  * @kind problem
- * @problem.severity warning
+ * @problem.severity error
  * @id joplin/mass-data-destruction
  */
 import javascript
@@ -16,9 +16,30 @@ predicate isUnboundedInterval(DataFlow::CallNode timer) {
   )
 }
 
+predicate isAlwaysTrueCondition(Expr condition) {
+  condition.stripParens() instanceof BooleanLiteral and
+  condition.stripParens().(BooleanLiteral).getBoolValue() = true
+  or
+  condition.stripParens() instanceof NumberLiteral and
+  condition.stripParens().(NumberLiteral).getValue() = "1"
+}
+
+predicate isUnboundedLoop(LoopStmt loop) {
+  loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())
+  or
+  loop instanceof DoWhileStmt and isAlwaysTrueCondition(loop.getTest())
+  or
+  loop instanceof ForStmt and not exists(loop.getTest())
+  or
+  loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest())
+}
+
 predicate inLoop(DataFlow::CallNode call) {
-  // Inside a synchronous loop
-  exists(LoopStmt loop | call.asExpr().getEnclosingStmt().getParentStmt*() = loop)
+  // Inside a synchronous loop with no normal finite bound.
+  exists(LoopStmt loop |
+    isUnboundedLoop(loop) and
+    call.asExpr().getEnclosingStmt().getParentStmt*() = loop
+  )
   or
   // Inside a setInterval loop
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
@@ -44,7 +65,7 @@ where
     del = Joplin::data().getAMethodCall("delete") and
     inLoop(del) and
     node = del and
-    msg = "Mass data deletion inside a loop detected."
+    msg = "Mass data deletion inside an unbounded loop detected. Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."
   )
   or
   // 3. Loop put with soft-delete payload
@@ -57,6 +78,6 @@ where
       exists(payload.getAPropertyWrite("is_conflict"))
     ) and
     node = put and
-    msg = "Mass data soft-deletion/conflict creation inside a loop detected."
+    msg = "Mass data soft-deletion/conflict creation inside an unbounded loop detected. Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."
   )
 select node, msg

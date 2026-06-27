@@ -10,22 +10,28 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
-from DataFlow::CallNode call, DataFlow::Node sink
-where
-  (
-    call.getCalleeName() = "setHtml" and
-    (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
-    sink = call.getArgument(1) and
-    (
-      sink.getStringValue().regexpMatch("(?is).*<(script|iframe)[^>]+src=.*") or
-      sink.getStringValue().regexpMatch("(?is).*(<script|<iframe).*")
-    )
+bindingset[value]
+predicate containsExternalWebviewSrc(string value) {
+  value.regexpMatch("(?is).*<(script|iframe)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*")
+}
+
+predicate hasExternalWebviewSrc(DataFlow::Node html) {
+  exists(string value |
+    (value = html.getStringValue() or value = html.getALocalSource().getStringValue()) and
+    containsExternalWebviewSrc(value)
   )
   or
-  (
-    call.getCalleeName() = "register" and
-    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("contentScripts") and
-    sink = call.getArgument(2)
+  exists(StringLiteral str |
+    html.asExpr().getAChildExpr*() = str and
+    containsExternalWebviewSrc(str.getStringValue())
   )
-select call, "Low Confidence: Webview setHtml with script/iframe, or contentScripts.register used. \n" +
+}
+
+from DataFlow::CallNode call, DataFlow::Node sink
+where
+  call.getCalleeName() = "setHtml" and
+  (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
+  sink = call.getArgument(1) and
+  hasExternalWebviewSrc(sink)
+select call, "Low Confidence: Webview setHtml with external script/iframe src. \n" +
   "Reviewer: verify URL points to known-good domain and not attacker-controlled."

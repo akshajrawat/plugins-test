@@ -2,7 +2,7 @@
  * @name Untrusted Archive Extraction
  * @description Extracting untrusted archives from the network can lead to malicious file overwrites.
  * @kind path-problem
- * @problem.severity warning
+ * @problem.severity error
  * @id joplin/archive-extraction
  */
 import javascript

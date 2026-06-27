@@ -7,19 +7,18 @@
  * @id js/joplin/clipboard-hijacking
  */
 import javascript
-import DataFlow::PathGraph
+
 import JoplinSources
 
-class ClipboardHijackingConfig extends TaintTracking::Configuration {
-  ClipboardHijackingConfig() { this = "ClipboardHijackingConfig" }
+module ClipboardHijackingConfig implements DataFlow::ConfigSig {
 
-  override predicate isSource(DataFlow::Node source) {
+  predicate isSource(DataFlow::Node source) {
     source = Joplin::clipboard().getAMethodCall("readText") or
     exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
     exists(source.getStringValue())
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     exists(DataFlow::MethodCallNode call |
       call.getReceiver().getALocalSource() = Joplin::clipboard() and
       (call.getMethodName() = "writeText" or call.getMethodName() = "writeHtml")
@@ -29,6 +28,9 @@ class ClipboardHijackingConfig extends TaintTracking::Configuration {
   }
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, ClipboardHijackingConfig cfg
-where cfg.hasFlowPath(source, sink)
+module ClipboardHijackFlow = TaintTracking::Global<ClipboardHijackingConfig>;
+import ClipboardHijackFlow::PathGraph
+
+from ClipboardHijackFlow::PathNode source, ClipboardHijackFlow::PathNode sink
+where ClipboardHijackFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Clipboard hijacking detected: clipboard read or written with arbitrary data."

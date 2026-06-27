@@ -7,12 +7,11 @@
  * @id js/joplin/network-backdoor
  */
 import javascript
-import DataFlow::PathGraph
 
-class NetworkBackdoorConfig extends TaintTracking::Configuration {
-  NetworkBackdoorConfig() { this = "NetworkBackdoorConfig" }
 
-  override predicate isSource(DataFlow::Node source) {
+module NetworkBackdoorConfig implements DataFlow::ConfigSig {
+
+  predicate isSource(DataFlow::Node source) {
     source = DataFlow::moduleMember("net", "createServer").getACall() or
     source = DataFlow::moduleMember("http", "createServer").getACall() or
     source = DataFlow::moduleMember("https", "createServer").getACall() or
@@ -25,7 +24,7 @@ class NetworkBackdoorConfig extends TaintTracking::Configuration {
     source = DataFlow::moduleImport("fastify").getACall()
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     exists(DataFlow::MethodCallNode call |
       call.getMethodName() in ["listen", "bind", "start"]
     |
@@ -34,6 +33,9 @@ class NetworkBackdoorConfig extends TaintTracking::Configuration {
   }
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, NetworkBackdoorConfig cfg
-where cfg.hasFlowPath(source, sink)
+module NetworkBackdoorFlow = TaintTracking::Global<NetworkBackdoorConfig>;
+import NetworkBackdoorFlow::PathGraph
+
+from NetworkBackdoorFlow::PathNode source, NetworkBackdoorFlow::PathNode sink
+where NetworkBackdoorFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Network backdoor detected: opening a listening port."

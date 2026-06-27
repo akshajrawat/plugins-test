@@ -7,14 +7,13 @@
  * @id js/joplin/command-execution
  */
 import javascript
-import DataFlow::PathGraph
+
 import JoplinSources
 import JoplinSinks
 
-class CommandExecutionConfig extends TaintTracking::Configuration {
-  CommandExecutionConfig() { this = "CommandExecutionConfig" }
+module CommandExecutionConfig implements DataFlow::ConfigSig {
 
-  override predicate isSource(DataFlow::Node source) {
+  predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call, Expr argExpr, string settingName |
       call = Joplin::settingsGlobalValue() and
       argExpr = call.getArgument(0).asExpr() and
@@ -31,11 +30,14 @@ class CommandExecutionConfig extends TaintTracking::Configuration {
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     JoplinSinks::isCommandExecutionSink(sink)
   }
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, CommandExecutionConfig cfg
-where cfg.hasFlowPath(source, sink)
+module CommandExecFlow = TaintTracking::Global<CommandExecutionConfig>;
+import CommandExecFlow::PathGraph
+
+from CommandExecFlow::PathNode source, CommandExecFlow::PathNode sink
+where CommandExecFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Execution of a terminal command via child_process (broad/residual pattern — see Secret Key Theft and Cryptojacking rules for higher-confidence variants of overlapping sources). Requires human review."

@@ -2,7 +2,7 @@
  * @name Silent Backup Hijacking (Taint)
  * @description Detects data from an export module flowing into a network, child_process, or unauthorized file system sink.
  * @kind path-problem
- * @problem.severity error
+ * @problem.severity warning
  * @tags security joplin-plugin backup-hijacking
  * @id js/joplin/backup-hijacking
  */

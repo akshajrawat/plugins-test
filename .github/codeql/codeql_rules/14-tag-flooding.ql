@@ -2,7 +2,7 @@
  * @name Asynchronous Tag Flooding & Search Poisoning
  * @description Sabotaging application indexing via programmatic high-volume metadata inflation.
  * @kind problem
- * @problem.severity warning
+ * @problem.severity error
  * @id joplin/tag-flooding
  */
 import javascript
@@ -26,6 +26,24 @@ predicate isUnboundedInterval(DataFlow::CallNode timer) {
   )
 }
 
+predicate isAlwaysTrueCondition(Expr condition) {
+  condition.stripParens() instanceof BooleanLiteral and
+  condition.stripParens().(BooleanLiteral).getBoolValue() = true
+  or
+  condition.stripParens() instanceof NumberLiteral and
+  condition.stripParens().(NumberLiteral).getValue() = "1"
+}
+
+predicate isUnboundedLoop(LoopStmt loop) {
+  loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())
+  or
+  loop instanceof DoWhileStmt and isAlwaysTrueCondition(loop.getTest())
+  or
+  loop instanceof ForStmt and not exists(loop.getTest())
+  or
+  loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest())
+}
+
 from DataFlow::CallNode post
 where
   post = Joplin::data().getAMethodCall("post") and
@@ -38,11 +56,12 @@ where
       post.getContainer() = callback.getFunction()
     )
     or
-    // Inside a synchronous loop (for, while, do-while)
-    exists(Stmt loop |
-      (loop instanceof ForStmt or loop instanceof WhileStmt or loop instanceof DoWhileStmt) and
+    // Inside a synchronous loop with no normal finite bound.
+    exists(LoopStmt loop |
+      isUnboundedLoop(loop) and
       post.asExpr().getEnclosingStmt().getParentStmt*() = loop
     )
   )
 select post, "Tag/Note Flooding: High-volume creation of items in a background loop or synchronous loop. \n" +
-  "Reviewer: verify (1) loop/interval is unbounded or has a very high iteration count, (2) items created are uniquely named (index pollution) vs. repeated/idempotent, (3) interval is never cleared, (4) check for synchronous loop variants."
+  "Reviewer: verify (1) loop/interval is unbounded or has a very high iteration count, (2) items created are uniquely named (index pollution) vs. repeated/idempotent, (3) interval is never cleared, (4) check for synchronous loop variants. \n" +
+  "Reviewer: confirm this loop is bounded by something finite (e.g. user-selected note IDs) and not an attacker-controlled or unbounded count."

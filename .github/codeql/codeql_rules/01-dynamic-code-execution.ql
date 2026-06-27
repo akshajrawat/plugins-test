@@ -7,13 +7,12 @@
  * @id js/joplin/dynamic-code-execution
  */
 import javascript
-import DataFlow::PathGraph
+
 import JoplinSources
 
-class DynamicCodeExecutionConfig extends TaintTracking::Configuration {
-  DynamicCodeExecutionConfig() { this = "DynamicCodeExecutionConfig" }
+module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 
-  override predicate isSource(DataFlow::Node source) {
+  predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call |
       call.getCalleeName() = "fetch" or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("node-fetch") or
@@ -34,7 +33,7 @@ class DynamicCodeExecutionConfig extends TaintTracking::Configuration {
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     sink = DataFlow::globalVarRef("eval").getACall().getAnArgument() or
     sink = DataFlow::globalVarRef("Function").getAnInstantiation().getAnArgument() or
     sink = DataFlow::globalVarRef("setTimeout").getACall().getArgument(0) or
@@ -52,6 +51,9 @@ class DynamicCodeExecutionConfig extends TaintTracking::Configuration {
 
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, DynamicCodeExecutionConfig cfg
-where cfg.hasFlowPath(source, sink)
+module DynCodeExecFlow = TaintTracking::Global<DynamicCodeExecutionConfig>;
+import DynCodeExecFlow::PathGraph
+
+from DynCodeExecFlow::PathNode source, DynCodeExecFlow::PathNode sink
+where DynCodeExecFlow::flowPath(source, sink)
 select sink.getNode(), source, sink, "Remote data flows to dynamic code execution."
