@@ -64,7 +64,7 @@ where
     (
       ClipboardNetworkConfig::isSource(sourceNode) and
       ClipboardNetworkConfig::isSink(sinkNode) and
-      msg = "Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a \"Copy\" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs)."
+      msg = "Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. \\n**Reviewer Action:** This is a severe privacy violation. Verify why the plugin needs to transmit clipboard contents and ensure the user explicitly authorized this data transfer."
     )
   )
 select sinkNode, source, sink, msg

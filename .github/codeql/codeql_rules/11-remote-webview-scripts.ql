@@ -52,8 +52,13 @@ module RemoteWebviewConfig implements DataFlow::ConfigSig {
       // setHtml sinks (panels and dialogs)
       call.getCalleeName() = "setHtml" and
       (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
-      sink = call.getArgument(1) and
-      hasExternalWebviewSrc(sink)
+      sink = call.getArgument(1)
+    ) or
+    exists(DataFlow::CallNode call |
+      // contentScripts.register sink
+      call.getCalleeName() = "register" and
+      call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("contentScripts") and
+      sink = call.getArgument(2)
     )
   }
 }

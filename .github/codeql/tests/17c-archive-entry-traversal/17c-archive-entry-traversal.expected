@@ -1,0 +1,18 @@
+WARNING: reference to 'JoplinSinks' references a local library, not the named module (17c-archive-entry-traversal.ql:10,8-19)
+edges
+| mock-rule-17c-archive-entry-traversal.ts:11:11:11:12 | s1 | mock-rule-17c-archive-entry-traversal.ts:12:28:12:29 | s1 | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:11:16:11:89 | await j ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:11:11:11:12 | s1 | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:11:22:11:89 | joplin. ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:11:16:11:89 | await j ... aDir()) | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:29 | s1 | mock-rule-17c-archive-entry-traversal.ts:12:28:12:32 | s1[0] | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:32 | s1[0] | mock-rule-17c-archive-entry-traversal.ts:12:28:12:37 | s1[0].name | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:32 | s1[0] | mock-rule-17c-archive-entry-traversal.ts:12:28:12:37 | s1[0].name | provenance | Config |
+nodes
+| mock-rule-17c-archive-entry-traversal.ts:11:11:11:12 | s1 | semmle.label | s1 |
+| mock-rule-17c-archive-entry-traversal.ts:11:16:11:89 | await j ... aDir()) | semmle.label | await j ... aDir()) |
+| mock-rule-17c-archive-entry-traversal.ts:11:22:11:89 | joplin. ... aDir()) | semmle.label | joplin. ... aDir()) |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:29 | s1 | semmle.label | s1 |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:32 | s1[0] | semmle.label | s1[0] |
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:37 | s1[0].name | semmle.label | s1[0].name |
+subpaths
+#select
+| mock-rule-17c-archive-entry-traversal.ts:12:28:12:37 | s1[0].name | mock-rule-17c-archive-entry-traversal.ts:11:22:11:89 | joplin. ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:12:28:12:37 | s1[0].name | Path Traversal Risk (Zip Slip): Unsanitized file names from inside an extracted archive are flowing directly into file system paths. \\n**Reviewer Action:** Ensure the plugin sanitizes archive entry names (e.g., blocking `../` sequences) before writing them to disk to prevent "Zip Slip" vulnerabilities from overwriting sensitive files outside the target directory. |

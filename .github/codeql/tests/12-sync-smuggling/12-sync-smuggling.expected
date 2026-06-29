@@ -1,0 +1,25 @@
+WARNING: reference to 'JoplinSinks' references a local library, not the named module (12-sync-smuggling.ql:10,8-19)
+edges
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | provenance |  |
+nodes
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | semmle.label | s1 |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | semmle.label | await j ... , '1']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | semmle.label | s1 |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | semmle.label | s1.body |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | semmle.label | s2 |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | semmle.label | await j ... , '1']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | semmle.label | s2 |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | semmle.label | s2.content |
+subpaths
+#select
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |

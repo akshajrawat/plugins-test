@@ -42,7 +42,7 @@ module BackupHijackingConfig implements DataFlow::ConfigSig {
       isExportModuleCallback(fn, propName) |
       (propName = "onProcessItem" and source = fn.getParameter(2)) or
       (propName = "onProcessResource" and (source = fn.getParameter(1) or source = fn.getParameter(2))) or
-      ((propName = "onInit" or propName = "onClose" or propName = "onExec") and source = fn.getParameter(0))
+      ((propName = "onInit" or propName = "onClose") and source = fn.getParameter(0))
     )
   }
 

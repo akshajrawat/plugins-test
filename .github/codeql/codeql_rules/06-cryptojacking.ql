@@ -38,7 +38,8 @@ predicate isElevatedSpawn(DataFlow::Node sink) {
     (options = call.getArgument(1) or options = call.getArgument(2)) and
     exists(Property prop | 
       prop = options.getALocalSource().asExpr().(ObjectExpr).getAProperty() and
-      prop.getName() = "shell"
+      prop.getName() = "shell" and
+      prop.getInit().(BooleanLiteral).getValue() = "true"
     )
   )
 }
@@ -54,7 +55,7 @@ where CryptojackFlow::flowPath(source, sink) and
   ) and
   (
     if isElevatedSpawn(sink.getNode())
-    then msg = "High-Risk Execution: The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. \\n**Reviewer Action:** This is a severe threat indicator. If `shell: true` is also flagged, the severity is elevated. Immediately audit the command payload to ensure it is not silently installing malware or hijacking CPU resources."
-    else msg = "High-Risk Execution: The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. \\n**Reviewer Action:** This is a severe threat indicator. If `shell: true` is also flagged, the severity is elevated. Immediately audit the command payload to ensure it is not silently installing malware or hijacking CPU resources."
+    then msg = "[ELEVATED SEVERITY] High-Risk Execution: The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. \\n**Reviewer Action:** This is a critical threat indicator. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately audit the command payload for malware or resource hijacking."
+    else msg = "High-Risk Execution: The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. \\n**Reviewer Action:** This is a severe threat indicator. Immediately audit the command payload to ensure it is not silently installing malware or hijacking CPU resources."
   )
 select sink.getNode(), source, sink, msg

@@ -1,0 +1,68 @@
+WARNING: reference to 'JoplinSinks' references a local library, not the named module (05-clipboard-hijacking.ql:12,8-19)
+edges
+| mock-rule-05-clipboard-hijacking.ts:11:11:11:12 | s1 | mock-rule-05-clipboard-hijacking.ts:12:38:12:39 | s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:11:11:11:12 | s1 | mock-rule-05-clipboard-hijacking.ts:13:38:13:39 | s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:11:11:11:12 | s1 | mock-rule-05-clipboard-hijacking.ts:14:47:14:48 | s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:11:16:11:48 | await j ... dText() | mock-rule-05-clipboard-hijacking.ts:11:11:11:12 | s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:11:22:11:48 | joplin. ... dText() | mock-rule-05-clipboard-hijacking.ts:11:16:11:48 | await j ... dText() | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:14:11:14:43 | 'http:/ ... ?clip=' | mock-rule-05-clipboard-hijacking.ts:14:11:14:48 | 'http:/ ... =' + s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:14:47:14:48 | s1 | mock-rule-05-clipboard-hijacking.ts:14:11:14:48 | 'http:/ ... =' + s1 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:16:11:16:11 | r | mock-rule-05-clipboard-hijacking.ts:17:22:17:22 | r | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:16:15:16:53 | await f ... /clip') | mock-rule-05-clipboard-hijacking.ts:16:11:16:11 | r | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:16:21:16:53 | fetch(' ... /clip') | mock-rule-05-clipboard-hijacking.ts:16:15:16:53 | await f ... /clip') | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:16:27:16:52 | 'http:/ ... m/clip' | mock-rule-05-clipboard-hijacking.ts:16:21:16:53 | fetch(' ... /clip') | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:11:17:12 | s2 | mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:11:17:12 | s2 | mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:11:17:12 | s2 | mock-rule-05-clipboard-hijacking.ts:20:47:20:48 | s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:16:17:29 | await r.text() | mock-rule-05-clipboard-hijacking.ts:17:11:17:12 | s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:22:17:22 | r | mock-rule-05-clipboard-hijacking.ts:17:22:17:29 | r.text() | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:17:22:17:29 | r.text() | mock-rule-05-clipboard-hijacking.ts:17:16:17:29 | await r.text() | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:20:11:20:43 | 'http:/ ... ?clip=' | mock-rule-05-clipboard-hijacking.ts:20:11:20:48 | 'http:/ ... =' + s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:20:47:20:48 | s2 | mock-rule-05-clipboard-hijacking.ts:20:11:20:48 | 'http:/ ... =' + s2 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:22:11:22:12 | s3 | mock-rule-05-clipboard-hijacking.ts:23:38:23:39 | s3 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:22:11:22:12 | s3 | mock-rule-05-clipboard-hijacking.ts:24:38:24:39 | s3 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:22:11:22:12 | s3 | mock-rule-05-clipboard-hijacking.ts:25:47:25:48 | s3 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:22:16:22:37 | "bitcoi ... s_here" | mock-rule-05-clipboard-hijacking.ts:22:11:22:12 | s3 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:25:11:25:43 | 'http:/ ... ?clip=' | mock-rule-05-clipboard-hijacking.ts:25:11:25:48 | 'http:/ ... =' + s3 | provenance |  |
+| mock-rule-05-clipboard-hijacking.ts:25:47:25:48 | s3 | mock-rule-05-clipboard-hijacking.ts:25:11:25:48 | 'http:/ ... =' + s3 | provenance |  |
+nodes
+| mock-rule-05-clipboard-hijacking.ts:11:11:11:12 | s1 | semmle.label | s1 |
+| mock-rule-05-clipboard-hijacking.ts:11:16:11:48 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05-clipboard-hijacking.ts:11:22:11:48 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05-clipboard-hijacking.ts:12:38:12:39 | s1 | semmle.label | s1 |
+| mock-rule-05-clipboard-hijacking.ts:13:38:13:39 | s1 | semmle.label | s1 |
+| mock-rule-05-clipboard-hijacking.ts:14:11:14:43 | 'http:/ ... ?clip=' | semmle.label | 'http:/ ... ?clip=' |
+| mock-rule-05-clipboard-hijacking.ts:14:11:14:48 | 'http:/ ... =' + s1 | semmle.label | 'http:/ ... =' + s1 |
+| mock-rule-05-clipboard-hijacking.ts:14:47:14:48 | s1 | semmle.label | s1 |
+| mock-rule-05-clipboard-hijacking.ts:16:11:16:11 | r | semmle.label | r |
+| mock-rule-05-clipboard-hijacking.ts:16:15:16:53 | await f ... /clip') | semmle.label | await f ... /clip') |
+| mock-rule-05-clipboard-hijacking.ts:16:21:16:53 | fetch(' ... /clip') | semmle.label | fetch(' ... /clip') |
+| mock-rule-05-clipboard-hijacking.ts:16:27:16:52 | 'http:/ ... m/clip' | semmle.label | 'http:/ ... m/clip' |
+| mock-rule-05-clipboard-hijacking.ts:16:27:16:52 | 'http:/ ... m/clip' | semmle.label | 'http:/ ... m/clip' |
+| mock-rule-05-clipboard-hijacking.ts:17:11:17:12 | s2 | semmle.label | s2 |
+| mock-rule-05-clipboard-hijacking.ts:17:16:17:29 | await r.text() | semmle.label | await r.text() |
+| mock-rule-05-clipboard-hijacking.ts:17:22:17:22 | r | semmle.label | r |
+| mock-rule-05-clipboard-hijacking.ts:17:22:17:29 | r.text() | semmle.label | r.text() |
+| mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | semmle.label | s2 |
+| mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | semmle.label | s2 |
+| mock-rule-05-clipboard-hijacking.ts:20:11:20:43 | 'http:/ ... ?clip=' | semmle.label | 'http:/ ... ?clip=' |
+| mock-rule-05-clipboard-hijacking.ts:20:11:20:48 | 'http:/ ... =' + s2 | semmle.label | 'http:/ ... =' + s2 |
+| mock-rule-05-clipboard-hijacking.ts:20:47:20:48 | s2 | semmle.label | s2 |
+| mock-rule-05-clipboard-hijacking.ts:22:11:22:12 | s3 | semmle.label | s3 |
+| mock-rule-05-clipboard-hijacking.ts:22:16:22:37 | "bitcoi ... s_here" | semmle.label | "bitcoi ... s_here" |
+| mock-rule-05-clipboard-hijacking.ts:23:38:23:39 | s3 | semmle.label | s3 |
+| mock-rule-05-clipboard-hijacking.ts:24:38:24:39 | s3 | semmle.label | s3 |
+| mock-rule-05-clipboard-hijacking.ts:25:11:25:43 | 'http:/ ... ?clip=' | semmle.label | 'http:/ ... ?clip=' |
+| mock-rule-05-clipboard-hijacking.ts:25:11:25:48 | 'http:/ ... =' + s3 | semmle.label | 'http:/ ... =' + s3 |
+| mock-rule-05-clipboard-hijacking.ts:25:47:25:48 | s3 | semmle.label | s3 |
+subpaths
+#select
+| mock-rule-05-clipboard-hijacking.ts:12:38:12:39 | s1 | mock-rule-05-clipboard-hijacking.ts:11:22:11:48 | joplin. ... dText() | mock-rule-05-clipboard-hijacking.ts:12:38:12:39 | s1 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:13:38:13:39 | s1 | mock-rule-05-clipboard-hijacking.ts:11:22:11:48 | joplin. ... dText() | mock-rule-05-clipboard-hijacking.ts:13:38:13:39 | s1 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:14:11:14:48 | 'http:/ ... =' + s1 | mock-rule-05-clipboard-hijacking.ts:11:22:11:48 | joplin. ... dText() | mock-rule-05-clipboard-hijacking.ts:14:11:14:48 | 'http:/ ... =' + s1 | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. \\n**Reviewer Action:** This is a severe privacy violation. Verify why the plugin needs to transmit clipboard contents and ensure the user explicitly authorized this data transfer. |
+| mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | mock-rule-05-clipboard-hijacking.ts:16:21:16:53 | fetch(' ... /clip') | mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | mock-rule-05-clipboard-hijacking.ts:16:27:16:52 | 'http:/ ... m/clip' | mock-rule-05-clipboard-hijacking.ts:18:38:18:39 | s2 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | mock-rule-05-clipboard-hijacking.ts:16:21:16:53 | fetch(' ... /clip') | mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | mock-rule-05-clipboard-hijacking.ts:16:27:16:52 | 'http:/ ... m/clip' | mock-rule-05-clipboard-hijacking.ts:19:38:19:39 | s2 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:23:38:23:39 | s3 | mock-rule-05-clipboard-hijacking.ts:22:16:22:37 | "bitcoi ... s_here" | mock-rule-05-clipboard-hijacking.ts:23:38:23:39 | s3 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-hijacking.ts:24:38:24:39 | s3 | mock-rule-05-clipboard-hijacking.ts:22:16:22:37 | "bitcoi ... s_here" | mock-rule-05-clipboard-hijacking.ts:24:38:24:39 | s3 | Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |

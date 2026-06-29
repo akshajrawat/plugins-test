@@ -1,0 +1,29 @@
+WARNING: reference to 'JoplinSinks' references a local library, not the named module (19-keylogging.ql:10,8-19)
+edges
+| mock-rule-19-keylogging-silent-surveillance.ts:11:43:11:44 | s1 | mock-rule-19-keylogging-silent-surveillance.ts:12:43:12:44 | s1 | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:12:43:12:44 | s1 | mock-rule-19-keylogging-silent-surveillance.ts:12:15:12:51 | 'http:/ ... .noteId | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:15:38:15:39 | s2 | mock-rule-19-keylogging-silent-surveillance.ts:16:46:16:47 | s2 | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:16:46:16:47 | s2 | mock-rule-19-keylogging-silent-surveillance.ts:16:15:16:47 | 'http:/ ... =' + s2 | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:19:31:19:32 | s3 | mock-rule-19-keylogging-silent-surveillance.ts:20:43:20:44 | s3 | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:20:43:20:44 | s3 | mock-rule-19-keylogging-silent-surveillance.ts:20:15:20:49 | 'http:/ ... s3.keys | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:23:46:23:47 | s4 | mock-rule-19-keylogging-silent-surveillance.ts:24:43:24:44 | s4 | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:24:43:24:44 | s4 | mock-rule-19-keylogging-silent-surveillance.ts:24:15:24:44 | 'http:/ ... =' + s4 | provenance |  |
+nodes
+| mock-rule-19-keylogging-silent-surveillance.ts:11:43:11:44 | s1 | semmle.label | s1 |
+| mock-rule-19-keylogging-silent-surveillance.ts:12:15:12:51 | 'http:/ ... .noteId | semmle.label | 'http:/ ... .noteId |
+| mock-rule-19-keylogging-silent-surveillance.ts:12:43:12:44 | s1 | semmle.label | s1 |
+| mock-rule-19-keylogging-silent-surveillance.ts:15:38:15:39 | s2 | semmle.label | s2 |
+| mock-rule-19-keylogging-silent-surveillance.ts:16:15:16:47 | 'http:/ ... =' + s2 | semmle.label | 'http:/ ... =' + s2 |
+| mock-rule-19-keylogging-silent-surveillance.ts:16:46:16:47 | s2 | semmle.label | s2 |
+| mock-rule-19-keylogging-silent-surveillance.ts:19:31:19:32 | s3 | semmle.label | s3 |
+| mock-rule-19-keylogging-silent-surveillance.ts:20:15:20:49 | 'http:/ ... s3.keys | semmle.label | 'http:/ ... s3.keys |
+| mock-rule-19-keylogging-silent-surveillance.ts:20:43:20:44 | s3 | semmle.label | s3 |
+| mock-rule-19-keylogging-silent-surveillance.ts:23:46:23:47 | s4 | semmle.label | s4 |
+| mock-rule-19-keylogging-silent-surveillance.ts:24:15:24:44 | 'http:/ ... =' + s4 | semmle.label | 'http:/ ... =' + s4 |
+| mock-rule-19-keylogging-silent-surveillance.ts:24:43:24:44 | s4 | semmle.label | s4 |
+subpaths
+#select
+| mock-rule-19-keylogging-silent-surveillance.ts:12:15:12:51 | 'http:/ ... .noteId | mock-rule-19-keylogging-silent-surveillance.ts:11:43:11:44 | s1 | mock-rule-19-keylogging-silent-surveillance.ts:12:15:12:51 | 'http:/ ... .noteId | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. \\n**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure. |
+| mock-rule-19-keylogging-silent-surveillance.ts:16:15:16:47 | 'http:/ ... =' + s2 | mock-rule-19-keylogging-silent-surveillance.ts:15:38:15:39 | s2 | mock-rule-19-keylogging-silent-surveillance.ts:16:15:16:47 | 'http:/ ... =' + s2 | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. \\n**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure. |
+| mock-rule-19-keylogging-silent-surveillance.ts:20:15:20:49 | 'http:/ ... s3.keys | mock-rule-19-keylogging-silent-surveillance.ts:19:31:19:32 | s3 | mock-rule-19-keylogging-silent-surveillance.ts:20:15:20:49 | 'http:/ ... s3.keys | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. \\n**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure. |
+| mock-rule-19-keylogging-silent-surveillance.ts:24:15:24:44 | 'http:/ ... =' + s4 | mock-rule-19-keylogging-silent-surveillance.ts:23:46:23:47 | s4 | mock-rule-19-keylogging-silent-surveillance.ts:24:15:24:44 | 'http:/ ... =' + s4 | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. \\n**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure. |

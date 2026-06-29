@@ -18,6 +18,7 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("node-fetch") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("got") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("superagent") or
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("superagent", "get") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get")

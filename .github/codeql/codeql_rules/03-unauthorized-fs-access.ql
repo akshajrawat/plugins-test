@@ -18,10 +18,13 @@ module FsAccessConfig implements DataFlow::ConfigSig {
     source = DataFlow::globalVarRef("__filename") or
     source = DataFlow::globalVarRef("process").getAMethodCall("cwd") or
     source = DataFlow::globalVarRef("app").getAMethodCall("getPath") or
+    source = DataFlow::moduleMember("electron", "app").getAMethodCall("getPath") or
     source = DataFlow::moduleMember("os", "homedir").getACall() or
+    source = DataFlow::moduleMember("node:os", "homedir").getACall() or
     source = DataFlow::moduleMember("path", "resolve").getACall() or
+    source = DataFlow::moduleMember("node:path", "resolve").getACall() or
     source = DataFlow::moduleMember("path", "join").getACall() or
-    source = Joplin::joplin().getAPropertyRead("plugins").getAPropertyRead("dataDir") or
+    source = DataFlow::moduleMember("node:path", "join").getACall() or
     source = Joplin::require("fs") or
     source = Joplin::require("fs-extra") or
     source = DataFlow::moduleImport("fs") or
