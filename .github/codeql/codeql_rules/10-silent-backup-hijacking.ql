@@ -31,7 +31,7 @@ module ContextTaintConfig implements DataFlow::ConfigSig {
     source = any(DataFlow::FunctionNode fn | isExportModuleCallback(fn, _)).getParameter(0)
   }
   predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call | JoplinSinks::isFileSystemDataSink(call.getArgument(1)) and sink = call.getArgument(0))
+    exists(DataFlow::CallNode call | isFileSystemDataSink(call.getArgument(1)) and sink = call.getArgument(0))
   }
 }
 module ContextTaint = TaintTracking::Global<ContextTaintConfig>;
@@ -47,10 +47,10 @@ module BackupHijackingConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink) or
-    JoplinSinks::isCommandExecutionSink(sink) or
+    isNetworkExfiltrationSink(sink) or
+    isCommandExecutionSink(sink) or
     (
-      JoplinSinks::isFileSystemDataSink(sink) and
+      isFileSystemDataSink(sink) and
       exists(DataFlow::CallNode call | call.getArgument(1) = sink |
         not ContextTaint::flow(_, call.getArgument(0))
       )

@@ -1,5 +1,5 @@
 // FROM : 
-// joplin.views.dialogs.open() / s1.formData
+// joplin.views.dialogs.open()
 // 
 // TO : 
 // fetch

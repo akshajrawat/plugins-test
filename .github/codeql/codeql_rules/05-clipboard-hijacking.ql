@@ -14,7 +14,7 @@ import JoplinSinks
 module ClipboardHijackingConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     source = Joplin::clipboard().getAMethodCall("readText") or
-    exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
+    exists(DataFlow::CallNode call | call = DataFlow::globalVarRef("fetch").getACall() | source = call) or
     exists(source.getStringValue())
   }
 
@@ -33,7 +33,7 @@ module ClipboardNetworkConfig implements DataFlow::ConfigSig {
     source = Joplin::clipboard().getAMethodCall("readText")
   }
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink)
+    isNetworkExfiltrationSink(sink)
   }
 }
 

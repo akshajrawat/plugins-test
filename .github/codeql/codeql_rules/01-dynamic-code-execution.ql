@@ -8,37 +8,65 @@
  */
 import javascript
 
-import JoplinSources
-
 module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 
   predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call |
-      call.getCalleeName() = "fetch" or
+      call = DataFlow::globalVarRef("fetch").getACall() or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("node-fetch") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("got") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("superagent") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("superagent", "get") or
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("got", "get") or
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("got", "post") or
       call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get")
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "post") or
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "request") or
+      call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("axios")
     |
       source = call
     )
     or
-    exists(DataFlow::MethodCallNode onCall |
-      (onCall.getMethodName() = "on" or onCall.getMethodName() = "addEventListener") and
-      (onCall.getArgument(0).getStringValue() = "message" or onCall.getArgument(0).getStringValue() = "data")
+    // superagent
+    exists(DataFlow::Node saReq |
+      saReq = DataFlow::moduleImport("superagent").getAMethodCall()
     |
-      source = onCall.getArgument(1).getALocalSource().(DataFlow::FunctionNode).getParameter(0)
+      source = saReq or
+      exists(DataFlow::MethodCallNode thenCall, DataFlow::FunctionNode cb |
+        thenCall.getMethodName() = "then" and
+        thenCall.getReceiver().getALocalSource*() = saReq and
+        cb = thenCall.getArgument(0).getAFunctionValue() and
+        source = cb.getParameter(0)
+      ) or
+      exists(DataFlow::MethodCallNode endCall, DataFlow::FunctionNode cb |
+        endCall.getMethodName() = "end" and
+        endCall.getReceiver().getALocalSource*() = saReq and
+        cb = endCall.getArgument(0).getAFunctionValue() and
+        source = cb.getParameter(1)
+      )
+    )
+    or
+    // restricted event sources
+    exists(DataFlow::MethodCallNode onCall, DataFlow::Node receiver, DataFlow::FunctionNode cb |
+      (onCall.getMethodName() = "on" or onCall.getMethodName() = "addEventListener") and
+      (onCall.getArgument(0).getStringValue() = "message" or onCall.getArgument(0).getStringValue() = "data") and
+      receiver = onCall.getReceiver().getALocalSource() and
+      (
+        receiver = DataFlow::globalVarRef("window") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get") or
+        receiver instanceof DataFlow::ParameterNode
+      ) and
+      cb = onCall.getArgument(1).getAFunctionValue() and
+      source = cb.getParameter(0)
     )
   }
 
   predicate isSink(DataFlow::Node sink) {
-    sink = DataFlow::globalVarRef("eval").getACall().getAnArgument() or
-    sink = DataFlow::globalVarRef("Function").getAnInstantiation().getAnArgument() or
-    sink = DataFlow::globalVarRef("setTimeout").getACall().getArgument(0) or
-    sink = DataFlow::globalVarRef("setInterval").getACall().getArgument(0) or
+    sink = DataFlow::globalVarRef("eval").getAnInvocation().getAnArgument() or
+    sink = DataFlow::globalVarRef("Function").getAnInvocation().getAnArgument() or
+    sink = DataFlow::globalVarRef("setTimeout").getAnInvocation().getArgument(0) or
+    sink = DataFlow::globalVarRef("setInterval").getAnInvocation().getArgument(0) or
     exists(DataFlow::InvokeNode vmInvoke |
       vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "runInNewContext") or
       vmInvoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember("vm", "runInThisContext") or

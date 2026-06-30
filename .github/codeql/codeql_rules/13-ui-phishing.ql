@@ -44,19 +44,20 @@ module UiPhishingConfig implements DataFlow::ConfigSig {
       (setHtmlCall.getReceiver().getALocalSource() = Joplin::panels() or setHtmlCall.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
       isPhishingHtml(setHtmlCall.getArgument(1))
     |
-      exists(DataFlow::MethodCallNode onMessage |
+      exists(DataFlow::MethodCallNode onMessage, DataFlow::FunctionNode cb |
         onMessage.getMethodName() = "onMessage" and
         onMessage.getReceiver().getALocalSource() = Joplin::panels() and
         onMessage.getArgument(0).getALocalSource() = setHtmlCall.getArgument(0).getALocalSource() and
-        source = onMessage.getArgument(1).getALocalSource().(DataFlow::FunctionNode).getParameter(0)
+        cb = onMessage.getArgument(1).getAFunctionValue() and
+        source = cb.getParameter(0)
       )
     )
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink) or
-    JoplinSinks::isCommandExecutionSink(sink) or
-    JoplinSinks::isFileSystemDataSink(sink)
+    isNetworkExfiltrationSink(sink) or
+    isCommandExecutionSink(sink) or
+    isFileSystemDataSink(sink)
   }
 
   predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {

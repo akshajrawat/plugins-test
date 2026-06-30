@@ -23,7 +23,7 @@ module ArchiveEntryConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isFileSystemPathSink(sink)
+    isFileSystemPathSink(sink)
   }
 }
 

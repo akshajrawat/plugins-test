@@ -41,10 +41,10 @@ module UserDataExecConfig implements DataFlow::ConfigSig {
     )
   }
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isCommandExecutionSink(sink) or
-    exists(DataFlow::CallNode call | call.getCalleeName() = "eval" and sink = call.getArgument(0)) or
-    exists(DataFlow::InvokeNode inv | inv.getCalleeName() = "Function" and sink = inv.getAnArgument()) or
-    exists(DataFlow::CallNode call | call.getCalleeName() in ["setTimeout", "setInterval"] and sink = call.getArgument(0))
+    isCommandExecutionSink(sink) or
+    exists(DataFlow::CallNode call | call = DataFlow::globalVarRef("eval").getACall() and sink = call.getArgument(0)) or
+    exists(DataFlow::InvokeNode inv | inv = DataFlow::globalVarRef("Function").getAnInstantiation() and sink = inv.getAnArgument()) or
+    exists(DataFlow::CallNode call | (call = DataFlow::globalVarRef("setTimeout").getACall() or call = DataFlow::globalVarRef("setInterval").getACall()) and sink = call.getArgument(0))
   }
 }
 

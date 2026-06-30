@@ -7,11 +7,12 @@
  * @id js/joplin/secret-key-access
  */
 import javascript
+import JoplinSources
 
 // Helper function to check if a specific API call requests a specific setting string
 bindingset[targetSetting]
 predicate isSettingAccess(DataFlow::CallNode call, string targetSetting) {
-  (call.getCalleeName() = "globalValue" or call.getCalleeName() = "globalValues") and
+  call = Joplin::settingsGlobalValue() and
   exists(Expr argExpr, string settingName |
     argExpr = call.getArgument(0).asExpr() and
     (

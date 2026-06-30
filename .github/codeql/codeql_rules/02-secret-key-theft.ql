@@ -16,8 +16,7 @@ module SecretTheftConfig implements DataFlow::ConfigSig {
 
   predicate isSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call, Expr argExpr, string settingName |
-      
-      (call.getCalleeName() = "globalValue" or call.getCalleeName() = "globalValues") and
+      call = Joplin::settingsGlobalValue() and
       argExpr = call.getArgument(0).asExpr() and
       (
         settingName = argExpr.getStringValue() 
@@ -30,11 +29,11 @@ module SecretTheftConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink) or
-    JoplinSinks::isFileSystemPathSink(sink) or
-    JoplinSinks::isFileSystemDataSink(sink) or
-    JoplinSinks::isCommandExecutionSink(sink) or
-    JoplinSinks::isJoplinSpecificSink(sink)
+    isNetworkExfiltrationSink(sink) or
+    isFileSystemPathSink(sink) or
+    isFileSystemDataSink(sink) or
+    isCommandExecutionSink(sink) or
+    isJoplinSpecificSink(sink)
   }
 
 }

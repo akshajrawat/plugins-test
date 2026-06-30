@@ -31,7 +31,7 @@ predicate hasExternalWebviewSrc(DataFlow::Node html) {
 module RemoteWebviewConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     // any fetch response
-    exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" and source = call) or
+    exists(DataFlow::CallNode call | call = DataFlow::globalVarRef("fetch").getACall() and source = call) or
     // any axios/http response
     exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") and source = call) or
     // joplin settings

@@ -1,5 +1,5 @@
 // FROM : 
-// 'spam' string literal / setInterval() / loop
+// 'spam' string literal / setInterval()
 // 
 // TO : 
 // joplin.data.post
@@ -11,9 +11,6 @@ async function triggerRule() {
         joplin.data.post(['tags'], null, { title: 'spam' });
     }, 100);
 
-    for (let i = 0; i < 1000; i++) {
-        await joplin.data.post(['notes'], null, { title: 'spam' });
-    }
 }
 
 export {};

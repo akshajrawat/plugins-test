@@ -20,20 +20,11 @@ module FsAccessConfig implements DataFlow::ConfigSig {
     source = DataFlow::globalVarRef("app").getAMethodCall("getPath") or
     source = DataFlow::moduleMember("electron", "app").getAMethodCall("getPath") or
     source = DataFlow::moduleMember("os", "homedir").getACall() or
-    source = DataFlow::moduleMember("node:os", "homedir").getACall() or
-    source = DataFlow::moduleMember("path", "resolve").getACall() or
-    source = DataFlow::moduleMember("node:path", "resolve").getACall() or
-    source = DataFlow::moduleMember("path", "join").getACall() or
-    source = DataFlow::moduleMember("node:path", "join").getACall() or
-    source = Joplin::require("fs") or
-    source = Joplin::require("fs-extra") or
-    source = DataFlow::moduleImport("fs") or
-    source = DataFlow::moduleImport("fs-extra") or
-    (source = DataFlow::globalVarRef("require").getACall() and source.(DataFlow::CallNode).getArgument(0).getStringValue().regexpMatch("fs(-extra)?"))
+    source = DataFlow::moduleMember("node:os", "homedir").getACall()
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isFileSystemPathSink(sink)
+    isFileSystemPathSink(sink)
   }
 }
 
@@ -62,7 +53,7 @@ module SafeFsDestinationConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isFileSystemPathSink(sink)
+    isFileSystemPathSink(sink)
   }
 }
 

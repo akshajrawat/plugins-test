@@ -2,7 +2,7 @@ temp/
 
 # CodeQL test artifacts
 *.actual
-.testproj
+*.testproj
 test-db/
 results.csv
 codeql-results/

@@ -28,7 +28,7 @@ module KeyloggingConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink)
+    isNetworkExfiltrationSink(sink)
   }
 }
 

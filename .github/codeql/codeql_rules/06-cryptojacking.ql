@@ -13,12 +13,12 @@ import JoplinSinks
 module CryptojackingConfig implements DataFlow::ConfigSig {
 
   predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" | source = call) or
+    exists(DataFlow::CallNode call | call = DataFlow::globalVarRef("fetch").getACall() | source = call) or
     exists(source.getStringValue())
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isCommandExecutionSink(sink)
+    isCommandExecutionSink(sink)
   }
 }
 

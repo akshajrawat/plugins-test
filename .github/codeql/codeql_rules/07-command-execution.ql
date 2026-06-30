@@ -31,7 +31,7 @@ module CommandExecutionConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isCommandExecutionSink(sink)
+    isCommandExecutionSink(sink)
   }
 }
 

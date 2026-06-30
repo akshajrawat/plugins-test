@@ -50,14 +50,14 @@ module MaliciousImportConfig implements DataFlow::ConfigSig {
       (
         node2 = readCall
         or
-        exists(int i | (i = 1 or i = 2) and node2 = readCall.getArgument(i).getALocalSource().(DataFlow::FunctionNode).getParameter(1))
+        exists(int i, DataFlow::FunctionNode cb | (i = 1 or i = 2) and cb = readCall.getArgument(i).getAFunctionValue() and node2 = cb.getParameter(1))
       )
     )
   }
 
   predicate isSink(DataFlow::Node sink) {
-    JoplinSinks::isNetworkExfiltrationSink(sink) or
-    JoplinSinks::isCommandExecutionSink(sink)
+    isNetworkExfiltrationSink(sink) or
+    isCommandExecutionSink(sink)
   }
 }
 

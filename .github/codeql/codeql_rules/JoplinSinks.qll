@@ -4,9 +4,7 @@
 import javascript
 import JoplinSources
 
-module JoplinSinks {
-
-  /**
+/**
    * Identifies sinks related to operating system command execution or child processes.
    */
   predicate isCommandExecutionSink(DataFlow::Node sink) {
@@ -73,7 +71,7 @@ module JoplinSinks {
    * Holds if `call` sends data over the network via fetch, axios, http, https, net, tls, websockets, or webview messaging.
    */
   predicate isNetworkExfiltrationCall(DataFlow::CallNode call) {
-    call.getCalleeName() = "fetch" or
+    call = DataFlow::globalVarRef("fetch").getACall() or
     call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", _) or
     call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
     call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
@@ -118,5 +116,3 @@ module JoplinSinks {
       sink = call.getAnArgument()
     )
   }
-
-}

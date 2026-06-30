@@ -10,7 +10,7 @@ import JoplinSources
 
 module UntrustedArchiveConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::CallNode call | call.getCalleeName() = "fetch" and source = call) or
+    exists(DataFlow::CallNode call | call = DataFlow::globalVarRef("fetch").getACall() and source = call) or
     exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") and source = call) or
     exists(DataFlow::CallNode call | call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("axios") and source = call)
   }

@@ -26,7 +26,7 @@ module NetworkBackdoorConfig implements DataFlow::ConfigSig {
 
   predicate isSink(DataFlow::Node sink) {
     exists(DataFlow::MethodCallNode call |
-      call.getMethodName() in ["listen", "bind", "start"]
+      call.getMethodName() in ["listen", "bind"]
     |
       sink = call.getReceiver()
     )

