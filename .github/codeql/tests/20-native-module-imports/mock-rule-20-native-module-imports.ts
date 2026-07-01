@@ -1,15 +1,10 @@
-// FROM : 
-// 'fs' / 'net' / 'os' / 'dgram' / 'child_process' / 'tls' / 'http' / 'https' / 'sqlite3' / 'better-sqlite3' / 'node:fs'
-// 
-// TO : 
-// require
-
-async function triggerRule() {
-    require('fs');
+function triggerRule() {
+    require('child_process');
     require('net');
     require('os');
     require('dgram');
-    require('child_process');
+    require('fs');
+    require('fs-extra');
     require('tls');
     require('http');
     require('https');

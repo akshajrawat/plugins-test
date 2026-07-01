@@ -1,100 +1,38 @@
 edges
-| mock-rule-01-dynamic-code-execution.ts:16:11:16:12 | ax | mock-rule-01-dynamic-code-execution.ts:17:10:17:11 | ax | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:16:16:16:36 | await a ... st(url) | mock-rule-01-dynamic-code-execution.ts:16:11:16:12 | ax | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:16:22:16:36 | axios.post(url) | mock-rule-01-dynamic-code-execution.ts:16:16:16:36 | await a ... st(url) | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:17:10:17:11 | ax | mock-rule-01-dynamic-code-execution.ts:17:10:17:16 | ax.data | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:19:11:19:12 | nf | mock-rule-01-dynamic-code-execution.ts:20:16:20:17 | nf | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:19:16:19:31 | await fetch(url) | mock-rule-01-dynamic-code-execution.ts:19:11:19:12 | nf | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:19:22:19:31 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:19:16:19:31 | await fetch(url) | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:20:16:20:17 | nf | mock-rule-01-dynamic-code-execution.ts:20:16:20:24 | nf.text() | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:20:16:20:24 | nf.text() | mock-rule-01-dynamic-code-execution.ts:20:10:20:24 | await nf.text() | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:22:11:22:11 | g | mock-rule-01-dynamic-code-execution.ts:23:10:23:10 | g | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:22:15:22:33 | await got.post(url) | mock-rule-01-dynamic-code-execution.ts:22:11:22:11 | g | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:22:21:22:33 | got.post(url) | mock-rule-01-dynamic-code-execution.ts:22:15:22:33 | await got.post(url) | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:23:10:23:10 | g | mock-rule-01-dynamic-code-execution.ts:23:10:23:15 | g.body | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:25:40:25:42 | res | mock-rule-01-dynamic-code-execution.ts:26:14:26:16 | res | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:26:14:26:16 | res | mock-rule-01-dynamic-code-execution.ts:26:14:26:21 | res.body | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:29:11:29:12 | sa | mock-rule-01-dynamic-code-execution.ts:30:10:30:11 | sa | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:29:16:29:40 | await s ... et(url) | mock-rule-01-dynamic-code-execution.ts:29:11:29:12 | sa | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:29:22:29:40 | superagent.get(url) | mock-rule-01-dynamic-code-execution.ts:29:16:29:40 | await s ... et(url) | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:30:10:30:11 | sa | mock-rule-01-dynamic-code-execution.ts:30:10:30:16 | sa.body | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:33:25:33:29 | chunk | mock-rule-01-dynamic-code-execution.ts:34:18:34:22 | chunk | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:39:25:39:29 | chunk | mock-rule-01-dynamic-code-execution.ts:40:18:40:22 | chunk | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:45:45:45:49 | event | mock-rule-01-dynamic-code-execution.ts:46:18:46:22 | event | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:46:18:46:22 | event | mock-rule-01-dynamic-code-execution.ts:46:18:46:27 | event.data | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:54:11:54:16 | source | mock-rule-01-dynamic-code-execution.ts:55:24:55:29 | source | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:54:20:54:35 | await fetch(url) | mock-rule-01-dynamic-code-execution.ts:54:11:54:16 | source | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:54:20:54:35 | await fetch(url) | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:60:10:60:13 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:61:14:61:17 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:62:16:62:19 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:63:17:63:20 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:64:9:64:12 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:65:24:65:27 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | mock-rule-01-dynamic-code-execution.ts:66:19:66:22 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:18:55:36 | await source.text() | mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:24:55:29 | source | mock-rule-01-dynamic-code-execution.ts:55:24:55:36 | source.text() | provenance |  |
-| mock-rule-01-dynamic-code-execution.ts:55:24:55:36 | source.text() | mock-rule-01-dynamic-code-execution.ts:55:18:55:36 | await source.text() | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:8:11:8:13 | res | mock-rule-01-dynamic-code-execution.ts:9:16:9:18 | res | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:8:17:8:32 | await fetch(url) | mock-rule-01-dynamic-code-execution.ts:8:11:8:13 | res | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:8:23:8:32 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:8:17:8:32 | await fetch(url) | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:9:16:9:18 | res | mock-rule-01-dynamic-code-execution.ts:9:16:9:25 | res.text() | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:9:16:9:25 | res.text() | mock-rule-01-dynamic-code-execution.ts:9:10:9:25 | await res.text() | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:14:31:14:35 | chunk | mock-rule-01-dynamic-code-execution.ts:15:20:15:24 | chunk | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:18:31:18:35 | reply | mock-rule-01-dynamic-code-execution.ts:19:28:19:32 | reply | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:19:28:19:32 | reply | mock-rule-01-dynamic-code-execution.ts:19:28:19:37 | reply.text | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:22:11:22:16 | stored | mock-rule-01-dynamic-code-execution.ts:23:17:23:22 | stored | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:22:20:22:75 | await j ... yload') | mock-rule-01-dynamic-code-execution.ts:22:11:22:16 | stored | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:22:26:22:75 | joplin. ... yload') | mock-rule-01-dynamic-code-execution.ts:22:20:22:75 | await j ... yload') | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:25:43:25:49 | message | mock-rule-01-dynamic-code-execution.ts:26:28:26:34 | message | provenance |  |
 nodes
-| mock-rule-01-dynamic-code-execution.ts:16:11:16:12 | ax | semmle.label | ax |
-| mock-rule-01-dynamic-code-execution.ts:16:16:16:36 | await a ... st(url) | semmle.label | await a ... st(url) |
-| mock-rule-01-dynamic-code-execution.ts:16:22:16:36 | axios.post(url) | semmle.label | axios.post(url) |
-| mock-rule-01-dynamic-code-execution.ts:17:10:17:11 | ax | semmle.label | ax |
-| mock-rule-01-dynamic-code-execution.ts:17:10:17:16 | ax.data | semmle.label | ax.data |
-| mock-rule-01-dynamic-code-execution.ts:19:11:19:12 | nf | semmle.label | nf |
-| mock-rule-01-dynamic-code-execution.ts:19:16:19:31 | await fetch(url) | semmle.label | await fetch(url) |
-| mock-rule-01-dynamic-code-execution.ts:19:22:19:31 | fetch(url) | semmle.label | fetch(url) |
-| mock-rule-01-dynamic-code-execution.ts:20:10:20:24 | await nf.text() | semmle.label | await nf.text() |
-| mock-rule-01-dynamic-code-execution.ts:20:16:20:17 | nf | semmle.label | nf |
-| mock-rule-01-dynamic-code-execution.ts:20:16:20:24 | nf.text() | semmle.label | nf.text() |
-| mock-rule-01-dynamic-code-execution.ts:22:11:22:11 | g | semmle.label | g |
-| mock-rule-01-dynamic-code-execution.ts:22:15:22:33 | await got.post(url) | semmle.label | await got.post(url) |
-| mock-rule-01-dynamic-code-execution.ts:22:21:22:33 | got.post(url) | semmle.label | got.post(url) |
-| mock-rule-01-dynamic-code-execution.ts:23:10:23:10 | g | semmle.label | g |
-| mock-rule-01-dynamic-code-execution.ts:23:10:23:15 | g.body | semmle.label | g.body |
-| mock-rule-01-dynamic-code-execution.ts:25:40:25:42 | res | semmle.label | res |
-| mock-rule-01-dynamic-code-execution.ts:26:14:26:16 | res | semmle.label | res |
-| mock-rule-01-dynamic-code-execution.ts:26:14:26:21 | res.body | semmle.label | res.body |
-| mock-rule-01-dynamic-code-execution.ts:29:11:29:12 | sa | semmle.label | sa |
-| mock-rule-01-dynamic-code-execution.ts:29:16:29:40 | await s ... et(url) | semmle.label | await s ... et(url) |
-| mock-rule-01-dynamic-code-execution.ts:29:22:29:40 | superagent.get(url) | semmle.label | superagent.get(url) |
-| mock-rule-01-dynamic-code-execution.ts:30:10:30:11 | sa | semmle.label | sa |
-| mock-rule-01-dynamic-code-execution.ts:30:10:30:16 | sa.body | semmle.label | sa.body |
-| mock-rule-01-dynamic-code-execution.ts:33:25:33:29 | chunk | semmle.label | chunk |
-| mock-rule-01-dynamic-code-execution.ts:34:18:34:22 | chunk | semmle.label | chunk |
-| mock-rule-01-dynamic-code-execution.ts:39:25:39:29 | chunk | semmle.label | chunk |
-| mock-rule-01-dynamic-code-execution.ts:40:18:40:22 | chunk | semmle.label | chunk |
-| mock-rule-01-dynamic-code-execution.ts:45:45:45:49 | event | semmle.label | event |
-| mock-rule-01-dynamic-code-execution.ts:46:18:46:22 | event | semmle.label | event |
-| mock-rule-01-dynamic-code-execution.ts:46:18:46:27 | event.data | semmle.label | event.data |
-| mock-rule-01-dynamic-code-execution.ts:54:11:54:16 | source | semmle.label | source |
-| mock-rule-01-dynamic-code-execution.ts:54:20:54:35 | await fetch(url) | semmle.label | await fetch(url) |
-| mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | semmle.label | fetch(url) |
-| mock-rule-01-dynamic-code-execution.ts:55:11:55:14 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:55:18:55:36 | await source.text() | semmle.label | await source.text() |
-| mock-rule-01-dynamic-code-execution.ts:55:24:55:29 | source | semmle.label | source |
-| mock-rule-01-dynamic-code-execution.ts:55:24:55:36 | source.text() | semmle.label | source.text() |
-| mock-rule-01-dynamic-code-execution.ts:60:10:60:13 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:61:14:61:17 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:62:16:62:19 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:63:17:63:20 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:64:9:64:12 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:65:24:65:27 | code | semmle.label | code |
-| mock-rule-01-dynamic-code-execution.ts:66:19:66:22 | code | semmle.label | code |
+| mock-rule-01-dynamic-code-execution.ts:8:11:8:13 | res | semmle.label | res |
+| mock-rule-01-dynamic-code-execution.ts:8:17:8:32 | await fetch(url) | semmle.label | await fetch(url) |
+| mock-rule-01-dynamic-code-execution.ts:8:23:8:32 | fetch(url) | semmle.label | fetch(url) |
+| mock-rule-01-dynamic-code-execution.ts:9:10:9:25 | await res.text() | semmle.label | await res.text() |
+| mock-rule-01-dynamic-code-execution.ts:9:16:9:18 | res | semmle.label | res |
+| mock-rule-01-dynamic-code-execution.ts:9:16:9:25 | res.text() | semmle.label | res.text() |
+| mock-rule-01-dynamic-code-execution.ts:14:31:14:35 | chunk | semmle.label | chunk |
+| mock-rule-01-dynamic-code-execution.ts:15:20:15:24 | chunk | semmle.label | chunk |
+| mock-rule-01-dynamic-code-execution.ts:18:31:18:35 | reply | semmle.label | reply |
+| mock-rule-01-dynamic-code-execution.ts:19:28:19:32 | reply | semmle.label | reply |
+| mock-rule-01-dynamic-code-execution.ts:19:28:19:37 | reply.text | semmle.label | reply.text |
+| mock-rule-01-dynamic-code-execution.ts:22:11:22:16 | stored | semmle.label | stored |
+| mock-rule-01-dynamic-code-execution.ts:22:20:22:75 | await j ... yload') | semmle.label | await j ... yload') |
+| mock-rule-01-dynamic-code-execution.ts:22:26:22:75 | joplin. ... yload') | semmle.label | joplin. ... yload') |
+| mock-rule-01-dynamic-code-execution.ts:23:17:23:22 | stored | semmle.label | stored |
+| mock-rule-01-dynamic-code-execution.ts:25:43:25:49 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:26:28:26:34 | message | semmle.label | message |
 subpaths
 #select
-| mock-rule-01-dynamic-code-execution.ts:17:10:17:16 | ax.data | mock-rule-01-dynamic-code-execution.ts:16:22:16:36 | axios.post(url) | mock-rule-01-dynamic-code-execution.ts:17:10:17:16 | ax.data | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:20:10:20:24 | await nf.text() | mock-rule-01-dynamic-code-execution.ts:19:22:19:31 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:20:10:20:24 | await nf.text() | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:23:10:23:15 | g.body | mock-rule-01-dynamic-code-execution.ts:22:21:22:33 | got.post(url) | mock-rule-01-dynamic-code-execution.ts:23:10:23:15 | g.body | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:26:14:26:21 | res.body | mock-rule-01-dynamic-code-execution.ts:25:40:25:42 | res | mock-rule-01-dynamic-code-execution.ts:26:14:26:21 | res.body | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:30:10:30:16 | sa.body | mock-rule-01-dynamic-code-execution.ts:29:22:29:40 | superagent.get(url) | mock-rule-01-dynamic-code-execution.ts:30:10:30:16 | sa.body | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:34:18:34:22 | chunk | mock-rule-01-dynamic-code-execution.ts:33:25:33:29 | chunk | mock-rule-01-dynamic-code-execution.ts:34:18:34:22 | chunk | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:40:18:40:22 | chunk | mock-rule-01-dynamic-code-execution.ts:39:25:39:29 | chunk | mock-rule-01-dynamic-code-execution.ts:40:18:40:22 | chunk | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:46:18:46:27 | event.data | mock-rule-01-dynamic-code-execution.ts:45:45:45:49 | event | mock-rule-01-dynamic-code-execution.ts:46:18:46:27 | event.data | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:60:10:60:13 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:60:10:60:13 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:61:14:61:17 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:61:14:61:17 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:62:16:62:19 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:62:16:62:19 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:63:17:63:20 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:63:17:63:20 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:64:9:64:12 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:64:9:64:12 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:65:24:65:27 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:65:24:65:27 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
-| mock-rule-01-dynamic-code-execution.ts:66:19:66:22 | code | mock-rule-01-dynamic-code-execution.ts:54:26:54:35 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:66:19:66:22 | code | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
+| mock-rule-01-dynamic-code-execution.ts:9:10:9:25 | await res.text() | mock-rule-01-dynamic-code-execution.ts:8:23:8:32 | fetch(url) | mock-rule-01-dynamic-code-execution.ts:9:10:9:25 | await res.text() | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
+| mock-rule-01-dynamic-code-execution.ts:15:20:15:24 | chunk | mock-rule-01-dynamic-code-execution.ts:14:31:14:35 | chunk | mock-rule-01-dynamic-code-execution.ts:15:20:15:24 | chunk | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
+| mock-rule-01-dynamic-code-execution.ts:19:28:19:37 | reply.text | mock-rule-01-dynamic-code-execution.ts:18:31:18:35 | reply | mock-rule-01-dynamic-code-execution.ts:19:28:19:37 | reply.text | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
+| mock-rule-01-dynamic-code-execution.ts:23:17:23:22 | stored | mock-rule-01-dynamic-code-execution.ts:22:26:22:75 | joplin. ... yload') | mock-rule-01-dynamic-code-execution.ts:23:17:23:22 | stored | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |
+| mock-rule-01-dynamic-code-execution.ts:26:28:26:34 | message | mock-rule-01-dynamic-code-execution.ts:25:43:25:49 | message | mock-rule-01-dynamic-code-execution.ts:26:28:26:34 | message | Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network. |

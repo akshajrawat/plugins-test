@@ -24,29 +24,71 @@ predicate isAlwaysTrueCondition(Expr condition) {
   condition.stripParens().(NumberLiteral).getValue() = "1"
 }
 
-predicate isUnboundedLoop(LoopStmt loop) {
-  loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())
-  or
-  loop instanceof DoWhileStmt and isAlwaysTrueCondition(loop.getTest())
-  or
-  loop instanceof ForStmt and not exists(loop.getTest())
-  or
-  loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest())
+predicate isRecursiveSetTimeout(DataFlow::CallNode call) {
+  exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
+    timer = DataFlow::globalVarRef("setTimeout").getACall() and
+    callback = timer.getArgument(0).getAFunctionValue() and
+    (
+      exists(DataFlow::CallNode innerTimer |
+        innerTimer = DataFlow::globalVarRef("setTimeout").getACall() and
+        innerTimer.getContainer().getEnclosingContainer*() = callback.getFunction() and
+        innerTimer.getArgument(0).getAFunctionValue() = callback
+      )
+    ) and
+    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+  )
 }
 
-predicate inLoop(DataFlow::CallNode call) {
+predicate inUnboundedLoop(DataFlow::CallNode call) {
   // Inside a synchronous loop with no normal finite bound.
   exists(LoopStmt loop |
-    isUnboundedLoop(loop) and
+    (
+      (loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())) or
+      (loop instanceof DoWhileStmt and isAlwaysTrueCondition(loop.getTest())) or
+      (loop instanceof ForStmt and not exists(loop.getTest())) or
+      (loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest()))
+    ) and
     call.asExpr().getEnclosingStmt().getParentStmt*() = loop
   )
   or
-  // Inside a setInterval loop
+  // Inside an uncleared setInterval loop
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
     isUnboundedInterval(timer) and
-    callback = timer.getArgument(0).getALocalSource() and
-    call.getContainer() = callback.getFunction()
+    callback = timer.getArgument(0).getAFunctionValue() and
+    call.getContainer().getEnclosingContainer*() = callback.getFunction()
   )
+  or
+  // Recursive setTimeout
+  isRecursiveSetTimeout(call)
+}
+
+predicate inAnyLoop(DataFlow::CallNode call) {
+  inUnboundedLoop(call) or
+  exists(LoopStmt loop | call.asExpr().getEnclosingStmt().getParentStmt*() = loop) or
+  exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
+    timer = DataFlow::globalVarRef("setInterval").getACall() and
+    callback = timer.getArgument(0).getAFunctionValue() and
+    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+  ) or
+  exists(DataFlow::MethodCallNode arrayCall |
+    arrayCall.getMethodName() in ["forEach", "map"] and
+    call.getContainer().getEnclosingContainer*() = arrayCall.getArgument(0).getAFunctionValue().getFunction()
+  )
+}
+
+predicate isDestructiveValue(DataFlow::Node val) {
+  not val.getStringValue() = "0" and
+  not val.getStringValue() = "false"
+}
+
+predicate isDestructiveBody(DataFlow::Node val) {
+  val.getStringValue() = ""
+}
+
+predicate hasDestructivePayload(DataFlow::SourceNode payload) {
+  (exists(DataFlow::Node val | val = payload.getAPropertyWrite("deleted_time").getRhs() and isDestructiveValue(val))) or
+  (exists(DataFlow::Node val | val = payload.getAPropertyWrite("is_conflict").getRhs() and isDestructiveValue(val))) or
+  (exists(DataFlow::Node val | val = payload.getAPropertyWrite("body").getRhs() and isDestructiveBody(val)))
 }
 
 from DataFlow::Node node, string msg
@@ -57,27 +99,24 @@ where
     arr = del.getArgument(0).getALocalSource() and
     arr.getElement(0).getStringValue() = "folders" and
     node = del and
-    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
+    msg = "Mass Data Destruction: The plugin is deleting an entire folder (which cascades to all its notes). \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user."
   )
   or
-  // 2. Loop delete
+  // 2. Unbounded loop delete
   exists(DataFlow::CallNode del |
     del = Joplin::data().getAMethodCall("delete") and
-    inLoop(del) and
+    inUnboundedLoop(del) and
     node = del and
-    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
+    msg = "Mass Data Destruction: The plugin is looping unboundedly to delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
   )
   or
-  // 3. Loop put with soft-delete payload
+  // 3. Any loop put with soft-delete payload
   exists(DataFlow::CallNode put, DataFlow::SourceNode payload |
     put = Joplin::data().getAMethodCall("put") and
-    inLoop(put) and
+    inAnyLoop(put) and
     payload = put.getArgument(2).getALocalSource() and
-    (
-      exists(payload.getAPropertyWrite("deleted_time")) or
-      exists(payload.getAPropertyWrite("is_conflict"))
-    ) and
+    hasDestructivePayload(payload) and
     node = put and
-    msg = "Mass Data Destruction: The plugin is either deleting an entire folder (which cascades to all its notes) or looping to delete/soft-delete many items at once. \\n**Reviewer Action:** This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
+    msg = "Mass Data Destruction: The plugin is looping to soft-delete, wipe bodies, or flag conflicts on many items at once. \\n**Reviewer Action:** This can effectively destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
   )
 select node, msg

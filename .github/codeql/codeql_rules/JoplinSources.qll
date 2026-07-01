@@ -36,6 +36,21 @@ module Joplin {
     result = joplin().getAPropertyRead("views").getAPropertyRead("panels")
   }
 
+  /** Gets a reference to `joplin.views.editors`. */
+  DataFlow::SourceNode editors() {
+    result = joplin().getAPropertyRead("views").getAPropertyRead("editors")
+  }
+
+  /** Gets a reference to `joplin.filters`. */
+  DataFlow::SourceNode filters() {
+    result = joplin().getAPropertyRead("filters")
+  }
+
+  /** Gets a reference to `joplin.contentScripts`. */
+  DataFlow::SourceNode contentScripts() {
+    result = joplin().getAPropertyRead("contentScripts")
+  }
+
   /** Gets a reference to `joplin.interop`. */
   DataFlow::SourceNode interop() {
     result = joplin().getAPropertyRead("interop")
@@ -56,14 +71,47 @@ module Joplin {
 
   bindingset[setting]
   predicate isSensitiveSetting(string setting) {
-        setting.regexpMatch("sync\\..*\\.auth") or
+    setting.regexpMatch("sync\\..*\\.auth") or
     setting.regexpMatch("sync\\..*\\.context") or
-    setting in ["sync.5.username", "sync.6.username", "sync.9.username", "sync.10.username", "sync.10.userEmail", "sync.userId", "clientId"] or
-    setting = "syncInfoCache" or
-    setting = "encryption.masterPassword" or
-    setting = "api.token" or
-    setting = "encryption.cachedPpk" or
-    setting = "encryption.passwordCache" or
-    setting.regexpMatch("sync\\..*\\.password")
+    setting.regexpMatch("sync\\..*\\.username") or
+    setting.regexpMatch("sync\\..*\\.userEmail") or
+    setting in [
+      "api.token", "syncInfoCache", "clientId", "sync.userId", 
+      "encryption.masterPassword", "encryption.cachedPpk", "encryption.passwordCache"
+    ]
+  }
+
+  /**
+   * Identifies parameters of callbacks registered via `onMessage` to receive data from webviews.
+   */
+  predicate isJoplinMessageSource(DataFlow::Node source) {
+    exists(DataFlow::MethodCallNode onMessageCall, DataFlow::FunctionNode callback |
+      onMessageCall.getMethodName() = "onMessage" and
+      (
+        onMessageCall.getReceiver().getALocalSource() = panels() or
+        onMessageCall.getReceiver().getALocalSource() = joplin().getAPropertyRead("views").getAPropertyRead("dialogs")
+      ) and
+      callback = onMessageCall.getArgument(1).getALocalSource() and
+      source = callback.getParameter(0)
+    )
+  }
+
+  /**
+   * Identifies sources of remote external data (fetch, axios, http, etc).
+   */
+  predicate isRemoteDataSource(DataFlow::Node source) {
+    exists(DataFlow::CallNode call | 
+      call = DataFlow::globalVarRef("fetch").getACall() or
+      call = DataFlow::moduleMember("axios", "get").getACall() or
+      call = DataFlow::moduleMember("axios", "post").getACall() or
+      call = DataFlow::globalVarRef("axios").getACall() or
+      call = DataFlow::moduleMember("http", "get").getACall() or
+      call = DataFlow::moduleMember("http", "request").getACall() or
+      call = DataFlow::moduleMember("https", "get").getACall() or
+      call = DataFlow::moduleMember("https", "request").getACall() or
+      call = DataFlow::globalVarRef("got").getACall() or
+      call = DataFlow::moduleImport("got").getACall()
+      | source = call
+    )
   }
 }

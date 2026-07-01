@@ -1,0 +1,8 @@
+edges
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | provenance |  |
+nodes
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | semmle.label | __filename |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | semmle.label | __filen ... t.json' |
+subpaths
+#select
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. \\n**Reviewer Action:** This is a critical security violation. A plugin should never modify its own packaged files in `installationDir`. |

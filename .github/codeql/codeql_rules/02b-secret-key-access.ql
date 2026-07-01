@@ -47,4 +47,4 @@ where
   ) and
   reason = "Combined access of BOTH masterPassword and syncInfoCache detected in this codebase."
 
-select call, "MANUAL REVIEW REQUIRED: " + reason
+select call, "MANUAL REVIEW REQUIRED: " + reason + " Note: In current versions of Joplin, highly secure settings may return `undefined` to plugins at runtime via `Setting.isSecureKey`. However, attempting to read these keys is still a strong indicator of malicious intent or dangerous credential mishandling."

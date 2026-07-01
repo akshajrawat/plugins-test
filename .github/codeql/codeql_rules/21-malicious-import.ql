@@ -8,29 +8,17 @@
  */
 import javascript
 import JoplinSinks
+import JoplinSources
 
 predicate isImportModuleRegistration(DataFlow::MethodCallNode reg) {
   reg.getMethodName() = "registerImportModule" and
-  (
-    exists(DataFlow::PropRead pr |
-      pr.getPropertyName() = "interop" and
-      reg.getReceiver().getALocalSource() = pr
-    ) or
-    reg.getReceiver().(DataFlow::PropRead).getPropertyName() = "interop"
-  )
+  reg.getReceiver().getALocalSource() = Joplin::interop()
 }
 
 predicate isImportModuleCallback(DataFlow::FunctionNode fn) {
   exists(DataFlow::MethodCallNode reg |
     isImportModuleRegistration(reg) and
-    exists(ObjectExpr obj |
-      obj = reg.getArgument(0).getALocalSource().asExpr() and
-      exists(Property prop |
-        prop = obj.getAProperty() and
-        prop.getName() = "onExec" and
-        fn.asExpr() = prop.getInit()
-      )
-    )
+    fn = reg.getArgument(0).getALocalSource().getAPropertyWrite("onExec").getRhs().getALocalSource()
   )
 }
 
@@ -38,14 +26,16 @@ module MaliciousImportConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     exists(DataFlow::FunctionNode fn |
       isImportModuleCallback(fn) and
-      // The first parameter of onExec contains the context/data being imported
-      source = fn.getParameter(0)
+      (
+        source = fn.getParameter(0) or
+        source = fn.getParameter(0).getAPropertyRead("sourcePath")
+      )
     )
   }
 
   predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     exists(DataFlow::CallNode readCall |
-      readCall.getCalleeName() in ["readFile", "readFileSync", "readJSON", "readJSONSync", "readFileString", "read"] and
+      readCall.getCalleeName() in ["readFile", "readFileSync", "readJSON", "readJSONSync", "readFileString"] and
       node1 = readCall.getArgument(0) and
       (
         node2 = readCall
@@ -57,7 +47,9 @@ module MaliciousImportConfig implements DataFlow::ConfigSig {
 
   predicate isSink(DataFlow::Node sink) {
     isNetworkExfiltrationSink(sink) or
-    isCommandExecutionSink(sink)
+    isCommandExecutionSink(sink) or
+    isFileSystemPathSink(sink) or
+    isFileSystemDataSink(sink)
   }
 }
 
@@ -66,4 +58,4 @@ import MaliciousImportFlow::PathGraph
 
 from MaliciousImportFlow::PathNode source, MaliciousImportFlow::PathNode sink
 where MaliciousImportFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration or OS command execution). \\n**Reviewer Action:** Importing a note should only result in note creation. Verify why the plugin needs to execute commands or phone home based on the contents of an imported file. Ensure strict sanitization."
+select sink.getNode(), source, sink, "Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). \\n**Reviewer Action:** Importing a note should only result in note creation. Verify why the plugin needs to execute commands, phone home, or write to arbitrary files based on the contents of an imported file. Ensure strict sanitization."

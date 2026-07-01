@@ -1,25 +1,37 @@
-WARNING: reference to 'JoplinSinks' references a local library, not the named module (12-sync-smuggling.ql:10,8-19)
 edges
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | provenance |  |
 nodes
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:11:10:12 | s1 | semmle.label | s1 |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:16:10:52 | await j ... , '1']) | semmle.label | await j ... , '1']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:36 | s1 | semmle.label | s1 |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | semmle.label | s1.body |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:11:13:12 | s2 | semmle.label | s2 |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:16:13:58 | await j ... , '1']) | semmle.label | await j ... , '1']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:36 | s2 | semmle.label | s2 |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | semmle.label | s2.content |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | semmle.label | await j ... note']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | semmle.label | joplin. ... note']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | semmle.label | note.body |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | semmle.label | await j ... lder']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | semmle.label | joplin. ... lder']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | semmle.label | folder.title |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | semmle.label | await j ... hadow') |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | semmle.label | joplin. ... hadow') |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | semmle.label | childPr ... ayload) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | semmle.label | payload |
 subpaths
 #select
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:22:10:52 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:35:11:41 | s1.body | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:22:13:58 | joplin. ... , '1']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:14:35:14:44 | s2.content | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. \\n**Reviewer Action:** This is highly dangerous. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE) or exfiltration trigger. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. \\n**Reviewer Action:** This is highly dangerous. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE) or exfiltration trigger. |

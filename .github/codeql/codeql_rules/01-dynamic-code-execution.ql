@@ -7,24 +7,32 @@
  * @id js/joplin/dynamic-code-execution
  */
 import javascript
+import JoplinSources
+import JoplinLinks
 
 module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 
   predicate isSource(DataFlow::Node source) {
+    Joplin::isRemoteDataSource(source) or
+    
+    // Direct http/https
     exists(DataFlow::CallNode call |
-      call = DataFlow::globalVarRef("fetch").getACall() or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("node-fetch") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("got") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("got", "get") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("got", "post") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "get") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "post") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleMember("axios", "request") or
-      call.getCalleeNode().getALocalSource() = DataFlow::moduleImport("axios")
-    |
-      source = call
-    )
-    or
+      call = DataFlow::moduleMember("http", "get").getACall() or
+      call = DataFlow::moduleMember("https", "get").getACall() or
+      call = DataFlow::moduleMember("http", "request").getACall() or
+      call = DataFlow::moduleMember("https", "request").getACall() or
+      call = DataFlow::moduleMember("node:http", "get").getACall() or
+      call = DataFlow::moduleMember("node:https", "get").getACall() or
+      call = DataFlow::moduleMember("node:http", "request").getACall() or
+      call = DataFlow::moduleMember("node:https", "request").getACall()
+    | source = call) or
+    
+    // userDataGet smuggled payloads
+    exists(DataFlow::MethodCallNode call |
+      call.getMethodName() = "userDataGet" and
+      call.getReceiver().getALocalSource() = Joplin::data()
+    | source = call) or
+
     // superagent
     exists(DataFlow::Node saReq |
       saReq = DataFlow::moduleImport("superagent").getAMethodCall()
@@ -55,16 +63,31 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
         receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
         receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
         receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get") or
-        receiver instanceof DataFlow::ParameterNode
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "request") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "request") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "get") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "get") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("ws", "WebSocket") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "Worker") or
+        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "MessagePort")
       ) and
       cb = onCall.getArgument(1).getAFunctionValue() and
       source = cb.getParameter(0)
-    )
+    ) or
+    Joplin::isJoplinMessageSource(source)
   }
 
   predicate isSink(DataFlow::Node sink) {
     sink = DataFlow::globalVarRef("eval").getAnInvocation().getAnArgument() or
-    sink = DataFlow::globalVarRef("Function").getAnInvocation().getAnArgument() or
+    
+    // Function sink - last argument is the body
+    exists(DataFlow::CallNode fnCall |
+      fnCall = DataFlow::globalVarRef("Function").getAnInstantiation() or
+      fnCall = DataFlow::globalVarRef("Function").getACall()
+    |
+      sink = fnCall.getLastArgument()
+    ) or
+    
     sink = DataFlow::globalVarRef("setTimeout").getAnInvocation().getArgument(0) or
     sink = DataFlow::globalVarRef("setInterval").getAnInvocation().getArgument(0) or
     exists(DataFlow::InvokeNode vmInvoke |

@@ -1,0 +1,26 @@
+edges
+| mock-rule-05-clipboard-injection.ts:4:11:4:16 | copied | mock-rule-05-clipboard-injection.ts:5:46:5:51 | copied | provenance |  |
+| mock-rule-05-clipboard-injection.ts:4:20:4:52 | await j ... dText() | mock-rule-05-clipboard-injection.ts:4:11:4:16 | copied | provenance |  |
+| mock-rule-05-clipboard-injection.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05-clipboard-injection.ts:4:20:4:52 | await j ... dText() | provenance |  |
+| mock-rule-05-clipboard-injection.ts:5:46:5:51 | copied | mock-rule-05-clipboard-injection.ts:5:38:5:60 | '<b>' + ...  '</b>' | provenance |  |
+| mock-rule-05-clipboard-injection.ts:7:11:7:16 | remote | mock-rule-05-clipboard-injection.ts:8:44:8:49 | remote | provenance |  |
+| mock-rule-05-clipboard-injection.ts:7:20:7:35 | await fetch(url) | mock-rule-05-clipboard-injection.ts:7:11:7:16 | remote | provenance |  |
+| mock-rule-05-clipboard-injection.ts:7:26:7:35 | fetch(url) | mock-rule-05-clipboard-injection.ts:7:20:7:35 | await fetch(url) | provenance |  |
+| mock-rule-05-clipboard-injection.ts:8:44:8:49 | remote | mock-rule-05-clipboard-injection.ts:8:44:8:56 | remote.text() | provenance |  |
+| mock-rule-05-clipboard-injection.ts:8:44:8:56 | remote.text() | mock-rule-05-clipboard-injection.ts:8:38:8:56 | await remote.text() | provenance |  |
+nodes
+| mock-rule-05-clipboard-injection.ts:4:11:4:16 | copied | semmle.label | copied |
+| mock-rule-05-clipboard-injection.ts:4:20:4:52 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05-clipboard-injection.ts:4:26:4:52 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05-clipboard-injection.ts:5:38:5:60 | '<b>' + ...  '</b>' | semmle.label | '<b>' + ...  '</b>' |
+| mock-rule-05-clipboard-injection.ts:5:46:5:51 | copied | semmle.label | copied |
+| mock-rule-05-clipboard-injection.ts:7:11:7:16 | remote | semmle.label | remote |
+| mock-rule-05-clipboard-injection.ts:7:20:7:35 | await fetch(url) | semmle.label | await fetch(url) |
+| mock-rule-05-clipboard-injection.ts:7:26:7:35 | fetch(url) | semmle.label | fetch(url) |
+| mock-rule-05-clipboard-injection.ts:8:38:8:56 | await remote.text() | semmle.label | await remote.text() |
+| mock-rule-05-clipboard-injection.ts:8:44:8:49 | remote | semmle.label | remote |
+| mock-rule-05-clipboard-injection.ts:8:44:8:56 | remote.text() | semmle.label | remote.text() |
+subpaths
+#select
+| mock-rule-05-clipboard-injection.ts:5:38:5:60 | '<b>' + ...  '</b>' | mock-rule-05-clipboard-injection.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05-clipboard-injection.ts:5:38:5:60 | '<b>' + ...  '</b>' | Clipboard Hijacking Risk: The plugin is reading external remote data or the user's current clipboard and replacing the clipboard contents. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |
+| mock-rule-05-clipboard-injection.ts:8:38:8:56 | await remote.text() | mock-rule-05-clipboard-injection.ts:7:26:7:35 | fetch(url) | mock-rule-05-clipboard-injection.ts:8:38:8:56 | await remote.text() | Clipboard Hijacking Risk: The plugin is reading external remote data or the user's current clipboard and replacing the clipboard contents. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a "Copy" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs). |

@@ -1,57 +1,26 @@
-// FROM : 
-// joplin.settings.globalValue('locale') / joplin.data.get() / joplin.workspace.selectedNote() / 'ls' / './script.js'
-// 
-// TO : 
-// directCp.exec / directCp.execFile / directCp.spawn / directCp.execSync / directCp.execFileSync / directCp.spawnSync / directCp.fork
-
+import * as childProcess from 'child_process';
 import * as joplin from 'api';
-import * as directCp from 'child_process';
 
-async function triggerRule() {
-    const s1 = await joplin.settings.globalValue('locale');
-    directCp.exec('echo ' + s1);
-    directCp.execFile('echo', [s1]);
-    directCp.spawn('echo', [s1]);
-    directCp.execSync(s1);
-    directCp.execFileSync(s1, ['-la']);
-    directCp.spawnSync(s1, ['-la']);
-    directCp.fork(s1);
+async function triggerRule(panel: string) {
+    const theme = await joplin.settings.globalValue('theme');
+    childProcess.exec('apply-theme ' + theme);
 
-    const s2 = (await joplin.data.get(['notes', '1'])).title;
-    directCp.exec('echo ' + s2);
-    directCp.execFile('echo', [s2]);
-    directCp.spawn('echo', [s2]);
-    directCp.execSync(s2);
-    directCp.execFileSync(s2, ['-la']);
-    directCp.spawnSync(s2, ['-la']);
-    directCp.fork(s2);
+    const note = await joplin.data.get(['notes', '1']);
+    childProcess.execFile(note.title, []);
 
-    const s3 = (await joplin.workspace.selectedNote()).title;
-    directCp.exec('echo ' + s3);
-    directCp.execFile('echo', [s3]);
-    directCp.spawn('echo', [s3]);
-    directCp.execSync(s3);
-    directCp.execFileSync(s3, ['-la']);
-    directCp.spawnSync(s3, ['-la']);
-    directCp.fork(s3);
+    const hidden = await joplin.data.userDataGet(['notes', '1'], 'command');
+    childProcess.spawn(hidden, []);
 
-    const s4 = 'ls';
-    directCp.exec('echo ' + s4);
-    directCp.execFile('echo', [s4]);
-    directCp.spawn('echo', [s4]);
-    directCp.execSync(s4);
-    directCp.execFileSync(s4, ['-la']);
-    directCp.spawnSync(s4, ['-la']);
-    directCp.fork(s4);
+    const selected = await joplin.workspace.selectedNote();
+    childProcess.execSync(selected.title);
 
-    const s5 = './script.js';
-    directCp.exec('echo ' + s5);
-    directCp.execFile('echo', [s5]);
-    directCp.spawn('echo', [s5]);
-    directCp.execSync(s5);
-    directCp.execFileSync(s5, ['-la']);
-    directCp.spawnSync(s5, ['-la']);
-    directCp.fork(s5);
+    joplin.workspace.onNoteChange((event: any) => {
+        childProcess.exec('note-changed ' + event.id);
+    });
+
+    joplin.views.panels.onMessage(panel, (message: any) => {
+        childProcess.spawnSync(message.command, message.args);
+    });
 }
 
 export {};

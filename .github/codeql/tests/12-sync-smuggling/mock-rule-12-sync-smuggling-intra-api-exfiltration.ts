@@ -1,17 +1,16 @@
-// FROM : 
-// joplin.data.get(['notes', '1']) / joplin.data.get(['master_keys', '1'])
-// 
-// TO : 
-// joplin.data.userDataSet
-
+import * as childProcess from 'child_process';
 import * as joplin from 'api';
 
 async function triggerRule() {
-    const s1 = await joplin.data.get(['notes', '1']);
-    await joplin.data.userDataSet(s1.body);
+    const note = await joplin.data.get(['notes', 'source-note']);
+    await joplin.data.userDataSet(['notes', 'target-note'], 'shadow', note.body);
 
-    const s2 = await joplin.data.get(['master_keys', '1']);
-    await joplin.data.userDataSet(s2.content);
+    const folder = await joplin.data.get(['folders', 'source-folder']);
+    await joplin.data.userDataSet(['notes', 'target-note'], 'folder-copy', folder.title);
+
+    const payload = await joplin.data.userDataGet(['notes', 'target-note'], 'shadow');
+    eval(payload);
+    childProcess.exec(payload);
 }
 
 export {};

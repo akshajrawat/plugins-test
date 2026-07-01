@@ -1,20 +1,24 @@
-WARNING: reference to 'JoplinSinks' references a local library, not the named module (13-ui-phishing.ql:10,8-19)
 edges
-| mock-rule-13-social-engineering-ui-phishing.ts:12:11:12:12 | s1 | mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:74 | s1 | provenance |  |
-| mock-rule-13-social-engineering-ui-phishing.ts:12:16:12:59 | await j ... h_r13') | mock-rule-13-social-engineering-ui-phishing.ts:12:11:12:12 | s1 | provenance |  |
-| mock-rule-13-social-engineering-ui-phishing.ts:12:22:12:59 | joplin. ... h_r13') | mock-rule-13-social-engineering-ui-phishing.ts:12:16:12:59 | await j ... h_r13') | provenance |  |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:58:13:84 | JSON.st ... rmData) | mock-rule-13-social-engineering-ui-phishing.ts:13:34:13:86 | { metho ... Data) } | provenance |  |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:74 | s1 | mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:83 | s1.formData | provenance |  |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:74 | s1 | mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:83 | s1.formData | provenance | Config |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:83 | s1.formData | mock-rule-13-social-engineering-ui-phishing.ts:13:58:13:84 | JSON.st ... rmData) | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:11:5:16 | result | mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:35 | result | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:20:5:58 | await j ... dialog) | mock-rule-13-social-engineering-ui-phishing.ts:5:11:5:16 | result | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:26:5:58 | joplin. ... dialog) | mock-rule-13-social-engineering-ui-phishing.ts:5:20:5:58 | await j ... dialog) | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:26:5:58 | joplin. ... dialog) | mock-rule-13-social-engineering-ui-phishing.ts:5:20:5:58 | await j ... dialog) | provenance | Config |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:35 | result | mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:44 | result.formData | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:35 | result | mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:44 | result.formData | provenance | Config |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:44 | result.formData | mock-rule-13-social-engineering-ui-phishing.ts:8:15:8:45 | JSON.st ... rmData) | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:12:43:12:49 | message | mock-rule-13-social-engineering-ui-phishing.ts:13:51:13:57 | message | provenance |  |
+| mock-rule-13-social-engineering-ui-phishing.ts:13:51:13:57 | message | mock-rule-13-social-engineering-ui-phishing.ts:13:15:13:63 | 'https: ... e.token | provenance |  |
 nodes
-| mock-rule-13-social-engineering-ui-phishing.ts:12:11:12:12 | s1 | semmle.label | s1 |
-| mock-rule-13-social-engineering-ui-phishing.ts:12:16:12:59 | await j ... h_r13') | semmle.label | await j ... h_r13') |
-| mock-rule-13-social-engineering-ui-phishing.ts:12:22:12:59 | joplin. ... h_r13') | semmle.label | joplin. ... h_r13') |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:34:13:86 | { metho ... Data) } | semmle.label | { metho ... Data) } |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:58:13:84 | JSON.st ... rmData) | semmle.label | JSON.st ... rmData) |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:74 | s1 | semmle.label | s1 |
-| mock-rule-13-social-engineering-ui-phishing.ts:13:73:13:83 | s1.formData | semmle.label | s1.formData |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:11:5:16 | result | semmle.label | result |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:20:5:58 | await j ... dialog) | semmle.label | await j ... dialog) |
+| mock-rule-13-social-engineering-ui-phishing.ts:5:26:5:58 | joplin. ... dialog) | semmle.label | joplin. ... dialog) |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:15:8:45 | JSON.st ... rmData) | semmle.label | JSON.st ... rmData) |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:35 | result | semmle.label | result |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:30:8:44 | result.formData | semmle.label | result.formData |
+| mock-rule-13-social-engineering-ui-phishing.ts:12:43:12:49 | message | semmle.label | message |
+| mock-rule-13-social-engineering-ui-phishing.ts:13:15:13:63 | 'https: ... e.token | semmle.label | 'https: ... e.token |
+| mock-rule-13-social-engineering-ui-phishing.ts:13:51:13:57 | message | semmle.label | message |
 subpaths
 #select
-| mock-rule-13-social-engineering-ui-phishing.ts:13:34:13:86 | { metho ... Data) } | mock-rule-13-social-engineering-ui-phishing.ts:12:22:12:59 | joplin. ... h_r13') | mock-rule-13-social-engineering-ui-phishing.ts:13:34:13:86 | { metho ... Data) } | UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. \\n**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection. |
+| mock-rule-13-social-engineering-ui-phishing.ts:8:15:8:45 | JSON.st ... rmData) | mock-rule-13-social-engineering-ui-phishing.ts:5:26:5:58 | joplin. ... dialog) | mock-rule-13-social-engineering-ui-phishing.ts:8:15:8:45 | JSON.st ... rmData) | UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. \\n**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection. |
+| mock-rule-13-social-engineering-ui-phishing.ts:13:15:13:63 | 'https: ... e.token | mock-rule-13-social-engineering-ui-phishing.ts:12:43:12:49 | message | mock-rule-13-social-engineering-ui-phishing.ts:13:15:13:63 | 'https: ... e.token | UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. \\n**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection. |

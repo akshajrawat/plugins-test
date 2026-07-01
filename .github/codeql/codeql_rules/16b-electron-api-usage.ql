@@ -29,4 +29,4 @@ where
       prop = "screen" and msg = "Usage of electron.screen bypasses Joplin's plugin APIs."
     )
   )
-select node, "Unauthorized Native API Usage: The plugin is importing the raw `electron` module directly. \\n**Reviewer Action:** Direct Electron API usage bypasses Joplin's sanctioned architecture. Verify which property is being accessed (e.g., clipboard, dialog). Instruct the developer to use the equivalent official Joplin API (e.g., `joplin.clipboard`) instead." + msg.substring(0,0)
+select node, "Unauthorized Native API Usage: The plugin is importing the raw `electron` module directly. \\n**Reviewer Action:** Direct Electron API usage bypasses Joplin's sanctioned architecture. Verify which property is being accessed (e.g., clipboard, dialog). Instruct the developer to use the equivalent official Joplin API (e.g., `joplin.clipboard`) instead." + " " + msg

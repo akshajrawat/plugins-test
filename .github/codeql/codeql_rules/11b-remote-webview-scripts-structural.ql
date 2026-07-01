@@ -8,11 +8,16 @@
  */
 import javascript
 import JoplinSources
-import JoplinSinks
 
 bindingset[value]
 predicate containsExternalWebviewSrc(string value) {
-  value.regexpMatch("(?is).*<(script|iframe|img)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*")
+  exists(string remoteUrlPattern |
+    remoteUrlPattern = "https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$))" |
+    value.regexpMatch("(?is).*<(script|iframe)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<link\\b[^>]*\\bhref\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<meta\\b[^>]*\\bhttp-equiv\\s*=\\s*[\"']?refresh[\"']?[^>]*\\bcontent\\s*=\\s*[\"']?[0-9]+;\\s*url\\s*=\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*\\burl\\s*\\(\\s*[\"']?\\s*" + remoteUrlPattern + ".*\\).*")
+  )
 }
 
 predicate hasExternalWebviewSrc(DataFlow::Node html) {
@@ -30,7 +35,11 @@ predicate hasExternalWebviewSrc(DataFlow::Node html) {
 from DataFlow::CallNode call, DataFlow::Node sink
 where
   call.getCalleeName() = "setHtml" and
-  (call.getReceiver().getALocalSource() = Joplin::panels() or call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs")) and
+  (
+    call.getReceiver().getALocalSource() = Joplin::panels() or 
+    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs") or
+    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("editors")
+  ) and
   sink = call.getArgument(1) and
   hasExternalWebviewSrc(sink)
-select call, "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe or script tags) or registering a remote Content Script. \\n**Reviewer Action:** Confirm the URL points to a trusted, known-good domain (like a CDN or official docs). Loading unverified remote scripts allows an attacker to bypass plugin updates and dynamically execute malicious UI code."
+select call, "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe, script, link, or meta refresh tags). \\n**Reviewer Action:** Confirm the URL points to a trusted, known-good domain (like a CDN or official docs). Loading unverified remote scripts allows an attacker to bypass plugin updates and dynamically execute malicious UI code."

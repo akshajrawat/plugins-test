@@ -1,0 +1,1 @@
+| mock-rule-03c-unauthorized-fs-access-config-literal.ts:5:19:5:42 | '/home/ ... id_rsa' | Sensitive Path Targeting: The plugin contains a hardcoded operation targeting a sensitive user configuration or database path. \\n**Reviewer Action:** This is a severe threat indicator for data theft or tampering. Verify this immediately. |
