@@ -8,6 +8,7 @@
 - exclude:
     id:
       - "*xss*"
+      - js/xss-through-dom
       - "*ssrf*"
       - js/redos
       - js/polynomial-redos
@@ -26,3 +27,4 @@
       - "*weak-crypto*"
       - "*insecure-download*"
       - "*http-to-file*"
+      - js/missing-origin-check

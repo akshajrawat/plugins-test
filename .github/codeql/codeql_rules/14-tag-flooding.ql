@@ -126,11 +126,11 @@ predicate isLargeWritePayload(DataFlow::Node payload) {
 from DataFlow::CallNode call, string msg
 where
   (
-    // 1. Data POST to flooding target inside ANY loop
+    // 1. Data POST to flooding target inside an unbounded/background loop
     call = Joplin::data().getAMethodCall("post") and
     isTargetPath(call.getArgument(0)) and
-    inAnyLoop(call) and
-    msg = "Resource Exhaustion (Flooding): The plugin is creating tags, notes, or resources in a loop. \\n**Reviewer Action:** This can destroy Joplin's search index and exhaust storage quotas. Confirm the loop is strictly bounded by a finite limit (e.g., iterating only over user-selected notes) and is not infinite."
+    inUnboundedLoop(call) and
+    msg = "Resource Exhaustion (Flooding): The plugin is creating tags, notes, or resources from an unbounded or background loop. \\n**Reviewer Action:** This can damage Joplin's search index and exhaust storage quotas. Require a finite cap or user-bounded input before allowing this behavior."
   )
   or
   (

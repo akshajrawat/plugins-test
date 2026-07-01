@@ -298,14 +298,18 @@ Sabotaging application indexing via unbounded programmatic entity creation.
 ### Flows :
 
 1. `joplin.data.post(["tags"|"notes"|"resources", ...])` inside unbounded `setInterval` (no `clearInterval`)
-2. `joplin.data.post()` inside `for` / `while` / `do-while` / recursive `setTimeout`
-3. `fs.writeFileSync()` generating large binary blobs inside any loop (disk quota exhaustion)
-4. `joplin.data.post(["tags"])` chained immediately to `joplin.data.post(["tags", id, "notes"])` in a loop (tag-to-note link flooding, search index corruption)
+2. `joplin.data.post()` inside infinite `while(true)` / `do-while(true)` / `for(;;)` or recursive `setTimeout`
+3. `fs.writeFileSync()` or `appendFileSync()` inside an unbounded loop
+4. `fs.writeFileSync()` generating large binary blobs inside any loop (disk quota exhaustion)
+
+### Notes :
+
+- Bounded loops over user-selected notes, configured tags, imported files, or template lists should not alert for Joplin entity creation.
 
 ### Messages :
 
-Resource Exhaustion (Flooding): The plugin is rapidly creating tags, notes, resources, or large files inside an unbounded loop or background interval.  
-**Reviewer Action:** This can corrupt Joplin's search index and exhaust disk/cloud storage quotas. Confirm the loop is strictly bounded by a finite, user-controlled limit and is not infinite or attacker-controlled.
+Resource Exhaustion (Flooding): The plugin is creating tags, notes, or resources from an unbounded or background loop.  
+**Reviewer Action:** This can damage Joplin's search index and exhaust storage quotas. Require a finite cap or user-bounded input before allowing this behavior.
 
 ### Severity : warning
 
@@ -448,21 +452,7 @@ Data captured from a workspace, settings, or sync event hook is being sent direc
 
 ### Severity : error
 
-# Rule 20 : Native Module Imports
-
-Bypassing joplin.require to gain host access.
-
-### Flows :
-
-1.  require() / import of fs , net , os , dgram , child_process , tls , http , https , sqlite3 , or better-sqlite3 (with or without "node:"prefix)
-
-### Messages :
-
-The plugin is directly importing a core Node.js native module (like `fs`, `net`, or `child_process`) without using `joplin.require`.
-
-### Severity : error
-
-# Rule 21 : Malicious Import Module
+# Rule 20 : Malicious Import Module
 
 Detects if data read from an imported file inside `registerImportModule` flows to a dangerous sink.
 

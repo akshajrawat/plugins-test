@@ -80,4 +80,4 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
 
 ## 4. Threat Model and Rules Summary
 
-The LLM will be prompted to evaluate plugins against these rules : [RULES.md](.github\codeql\rules.md)
+CodeQl will be used to evaluate plugins against these rules : [RULES.md](.github\codeql\rules.md)
