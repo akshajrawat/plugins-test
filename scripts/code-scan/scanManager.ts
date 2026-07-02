@@ -1,10 +1,14 @@
-import {
-    existsSync,
-    readFileSync,
-    readdirSync,
-    statSync,
-} from 'fs';
+import { access, readFile, readdir, stat } from 'fs/promises';
 import { join, relative, resolve, sep } from 'path';
+
+const fileExists = async (path: string) => {
+    try {
+        await access(path);
+        return true;
+    } catch {
+        return false;
+    }
+};
 import {
     extractReportMetadata,
     getPhases,
@@ -143,7 +147,7 @@ const validateTitle = (title: string | null | undefined) => {
 };
 
 // Gets the path to manifest.json
-const getRegistryPath = (relativePath: string) => {
+const getRegistryPath = async (relativePath: string) => {
     const workspace = process.env.GITHUB_WORKSPACE;
     const candidates = [
         workspace ? resolve(workspace, 'plugins-test', relativePath) : '',
@@ -152,16 +156,19 @@ const getRegistryPath = (relativePath: string) => {
         resolve(__dirname, '..', '..', relativePath),
     ].filter(Boolean);
 
-    return candidates.find(candidate => existsSync(candidate)) ?? candidates[0];
+    for (const candidate of candidates) {
+        if (await fileExists(candidate)) return candidate;
+    }
+    return candidates[0];
 };
 
 // checks if the plugin already exists in the manifest.json
-const existingPluginFor = (pluginName: string) => {
-    const manifestsPath = getRegistryPath('manifests.json');
+const existingPluginFor = async (pluginName: string) => {
+    const manifestsPath = await getRegistryPath('manifests.json');
 
-    if (!existsSync(manifestsPath)) return null;
+    if (!(await fileExists(manifestsPath))) return null;
 
-    const manifests = JSON.parse(readFileSync(manifestsPath, 'utf8'));
+    const manifests = JSON.parse(await readFile(manifestsPath, 'utf8'));
     const directlyRegisteredPlugin = manifests[pluginName];
 
     if (directlyRegisteredPlugin) return directlyRegisteredPlugin;
@@ -209,14 +216,15 @@ const isInside = (parent: string, child: string) => {
     return relativePath === '' || (!relativePath.startsWith('..') && !relativePath.startsWith(sep));
 };
 
-const findSourceFiles = (root: string) => {
+const findSourceFiles = async (root: string) => {
     const files: string[] = [];
 
-    const visit = (directory: string) => {
-        for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const visit = async (directory: string) => {
+        const entries = await readdir(directory, { withFileTypes: true });
+        for (const entry of entries) {
             if (entry.isDirectory()) {
                 if (!ignoredSourceDirectories.has(entry.name)) {
-                    visit(join(directory, entry.name));
+                    await visit(join(directory, entry.name));
                 }
 
                 continue;
@@ -228,7 +236,7 @@ const findSourceFiles = (root: string) => {
         }
     };
 
-    visit(root);
+    await visit(root);
 
     return files;
 };
@@ -311,7 +319,7 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
             body: commentBody,
         });
 
-    const existingPlugin = existingPluginFor(plugin_name);
+    const existingPlugin = await existingPluginFor(plugin_name);
     const registeredUrl = existingPlugin?.repository_url;
 
     if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
@@ -366,7 +374,9 @@ export const validateTargetRepository = async (
     const workspace = process.env.GITHUB_WORKSPACE ? resolve(process.env.GITHUB_WORKSPACE) : resolve(process.cwd());
     const targetRoot = resolve(workspace, targetPath);
 
-    if (!isInside(workspace, targetRoot) || !existsSync(targetRoot) || !statSync(targetRoot).isDirectory()) {
+    const isDir = await stat(targetRoot).then(s => s.isDirectory()).catch(() => false);
+
+    if (!isInside(workspace, targetRoot) || !isDir) {
         return await failWithIssueComment(
             { github, context, core },
             commentId,
@@ -375,7 +385,7 @@ export const validateTargetRepository = async (
         );
     }
 
-    const sourceFiles = findSourceFiles(targetRoot);
+    const sourceFiles = await findSourceFiles(targetRoot);
 
     if (sourceFiles.length === 0) {
         return await failWithIssueComment(
@@ -399,7 +409,7 @@ export const generateFinalReport = async (
     repoUrl: string,
     commitHash: string,
 ) => {
-    const body = renderFinalReport({
+    const body = await renderFinalReport({
         sarifPath,
         repoUrl,
         commitHash,

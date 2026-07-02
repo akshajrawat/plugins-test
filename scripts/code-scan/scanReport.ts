@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'fs';
+import { access, readFile } from 'fs/promises';
 import type {
     FinalReportInput,
     GithubActionContext,
@@ -11,6 +11,15 @@ import type {
 
 const phaseCount = 5;
 const targetPluginPathMarker = '/target-plugin/';
+
+const fileExists = async (path: string) => {
+    try {
+        await access(path);
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 const escapeMarkdownText = (value: string) => {
     return value
@@ -38,7 +47,7 @@ export const runUrlFor = (context: GithubActionContext) => {
     return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 };
 
-// Keeps
+// Get the phase status 
 export const getPhases = (currentPhase: number) => {
     const phases: PhaseMap = {};
 
@@ -89,6 +98,8 @@ export const extractReportMetadata = (body: string): ReportMetadata => {
     };
 };
 
+// Removes any leading path data like : `home/../test-plugin/src/index.ts 
+// To : src/index.ts
 const toRepoRelativeFile = (uri: string) => {
     const normalized = uri.replace(/\\/g, '/');
     const markerIndex = normalized.indexOf(targetPluginPathMarker);
@@ -109,19 +120,22 @@ const toGitHubBlobUrl = (repoUrl: string, commitHash: string, file: string, line
     return `${repoUrl}/blob/${commitHash}/${filePath}#L${line}`;
 };
 
-const readSarif = (sarifPath: string) => {
-    return JSON.parse(readFileSync(sarifPath, 'utf8')) as SarifReport;
+const readSarif = async (sarifPath: string) => {
+    return JSON.parse(await readFile(sarifPath, 'utf8')) as SarifReport;
 };
 
+// Gives an array of all the results
 const sarifResults = (sarif: SarifReport) => {
     return sarif.runs.flatMap(run => run.results ?? []);
 };
 
+// find the rule inside 'run.tool.driver' or `run.tool.extensions` to find
+// more information about the rules
 const findRule = (sarif: SarifReport, ruleId: string) => {
     for (const run of sarif.runs) {
         const rules = run.tool?.driver?.rules ?? [];
         let foundRule = rules.find(rule => rule.id === ruleId);
-        
+
         if (foundRule) return foundRule;
 
         if (run.tool?.extensions) {
@@ -136,14 +150,16 @@ const findRule = (sarif: SarifReport, ruleId: string) => {
     return null;
 };
 
+// Find the severity of the result 
+// If failed to get an severity defaults to 'warning'
 const getSeverityLevel = (rule: SarifRule | null) => {
     let severityLevel = rule?.defaultConfiguration?.level;
-    
+
     if (!severityLevel && rule?.properties?.['problem.severity']) {
-        severityLevel = rule.properties['problem.severity'] === 'error' ? 'error' : 
-                        rule.properties['problem.severity'] === 'warning' ? 'warning' : 'warning';
+        severityLevel = rule.properties['problem.severity'] === 'error' ? 'error' :
+            rule.properties['problem.severity'] === 'warning' ? 'warning' : 'warning';
     }
-    
+
     return severityLevel ?? 'warning';
 };
 
@@ -155,16 +171,19 @@ const severityIcon = (rule: SarifRule | null) => {
     return '🔵 Info';
 };
 
+// renders finding in reviewer friendly way 
 const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: string, commitHash: string) => {
     const rule = findRule(sarif, result.ruleId);
     const rawMessage = result.message?.text ?? '';
     const message = Array.from(new Set(rawMessage.split('\n').map(value => value.trim())))
         .filter(Boolean)
         .join(' ');
+    const title = rule?.shortDescription?.text ?? rule?.name ?? result.ruleId;
+
+    // Find the file path where the vulnerability was found 
     const location = result.locations?.[0]?.physicalLocation;
     const file = toRepoRelativeFile(location?.artifactLocation?.uri ?? '');
     const line = location?.region?.startLine ?? 1;
-    const title = rule?.shortDescription?.text ?? rule?.name ?? result.ruleId;
     const locationUrl = escapeMarkdownUrl(toGitHubBlobUrl(repoUrl, commitHash, file, line));
 
     return `### ${severityIcon(rule)}: ${escapeMarkdownText(title)}
@@ -175,33 +194,32 @@ const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: st
 `;
 };
 
-export const renderFinalReport = ({ sarifPath, repoUrl, commitHash, runUrl }: FinalReportInput) => {
+export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl }: FinalReportInput) => {
     const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null)}
+    ---
+    # Findings
 
----
+    `;
 
-# Findings
-
-`;
-
-    if (!existsSync(sarifPath)) {
+    if (!(await fileExists(sarifPath))) {
         return `${reportHeader}❌ Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
     }
 
-    const sarif = readSarif(sarifPath);
+    const sarif = await readSarif(sarifPath);
     const results = sarifResults(sarif);
 
     if (results.length === 0) {
         return `${reportHeader}✅ No vulnerabilities detected by CodeQL.\n`;
     }
 
+    // shows error findings above warning findings
     const sortedResults = [...results].sort((a, b) => {
         const ruleA = findRule(sarif, a.ruleId);
         const ruleB = findRule(sarif, b.ruleId);
-        
+
         const levelA = getSeverityLevel(ruleA);
         const levelB = getSeverityLevel(ruleB);
-        
+
         if (levelA === 'error' && levelB !== 'error') return -1;
         if (levelA !== 'error' && levelB === 'error') return 1;
         if (levelA === 'warning' && levelB !== 'warning' && levelB !== 'error') return -1;

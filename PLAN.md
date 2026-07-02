@@ -8,7 +8,10 @@ To minimize risk, this will be delivered as a fully functional Proof of Concept 
 ### Key Requirements :
 
 1. **Zero False-Positive on top 20 official plugins:** The pipeline must scan the Top 20 most popular plugins without generating false-positive.
-2. **Threat Detection Verification:** The pipeline should successfully analyze 5-10 purpose-built malicious plugins (demonstrating data exfiltration, RCE, cryptojacking, etc.)
+2. **Threat Detection Verification:** The pipeline should successfully analyze 5-10 purpose-built malicious plugins.
+3. User should be able to run `npm run publish` to open an issue on the joplin test plugin repository for the scan.
+4. The scan on issue submission should work and generate a report in the issue comment for the reviewer to review.
+5. When reviewer confirms the plugin is safe he should be able to start the second workflow by labeling the issue. This workflow will upsert the plugin data in the test registry and the github releases. 
 
 ---
 
