@@ -11,7 +11,7 @@ To minimize risk, this will be delivered as a fully functional Proof of Concept 
 2. **Threat Detection Verification:** The pipeline should successfully analyze 5-10 purpose-built malicious plugins.
 3. User should be able to run `npm run publish` to open an issue on the joplin test plugin repository for the scan.
 4. The scan on issue submission should work and generate a report in the issue comment for the reviewer to review.
-5. When reviewer confirms the plugin is safe he should be able to start the second workflow by labeling the issue. This workflow will upsert the plugin data in the test registry and the github releases. 
+5. When reviewer confirms the plugin is safe he should be able to start the second workflow by labeling the issue. This workflow will upsert the plugin data in the test registry and the github releases.
 
 ---
 
@@ -41,7 +41,7 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
 
 ## 3. Project Schedule :
 
-### Milestone 1: CLI & Authentication Transition
+### Milestone 1: CLI & Authentication Transition (1 PR LEFT)
 
 - **Tasks:**
   - Make sure that the code user is submitting is not broken and has a valid public repository on github.
@@ -50,7 +50,7 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
 
 - **Deliverable:** Developers can run `npm run publish` to authenticate and securely open a submission issue on the test repository.
 
-### Milestone 2: SAST Scanning using CodeQl and Repository update
+### Milestone 2: SAST Scanning using CodeQl and Repository update (UPDATE WORKFLOW LEFT)
 
 - **Tasks:**
   - Integrate the CodeQl scanner with custom rules using our threat model.
@@ -62,7 +62,7 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
     2. _Publish Job:_ Triggered by `status: approved` label; uploads `.jpl` to GitHub Releases and the `/plugin` folder in the repository.
 - **Deliverable:** Automated, structured security reports posted directly to submission issues comments, after review is done add `status: approved` label to get the plugin into the repository.
 
-### Milestone 3: Joplin Plugin Cli update
+### Milestone 3: Joplin Plugin Cli update (1 PR LEFT)
 
 - **Tasks:**
   - Implement "First-Come, First-Served" Plugin ID locking bound to `repository_url`.
@@ -81,6 +81,35 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
 
 ---
 
-## 4. Threat Model and Rules Summary
+## 3. UPCOMMING WEEK SHEDULE :
 
-CodeQl will be used to evaluate plugins against these rules : [RULES.md](.github\\codeql\\rules.md)
+We have 2 PR's to merge :
+
+- 1 in `generator-joplin`
+- 1 in `plugin-repo-cli`
+
+### Week 7 - 8 :
+
+With the end of week 6 we have a complete scanning pipeline to test with custom plugins.
+In week 7, I will create custom plugins that will target the rules intentionally 3-4 rules per plugin to check if the rules are working properly. In case of any changed in the rule, I will retest all the 20 recommended joplin plugins again.
+
+Here on we can also focus on getting the PR for `plugin-repo-cli` merge as the registry update workflow will depend on this pr.
+
+### Week 9 :
+
+With the end of week 8 all the testing will be completed and we will have rules that does what their description says. I will update the official `Plugins-test` repository with the scanning logic and open the test issues for all the test plugin I wrote in the official repository for logs.
+
+I will start working on the update registry workflow with the intented logic (predicting that the pr for `plugin-repo-cli` was merged).
+
+
+### Week 10 - 12 :
+
+With the end of week 9 we will have the logic for the update registry workflow implemented and ready for testing. Now we can be focused on testing the whole scanning + update workflow.
+
+In parallel, from here on we can focus on getting the last pr for `generator-joplin` merged, this can be done at last as it does not conflict or block any of the other code.
+
+---
+
+## 5. Threat Model and Rules Summary
+
+CodeQl will be used to evaluate plugins against these rules : [RULES.md](.github\codeql\rules.md)
