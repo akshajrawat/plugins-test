@@ -28,9 +28,9 @@ const escapeMarkdownUrl = (value: string) => {
 };
 
 const statusLabel = (phase: number, currentPhase: number) => {
-    if (phase < currentPhase) return '[OK]';
-    if (phase === currentPhase) return '[RUNNING]';
-    return '[PENDING]';
+    if (phase < currentPhase) return '✅';
+    if (phase === currentPhase) return '⏳';
+    return '⚪';
 };
 
 // Give the url of current workflow run in actions tab 
@@ -48,7 +48,7 @@ export const getPhases = (currentPhase: number) => {
 
     if (currentPhase > phaseCount) {
         for (let phase = 1; phase <= phaseCount; phase++) {
-            phases[phase] = '[OK]';
+            phases[phase] = '✅';
         }
     }
 
@@ -120,20 +120,39 @@ const sarifResults = (sarif: SarifReport) => {
 const findRule = (sarif: SarifReport, ruleId: string) => {
     for (const run of sarif.runs) {
         const rules = run.tool?.driver?.rules ?? [];
-        const foundRule = rules.find(rule => rule.id === ruleId);
-
+        let foundRule = rules.find(rule => rule.id === ruleId);
+        
         if (foundRule) return foundRule;
+
+        if (run.tool?.extensions) {
+            for (const extension of run.tool.extensions) {
+                const extRules = extension.rules ?? [];
+                foundRule = extRules.find(rule => rule.id === ruleId);
+                if (foundRule) return foundRule;
+            }
+        }
     }
 
     return null;
 };
 
-const severityIcon = (rule: SarifRule | null) => {
-    const severityLevel = rule?.defaultConfiguration?.level ?? 'warning';
+const getSeverityLevel = (rule: SarifRule | null) => {
+    let severityLevel = rule?.defaultConfiguration?.level;
+    
+    if (!severityLevel && rule?.properties?.['problem.severity']) {
+        severityLevel = rule.properties['problem.severity'] === 'error' ? 'error' : 
+                        rule.properties['problem.severity'] === 'warning' ? 'warning' : 'warning';
+    }
+    
+    return severityLevel ?? 'warning';
+};
 
-    if (severityLevel === 'error') return '[CRITICAL]';
-    if (severityLevel === 'warning') return '[WARNING]';
-    return '[INFO]';
+const severityIcon = (rule: SarifRule | null) => {
+    const severityLevel = getSeverityLevel(rule);
+
+    if (severityLevel === 'error') return '🔴 Critical';
+    if (severityLevel === 'warning') return '🟡 Warning';
+    return '🔵 Info';
 };
 
 const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: string, commitHash: string) => {
@@ -166,17 +185,31 @@ export const renderFinalReport = ({ sarifPath, repoUrl, commitHash, runUrl }: Fi
 `;
 
     if (!existsSync(sarifPath)) {
-        return `${reportHeader}[FAILED] Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
+        return `${reportHeader}❌ Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
     }
 
     const sarif = readSarif(sarifPath);
     const results = sarifResults(sarif);
 
     if (results.length === 0) {
-        return `${reportHeader}[OK] No vulnerabilities detected by CodeQL.\n`;
+        return `${reportHeader}✅ No vulnerabilities detected by CodeQL.\n`;
     }
 
-    const findings = results.map(result => renderSarifFinding(sarif, result, repoUrl, commitHash)).join('');
+    const sortedResults = [...results].sort((a, b) => {
+        const ruleA = findRule(sarif, a.ruleId);
+        const ruleB = findRule(sarif, b.ruleId);
+        
+        const levelA = getSeverityLevel(ruleA);
+        const levelB = getSeverityLevel(ruleB);
+        
+        if (levelA === 'error' && levelB !== 'error') return -1;
+        if (levelA !== 'error' && levelB === 'error') return 1;
+        if (levelA === 'warning' && levelB !== 'warning' && levelB !== 'error') return -1;
+        if (levelA !== 'warning' && levelA !== 'error' && levelB === 'warning') return 1;
+        return 0;
+    });
+
+    const findings = sortedResults.map(result => renderSarifFinding(sarif, result, repoUrl, commitHash)).join('');
 
     return `${reportHeader}${findings}`;
 };

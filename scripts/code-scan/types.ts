@@ -84,14 +84,20 @@ export interface SarifRule {
     name?: string;
     shortDescription?: SarifRuleDescription;
     defaultConfiguration?: SarifRuleConfiguration;
+    properties?: Record<string, any>;
 }
 
 export interface SarifDriver {
     rules?: SarifRule[];
 }
 
+export interface SarifExtension {
+    rules?: SarifRule[];
+}
+
 export interface SarifTool {
     driver?: SarifDriver;
+    extensions?: SarifExtension[];
 }
 
 export interface SarifRun {
