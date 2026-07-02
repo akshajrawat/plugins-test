@@ -16,6 +16,19 @@ jobs:
     env:
       SCAN_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/code-scan/scanManager.js
     steps:
+      - name: Acknowledge scan initialization
+        id: ack
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const comment = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "# Security Scan Initializing\nSetting up the scanner and validating the submission payload."
+            });
+            core.setOutput('comment_id', comment.data.id.toString());
+
       - name: Checkout plugins-test registry
         uses: actions/checkout@v7
         with:
@@ -34,18 +47,10 @@ jobs:
           npm ci
           npm run build
 
-      - name: Acknowledge scan initialization
-        id: ack
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const scan = require(process.env.SCAN_MANAGER_PATH);
-            return await scan.acknowledgeScanInitialization({github, context, core});
-
       - name: Pre-flight metadata validation
         id: preflight
         env:
-          ACK_COMMENT_ID: ${{ steps.ack.outputs.result }}
+          ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9
         with:
           script: |
@@ -55,7 +60,7 @@ jobs:
       - name: Phase 1 - Parse payload and initial check
         id: init
         env:
-          INITIAL_COMMENT_ID: ${{ steps.ack.outputs.result }}
+          INITIAL_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9
         with:
           script: |
@@ -157,9 +162,9 @@ jobs:
             );
 
       - name: Handle workflow failure
-        if: failure() && steps.ack.outputs.result && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
+        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
-          ACK_COMMENT_ID: ${{ steps.ack.outputs.result }}
+          ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9
         with:
           script: |
