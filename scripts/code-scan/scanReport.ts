@@ -61,23 +61,20 @@ export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: stri
     const targetUrl = escapeMarkdownUrl(`${repoUrl}/commit/${commitHash}`);
     const workflowRunUrl = escapeMarkdownUrl(runUrl);
 
-    const base = `
-    # Security Scan Report
-    **Target:** [${targetText}](${targetUrl})
-    **Workflow Run:** [View Logs](${workflowRunUrl})
-    `;
+    const base = `# Security Scan Report
+**Target:** [${targetText}](${targetUrl})
+**Workflow Run:** [View Logs](${workflowRunUrl})`;
 
     if (!phases) return base;
 
-    return `
-    ${base}
-    # Pipeline Status
-    * ${phases[1]} **Phase 1: Identity & Uniqueness Check**
-    * ${phases[2]} **Phase 2: Environment Provisioning**
-    * ${phases[3]} **Phase 3: CodeQL Database Compilation**
-    * ${phases[4]} **Phase 4: SAST Taint Analysis**
-    * ${phases[5]} **Phase 5: Final Report Generation**
-    `;
+    return `${base}
+
+# Pipeline Status
+* ${phases[1]} **Phase 1: Identity & Uniqueness Check**
+* ${phases[2]} **Phase 2: Environment Provisioning**
+* ${phases[3]} **Phase 3: CodeQL Database Compilation**
+* ${phases[4]} **Phase 4: SAST Taint Analysis**
+* ${phases[5]} **Phase 5: Final Report Generation**`;
 };
 
 export const extractReportMetadata = (body: string): ReportMetadata => {

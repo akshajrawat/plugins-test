@@ -62,11 +62,9 @@ const failWithIssueComment = async (
     message: string,
 ) => {
     if (commentId) {
-        const body = `
-            # ${heading}
-            ${message}
-            **Workflow Run:** [View Logs](${runUrlFor(context)})
-            `
+        const body = `# ${heading}
+${message}
+**Workflow Run:** [View Logs](${runUrlFor(context)})`;
         await updateComment(github, context, commentId, body);
     }
 
@@ -185,16 +183,13 @@ const closeOwnershipMismatchIssue = async (
     registeredUrl: string,
     repositoryUrl: string,
 ) => {
-    const rejectMsg = `
-    Security reject: plugin ${pluginName} already exists, but the repository URL does not match the registered owner.
-    Expected: ${registeredUrl}
-    Provided: ${repositoryUrl}
-    `;
+    const rejectMsg = `Security reject: plugin ${pluginName} already exists, but the repository URL does not match the registered owner.
+Expected: ${registeredUrl}
+Provided: ${repositoryUrl}`;
 
-    const body = `
-    ${commentBody}
-    ${rejectMsg}
-    `
+    const body = `${commentBody}
+
+${rejectMsg}`;
 
     await updateComment(github, context, commentId, body);
 
@@ -240,10 +235,8 @@ const findSourceFiles = (root: string) => {
 
 // Created a comment in the issue body to indicate the scanning workflow has been started 
 export const acknowledgeScanInitialization = async ({ github, context }: GithubContext) => {
-    const body = `
-    # Security Scan Initializing
-    Setting up the scanner and validating the submission payload.
-    `
+    const body = `# Security Scan Initializing
+Setting up the scanner and validating the submission payload.`;
     const comment = await github.rest.issues.createComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
