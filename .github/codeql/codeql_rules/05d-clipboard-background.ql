@@ -40,4 +40,4 @@ where
   call.getReceiver().getALocalSource() = Joplin::clipboard() and
   (call.getMethodName() = "readText" or call.getMethodName() = "writeText" or call.getMethodName() = "writeHtml") and
   inAnyLoop(call)
-select call, "Silent Clipboard Access: The plugin is reading or writing the clipboard inside a loop or background interval. \\n**Reviewer Action:** This is a severe threat indicator for silent clipboard hijacking or monitoring. Verify that the user has explicitly authorized this continuous access."
+select call, "Silent Clipboard Access: The plugin is reading or writing the clipboard inside a loop or background interval. This is a threat indicator for silent clipboard hijacking or monitoring."

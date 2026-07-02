@@ -43,4 +43,4 @@ import DataExfil::PathGraph
 
 from DataExfil::PathNode source, DataExfil::PathNode sink
 where DataExfil::flowPath(source, sink)
-select sink.getNode(), source, sink, "Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. \\n**Reviewer Action:** Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload and ensure the destination server is trusted and expected by the user."
+select sink.getNode(), source, sink, "Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload."

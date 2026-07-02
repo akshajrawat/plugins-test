@@ -39,4 +39,4 @@ import UnsafeDestFlow::PathGraph
 
 from UnsafeDestFlow::PathNode source, UnsafeDestFlow::PathNode sink
 where UnsafeDestFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Unsafe Extraction Destination: An archive is being extracted into an unsafe path derived from user input, system environment variables, or hardcoded absolute paths. \\n**Reviewer Action:** Extraction paths must be strictly isolated inside `joplin.plugins.dataDir()`. Reject this if it risks overwriting user configuration files or core Joplin application data."
+select sink.getNode(), source, sink, "Unsafe Extraction Destination: An archive is being extracted into an unsafe path derived from user input, system environment variables, or hardcoded absolute paths. Reject this if it risks overwriting user configuration files or core Joplin application data."

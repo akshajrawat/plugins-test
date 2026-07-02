@@ -36,4 +36,4 @@ from SelfModFlow::PathNode source, SelfModFlow::PathNode sink
 where 
   SelfModFlow::flowPath(source, sink) and
   targetsPluginFile(sink.getNode())
-select sink.getNode(), source, sink, "Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. \\n**Reviewer Action:** This is a critical security violation. A plugin should never modify its own packaged files in `installationDir`."
+select sink.getNode(), source, sink, "Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files."

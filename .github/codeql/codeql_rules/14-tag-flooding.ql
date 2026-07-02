@@ -130,14 +130,14 @@ where
     call = Joplin::data().getAMethodCall("post") and
     isTargetPath(call.getArgument(0)) and
     inUnboundedLoop(call) and
-    msg = "Resource Exhaustion (Flooding): The plugin is creating tags, notes, or resources from an unbounded or background loop. \\n**Reviewer Action:** This can damage Joplin's search index and exhaust storage quotas. Require a finite cap or user-bounded input before allowing this behavior."
+    msg = "Resource Exhaustion: The plugin is creating tags, notes, or resources from an unbounded or background loop. Ensure loops have finite execution limits."
   )
   or
   (
     // 2. ANY file write inside an UNBOUNDED loop
     isFileWrite(call) and
     inUnboundedLoop(call) and
-    msg = "Disk Quota Exhaustion: The plugin is writing to the filesystem inside an unbounded or infinite loop. \\n**Reviewer Action:** This will rapidly exhaust disk space. Ensure loops have finite execution limits."
+    msg = "Disk Quota Exhaustion: The plugin is writing to the filesystem inside an unbounded or infinite loop. This will rapidly exhaust disk space. Ensure loops have finite execution limits."
   )
   or
   (
@@ -145,6 +145,6 @@ where
     isFileWrite(call) and
     isLargeWritePayload(call.getArgument(1).getALocalSource()) and
     inAnyLoop(call) and
-    msg = "Disk Quota Exhaustion: The plugin is writing large chunks of data to the filesystem inside a loop. \\n**Reviewer Action:** Verify this is intended user-initiated behavior and won't overwhelm local storage."
+    msg = "Disk Quota Exhaustion: The plugin is writing large chunks of data to the filesystem inside a loop. Verify this is intended user-initiated behavior and won't overwhelm local storage."
   )
 select call, msg

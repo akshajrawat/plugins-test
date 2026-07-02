@@ -69,7 +69,7 @@ from CryptojackFlow::PathNode source, CryptojackFlow::PathNode sink, string msg
 where CryptojackFlow::flowPath(source, sink) and
   (
     if isElevatedSpawn(sink.getNode())
-    then msg = "[ELEVATED SEVERITY] High-Risk Execution: The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. \\n**Reviewer Action:** This is a critical threat indicator. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately audit the command payload for malware or resource hijacking."
-    else msg = "High-Risk Execution: The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. \\n**Reviewer Action:** This is a severe threat indicator. Immediately audit the command payload to ensure it is not silently installing malware or hijacking CPU resources."
+    then msg = "The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately verify the command payload for malware or resource hijacking."
+    else msg = "The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. Immediately check the command payload to ensure it is not silently installing malware or hijacking resources."
   )
 select sink.getNode(), source, sink, msg

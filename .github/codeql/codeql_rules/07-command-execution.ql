@@ -51,4 +51,4 @@ import CommandExecFlow::PathGraph
 
 from CommandExecFlow::PathNode source, CommandExecFlow::PathNode sink
 where CommandExecFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Terminal Command Execution: Generic data, Joplin data, settings, or message callback input is passed to a child_process command or argument. \\n**Reviewer Action:** Note: this is the broadest, lowest-specificity command-execution check. Review the executed command to ensure the inputs are properly sanitized against command injection."
+select sink.getNode(), source, sink, "Terminal Command Execution: This code executes an external terminal command."

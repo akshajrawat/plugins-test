@@ -62,4 +62,4 @@ import UrlSmugglingFlow::PathGraph
 
 from UrlSmugglingFlow::PathNode source, UrlSmugglingFlow::PathNode sink
 where UrlSmugglingFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src=\"https://...\"`) in a Webview. \\n**Reviewer Action:** This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch."
+select sink.getNode(), source, sink, "URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src=\"https://...\"`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch."

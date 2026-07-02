@@ -58,7 +58,7 @@ where
   not SafeFsDestinationFlow::flow(_, sink.getNode()) and
   (
     if source.getNode().(DataFlow::CallNode).getCalleeName() = "tmpdir"
-    then (msg = "Temporary Directory Access: The plugin is writing to `os.tmpdir()`. \\n**Reviewer Action:** Check if this is a temporary file creation. If it is used for persistent writes, move it to `joplin.plugins.dataDir()`." and severity = "warning")
-    else (msg = "Unauthorized File System Access: The plugin is using path-revealing variables (like `__dirname` or `process.cwd`) to write, modify, or delete files outside of the safe Joplin sandbox. \\n**Reviewer Action:** Plugins must exclusively use `joplin.plugins.dataDir()` for persistent file storage." and severity = "error")
+    then (msg = "Temporary Directory Access: The plugin is writing to `os.tmpdir()`. Check if this is a temporary file creation. If it is used for persistent writes, move it to `joplin.plugins.dataDir()`." and severity = "warning")
+    else (msg = "Unauthorized File System Access: The plugin is using path-revealing variables (like `__dirname` or `process.cwd`) to write, modify, or delete files outside of the safe Joplin sandbox. Plugins must exclusively use `joplin.plugins.dataDir()` for persistent file storage." and severity = "error")
   )
 select sink.getNode(), source, sink, msg

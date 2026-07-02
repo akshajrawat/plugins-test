@@ -108,4 +108,4 @@ import DynCodeExecFlow::PathGraph
 
 from DynCodeExecFlow::PathNode source, DynCodeExecFlow::PathNode sink
 where DynCodeExecFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Remote data flows to dynamic code execution. \\n**Reviewer Action:** Verify if the endpoint is a trusted Joplin service or a remote server. If code execution is intended, check for strict code signing, content-hash validation, or sandboxing to ensure an attacker cannot inject arbitrary payloads via the network."
+select sink.getNode(), source, sink, "Remote data flows to dynamic code execution. If code execution is intended, check for hash validation or sandboxing."

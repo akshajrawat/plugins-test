@@ -24,4 +24,4 @@ import ClipboardExfiltrationFlow::PathGraph
 
 from ClipboardExfiltrationFlow::PathNode source, ClipboardExfiltrationFlow::PathNode sink
 where ClipboardExfiltrationFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. \\n**Reviewer Action:** This is a severe privacy violation. Verify why the plugin needs to transmit clipboard contents and ensure the user explicitly authorized this data transfer."
+select sink.getNode(), source, sink, "Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network."

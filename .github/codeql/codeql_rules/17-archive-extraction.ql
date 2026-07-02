@@ -71,4 +71,4 @@ import UntrustedArchiveFlow::PathGraph
 
 from UntrustedArchiveFlow::PathNode source, UntrustedArchiveFlow::PathNode sink
 where UntrustedArchiveFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination without an apparent integrity check. \\n**Reviewer Action:** This can lead to arbitrary file overwrites. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping."
+select sink.getNode(), source, sink, "Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping."

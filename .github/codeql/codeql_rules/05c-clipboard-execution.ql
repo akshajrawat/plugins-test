@@ -35,4 +35,4 @@ import ClipboardExecutionFlow::PathGraph
 
 from ClipboardExecutionFlow::PathNode source, ClipboardExecutionFlow::PathNode sink
 where ClipboardExecutionFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink. \\n**Reviewer Action:** This is extremely dangerous. An attacker can hijack the user's clipboard via another application, and when the user switches to Joplin, this plugin will execute the malicious clipboard payload."
+select sink.getNode(), source, sink, "Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink."

@@ -1,0 +1,104 @@
+export type GithubClient = any;
+export type GithubActionContext = any;
+export type GithubActionCore = any;
+
+export interface GithubApiContext {
+    github: GithubClient;
+    context: GithubActionContext;
+}
+
+export interface GithubContext extends GithubApiContext {
+    core: GithubActionCore;
+}
+
+export interface SubmissionPayload {
+    plugin_name: string;
+    repository_url: string;
+    commit_hash: string;
+}
+
+export interface ValidationSuccess {
+    ok: true;
+    payload: SubmissionPayload;
+}
+
+export interface ValidationFailure {
+    ok: false;
+    error: string;
+}
+
+export type ValidationResult = ValidationSuccess | ValidationFailure;
+
+export type PhaseMap = Record<number, string>;
+
+export interface ReportMetadata {
+    repoUrl: string;
+    commitHash: string;
+    runUrl: string;
+}
+
+export interface FinalReportInput {
+    sarifPath: string;
+    repoUrl: string;
+    commitHash: string;
+    runUrl: string;
+}
+
+export interface SarifMessage {
+    text?: string;
+}
+
+export interface SarifArtifactLocation {
+    uri?: string;
+}
+
+export interface SarifRegion {
+    startLine?: number;
+}
+
+export interface SarifPhysicalLocation {
+    artifactLocation?: SarifArtifactLocation;
+    region?: SarifRegion;
+}
+
+export interface SarifLocation {
+    physicalLocation?: SarifPhysicalLocation;
+}
+
+export interface SarifResult {
+    ruleId: string;
+    message?: SarifMessage;
+    locations?: SarifLocation[];
+}
+
+export interface SarifRuleDescription {
+    text?: string;
+}
+
+export interface SarifRuleConfiguration {
+    level?: string;
+}
+
+export interface SarifRule {
+    id: string;
+    name?: string;
+    shortDescription?: SarifRuleDescription;
+    defaultConfiguration?: SarifRuleConfiguration;
+}
+
+export interface SarifDriver {
+    rules?: SarifRule[];
+}
+
+export interface SarifTool {
+    driver?: SarifDriver;
+}
+
+export interface SarifRun {
+    results?: SarifResult[];
+    tool?: SarifTool;
+}
+
+export interface SarifReport {
+    runs: SarifRun[];
+}

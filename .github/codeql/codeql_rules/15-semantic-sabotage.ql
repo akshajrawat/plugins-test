@@ -45,4 +45,4 @@ where
   isWorkspaceHookCallback(cb) and
   isNoteMutation(call) and
   callInsideCallback(call, cb)
-select call, "Semantic Sabotage: The plugin is mutating or deleting notes directly inside a workspace event hook (e.g., `onNoteSelectionChange`). \\n**Reviewer Action:** Modifying a note the exact moment a user views or edits it can mimic \"gaslighting\" malware. Ensure these modifications are expected, visible formatting changes (like an auto-linter), not destructive silent edits."
+select call, "The plugin is mutating or deleting notes directly inside a workspace event hook (e.g., `onNoteSelectionChange`). Modifying a note the exact moment a user views or edits it can mimic \"gaslighting\" malware. Ensure these modifications are expected, visible formatting changes, not destructive silent edits."

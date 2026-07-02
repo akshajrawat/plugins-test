@@ -43,4 +43,4 @@ import SecretTheftFlow::PathGraph
 
 from SecretTheftFlow::PathNode source, SecretTheftFlow::PathNode sink
 where SecretTheftFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Critical Security Alert: Sensitive configuration data (such as a master password, sync cache, encryption keys, or API tokens) is flowing directly to an external or untrusted sink. \\n**Reviewer Action:** This is highly suspicious behavior. Confirm whether the plugin has a legitimate, fully disclosed reason to touch credentials. Note: In current versions of Joplin, highly secure settings may return `undefined` to plugins at runtime via `Setting.isSecureKey`. However, any proven taint flow of these settings is still a strong indicator of malicious intent or dangerous credential mishandling."
+select sink.getNode(), source, sink, "Critical Security Alert: Sensitive configuration data (such as a master password, sync cache, encryption keys, or API tokens) is flowing directly to an external or untrusted sink. This is highly suspicious behavior. Confirm whether the plugin has a legitimate, fully disclosed reason to touch credentials."

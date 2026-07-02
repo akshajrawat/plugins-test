@@ -93,13 +93,13 @@ where
       sinkNode = userDataSetCall.getAnArgument() and
       userDataSetCall = Joplin::data().getAMethodCall("userDataSet") and
       not isSameItemCorrelated(getCall, userDataSetCall) and
-      msg = "Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. \\n**Reviewer Action:** This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect."
+      msg = "Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect."
     )
     or
     (
       UserDataExecConfig::isSource(sourceNode) and
       UserDataExecConfig::isSink(sinkNode) and
-      msg = "Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. \\n**Reviewer Action:** This is highly dangerous. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE) or exfiltration trigger."
+      msg = "Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE)."
     )
   )
 select sinkNode, source, sink, msg

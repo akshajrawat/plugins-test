@@ -1,238 +1,419 @@
-import { existsSync, readFileSync } from 'fs';
+import {
+    existsSync,
+    readFileSync,
+    readdirSync,
+    statSync,
+} from 'fs';
+import { join, relative, resolve, sep } from 'path';
+import {
+    extractReportMetadata,
+    getPhases,
+    renderFinalReport,
+    runUrlFor,
+    statusTemplate,
+} from './scanReport';
+import type {
+    GithubApiContext,
+    GithubContext,
+    SubmissionPayload,
+    ValidationResult,
+} from './types';
 
-type PhaseMap = Record<number, string>;
+const ignoredSourceDirectories = new Set([
+    '.git',
+    '.github',
+    'build',
+    'coverage',
+    'dist',
+    'node_modules',
+    'out',
+    'test',
+    'tests',
+]);
 
-const statusTemplate = (repoUrl: string, commitHash: string, runUrl: string, phases: PhaseMap | null) => {
-    let base = `# 🛡️Security Scan Report
+const sourceFilePattern = /\.(cjs|cts|js|jsx|mjs|mts|ts|tsx)$/i;
 
-**Target:** [${repoUrl}/commit/${commitHash}](${repoUrl}/commit/${commitHash})
-**Workflow Run:** [View Logs](${runUrl})
-`;
-    if (phases) {
-        base += `
-# ⏳ Pipeline Status
-* ${phases[1]} **Phase 1: Identity & Uniqueness Check**
-* ${phases[2]} **Phase 2: Environment Provisioning**
-* ${phases[3]} **Phase 3: CodeQL Database Compilation**
-* ${phases[4]} **Phase 4: SAST Taint Analysis**
-* ${phases[5]} **Phase 5: Final Report Generation**
-`;
-    }
-    return base;
+const canonicalRepositoryUrl = (url: string) => {
+    return url.trim().replace(/\/+$/, '').replace(/\.git$/i, '');
 };
 
-const getPhases = (currentPhase: number): PhaseMap => {
-    const phases: PhaseMap = {};
-    for (let i = 1; i <= 5; i++) {
-        if (i < currentPhase) phases[i] = '✅';
-        else if (i === currentPhase) phases[i] = '🔄';
-        else phases[i] = '⚪';
-    }
-    if (currentPhase > 5) {
-        for (let i = 1; i <= 5; i++) phases[i] = '✅';
-    }
-    return phases;
+const normalizeUrl = (url: string) => {
+    return canonicalRepositoryUrl(url).toLowerCase();
 };
 
-const normalizeUrl = (url: string): string => {
-    return url.replace(/\/$/, '').toLowerCase();
+const repoNameFromUrl = (repositoryUrl: string) => {
+    const urlParts = normalizeUrl(repositoryUrl).split('/');
+    return urlParts.slice(-2).join('/');
 };
 
-interface GithubContext {
-    github: any;
-    context: any;
-    core: any;
-}
+const updateComment = async (github: any, context: any, commentId: string | number, body: string) => {
+    await github.rest.issues.updateComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: typeof commentId === 'number' ? commentId : parseInt(commentId, 10),
+        body,
+    });
+};
 
-export const initialize = async ({ github, context, core }: GithubContext) => {
-    const issueBody = context.payload.issue.body;
-    const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+const failWithIssueComment = async (
+    { github, context, core }: GithubContext,
+    commentId: string | undefined,
+    heading: string,
+    message: string,
+) => {
+    if (commentId) {
+        await updateComment(
+            github,
+            context,
+            commentId,
+            `# ${heading}
 
-    const initialCommentId = process.env.INITIAL_COMMENT_ID;
-    const failWithComment = async (msg: string) => {
-        if (initialCommentId) {
-            await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: parseInt(initialCommentId, 10),
-                body: `❌ **Security Scan Failed**\n\n${msg}\n\n**Workflow Run:** [View Logs](${runUrl})`
-            });
-        }
-        core.setOutput('handled_failure', 'true');
-        core.setFailed(msg);
-        return { should_proceed: false };
-    };
+${message}
 
-    const jsonMatch = issueBody.match(/```json\s*([\s\S]*?)\s*```/);
+**Workflow Run:** [View Logs](${runUrlFor(context)})`,
+        );
+    }
+
+    core.setOutput('handled_failure', 'true');
+    core.setFailed(message);
+
+    return { should_proceed: false };
+};
+
+const parseIssuePayload = (body: string | null | undefined): ValidationResult => {
+    const jsonMatch = (body ?? '').match(/```json\s*([\s\S]*?)\s*```/);
+
     if (!jsonMatch) {
-        return await failWithComment("Could not find JSON payload in the issue body. Please ensure you included a \`\`\`json block.");
+        return {
+            ok: false,
+            error: 'Could not find a JSON payload in the issue body. Include a fenced ```json block.',
+        };
     }
 
-    let payload: any;
+    let payload: Partial<SubmissionPayload>;
+
     try {
-        payload = JSON.parse(jsonMatch[1]);
-    } catch (e) {
-        return await failWithComment("Invalid JSON payload. Please check for syntax errors.");
+        payload = JSON.parse(jsonMatch[1]) as Partial<SubmissionPayload>;
+    } catch {
+        return {
+            ok: false,
+            error: 'Invalid JSON payload. Check the fenced JSON block for syntax errors.',
+        };
     }
 
     const { plugin_name, repository_url, commit_hash } = payload;
 
     if (!plugin_name || !repository_url || !commit_hash) {
-        return await failWithComment("Missing required fields in payload. Ensure \`plugin_name\`, \`repository_url\`, and \`commit_hash\` are provided.");
+        return {
+            ok: false,
+            error: 'Missing required fields. Provide plugin_name, repository_url, and commit_hash.',
+        };
     }
 
+    const urlRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?\/?$/;
+
+    if (!urlRegex.test(repository_url)) {
+        return {
+            ok: false,
+            error: `Invalid repository URL: ${repository_url}. It must be a GitHub repository URL.`,
+        };
+    }
+
+    const hashRegex = /^[a-fA-F0-9]{40}$/;
+
+    if (!hashRegex.test(commit_hash)) {
+        return {
+            ok: false,
+            error: `Invalid commit hash: ${commit_hash}. It must be a full 40-character SHA-1 hash.`,
+        };
+    }
+
+    return {
+        ok: true,
+        payload: {
+            plugin_name,
+            repository_url: canonicalRepositoryUrl(repository_url),
+            commit_hash,
+        },
+    };
+};
+
+const validateTitle = (title: string | null | undefined) => {
+    const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9.]+.*$/;
+
+    if (titleRegex.test(title ?? '')) return '';
+
+    return 'Invalid issue title format. It must begin with [Plugin Submission] and include the plugin name and version.';
+};
+
+const getRegistryPath = (relativePath: string) => {
+    const workspace = process.env.GITHUB_WORKSPACE;
+    const candidates = [
+        workspace ? resolve(workspace, 'plugins-test', relativePath) : '',
+        resolve(process.cwd(), 'plugins-test', relativePath),
+        resolve(process.cwd(), relativePath),
+        resolve(__dirname, '..', '..', relativePath),
+    ].filter(Boolean);
+
+    return candidates.find(candidate => existsSync(candidate)) ?? candidates[0];
+};
+
+const existingPluginFor = (pluginName: string) => {
+    const manifestsPath = getRegistryPath('manifests.json');
+
+    if (!existsSync(manifestsPath)) return null;
+
+    const manifests = JSON.parse(readFileSync(manifestsPath, 'utf8'));
+    const directlyRegisteredPlugin = manifests[pluginName];
+
+    if (directlyRegisteredPlugin) return directlyRegisteredPlugin;
+
+    for (const pluginId in manifests) {
+        const plugin = manifests[pluginId];
+
+        if (plugin.name === pluginName) return plugin;
+    }
+
+    return null;
+};
+
+const closeOwnershipMismatchIssue = async (
+    { github, context, core }: GithubContext,
+    commentId: number,
+    commentBody: string,
+    pluginName: string,
+    registeredUrl: string,
+    repositoryUrl: string,
+) => {
+    const rejectMsg = `Security reject: plugin ${pluginName} already exists, but the repository URL does not match the registered owner.
+
+Expected: ${registeredUrl}
+Provided: ${repositoryUrl}`;
+
+    await updateComment(github, context, commentId, `${commentBody}
+
+${rejectMsg}`);
+
+    await github.rest.issues.update({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        state: 'closed',
+    });
+
+    core.setOutput('handled_failure', 'true');
+    core.setFailed('Ownership mismatch. Issue closed.');
+};
+
+const isInside = (parent: string, child: string) => {
+    const relativePath = relative(parent, child);
+    return relativePath === '' || (!relativePath.startsWith('..') && !relativePath.startsWith(sep));
+};
+
+const findSourceFiles = (root: string) => {
+    const files: string[] = [];
+
+    const visit = (directory: string) => {
+        for (const entry of readdirSync(directory, { withFileTypes: true })) {
+            if (entry.isDirectory()) {
+                if (!ignoredSourceDirectories.has(entry.name)) {
+                    visit(join(directory, entry.name));
+                }
+
+                continue;
+            }
+
+            if (entry.isFile() && sourceFilePattern.test(entry.name)) {
+                files.push(join(directory, entry.name));
+            }
+        }
+    };
+
+    visit(root);
+
+    return files;
+};
+
+export const acknowledgeScanInitialization = async ({ github, context }: GithubContext) => {
+    const comment = await github.rest.issues.createComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        body: `# Security Scan Initializing
+
+Setting up the scanner and validating the submission payload.`,
+    });
+
+    return comment.data.id;
+};
+
+export const preflightMetadataValidation = async ({ github, context, core }: GithubContext) => {
+    const titleError = validateTitle(context.payload.issue.title);
+
+    if (titleError) {
+        return await failWithIssueComment(
+            { github, context, core },
+            process.env.ACK_COMMENT_ID,
+            'Security Scan Rejected',
+            titleError,
+        );
+    }
+
+    const validation = parseIssuePayload(context.payload.issue.body);
+
+    if ('error' in validation) {
+        return await failWithIssueComment(
+            { github, context, core },
+            process.env.ACK_COMMENT_ID,
+            'Security Scan Rejected',
+            validation.error,
+        );
+    }
+
+    core.setOutput('handled_failure', 'false');
+
+    return { should_proceed: true };
+};
+
+export const initialize = async ({ github, context, core }: GithubContext) => {
+    const validation = parseIssuePayload(context.payload.issue.body);
+    const initialCommentId = process.env.INITIAL_COMMENT_ID;
+
+    if ('error' in validation) {
+        return await failWithIssueComment(
+            { github, context, core },
+            initialCommentId,
+            'Security Scan Failed',
+            validation.error,
+        );
+    }
+
+    const { plugin_name, repository_url, commit_hash } = validation.payload;
+    const runUrl = runUrlFor(context);
     const phases = getPhases(1);
     const commentBody = statusTemplate(repository_url, commit_hash, runUrl, phases);
 
-    let comment;
-    if (initialCommentId) {
-        comment = await github.rest.issues.updateComment({
+    const comment = initialCommentId
+        ? await github.rest.issues.updateComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             comment_id: parseInt(initialCommentId, 10),
-            body: commentBody
-        });
-    } else {
-        comment = await github.rest.issues.createComment({
+            body: commentBody,
+        })
+        : await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: commentBody
+            body: commentBody,
         });
+
+    const existingPlugin = existingPluginFor(plugin_name);
+    const registeredUrl = existingPlugin?.repository_url;
+
+    if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
+        await closeOwnershipMismatchIssue(
+            { github, context, core },
+            comment.data.id,
+            commentBody,
+            plugin_name,
+            registeredUrl,
+            repository_url,
+        );
+
+        return { should_proceed: false };
     }
 
-    const manifestsPath = './plugins-test/manifests.json';
-    if (existsSync(manifestsPath)) {
-        const manifests = JSON.parse(readFileSync(manifestsPath, 'utf8'));
-
-        let existingPlugin = manifests[plugin_name];
-        if (!existingPlugin) {
-            for (const key in manifests) {
-                if (manifests[key].name === plugin_name) {
-                    existingPlugin = manifests[key];
-                    break;
-                }
-            }
-        }
-
-        if (existingPlugin) {
-            const registeredUrl = existingPlugin.repository_url;
-            if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
-                const rejectMsg = `🚨 **Security Reject:** Plugin \`${plugin_name}\` already exists, but the repository URL does not match the registered owner.\n\nExpected: ${registeredUrl}\nProvided: ${repository_url}`;
-                await github.rest.issues.updateComment({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    comment_id: comment.data.id,
-                    body: commentBody + `\n\n${rejectMsg}`
-                });
-                await github.rest.issues.update({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    issue_number: context.issue.number,
-                    state: 'closed'
-                });
-                core.setOutput('handled_failure', 'true');
-                core.setFailed("Ownership mismatch. Issue closed.");
-                return { should_proceed: false };
-            }
-        }
-    }
-
-    const urlParts = normalizeUrl(repository_url).split('/');
-    let repoName = urlParts.slice(-2).join('/');
-    repoName = repoName.replace(/\.git$/, '');
+    const repoName = repoNameFromUrl(repository_url);
 
     core.setOutput('repository_url', repository_url);
     core.setOutput('commit_hash', commit_hash);
     core.setOutput('repo_name', repoName);
     core.setOutput('comment_id', comment.data.id.toString());
     core.setOutput('should_proceed', 'true');
+    core.setOutput('handled_failure', 'false');
 
     return {
         repository_url,
         commit_hash,
         repo_name: repoName,
         comment_id: comment.data.id,
-        should_proceed: true
+        should_proceed: true,
     };
 };
 
-export const updatePhase = async ({ github, context }: Partial<GithubContext>, comment_id: string, phase: number) => {
+export const updatePhase = async ({ github, context }: GithubApiContext, commentId: string, phase: number) => {
     const comment = await github.rest.issues.getComment({
-        owner: (context as any).repo.owner,
-        repo: (context as any).repo.repo,
-        comment_id: parseInt(comment_id, 10)
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: parseInt(commentId, 10),
     });
-
-    const body = comment.data.body;
-    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/commit\//);
-    const repoUrl = repoUrlMatch ? repoUrlMatch[1] : '';
-    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/commit\/([^\]]+)\]/);
-    const commitHash = commitHashMatch ? commitHashMatch[1] : '';
-    const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
-    const runUrl = runUrlMatch ? runUrlMatch[1] : '';
-
+    const metadata = extractReportMetadata(comment.data.body);
     const phases = getPhases(phase);
-    const newHeader = statusTemplate(repoUrl, commitHash, runUrl, phases);
+    const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, phases);
 
-    await github.rest.issues.updateComment({
-        owner: (context as any).repo.owner,
-        repo: (context as any).repo.repo,
-        comment_id: parseInt(comment_id, 10),
-        body: newHeader
-    });
+    await updateComment(github, context, commentId, newHeader);
 };
 
-export const generateFinalReport = async ({ github, context }: Partial<GithubContext>, comment_id: string, sarifPath: string, repoUrl: string, commitHash: string) => {
-    const runUrl = `${(context as any).serverUrl}/${(context as any).repo.owner}/${(context as any).repo.repo}/actions/runs/${(context as any).runId}`;
-    let body = statusTemplate(repoUrl, commitHash, runUrl, null) + `\n\n---\n\n# Findings\n\n`;
+export const validateTargetRepository = async (
+    { github, context, core }: GithubContext,
+    commentId: string,
+    targetPath: string,
+) => {
+    const workspace = process.env.GITHUB_WORKSPACE ? resolve(process.env.GITHUB_WORKSPACE) : resolve(process.cwd());
+    const targetRoot = resolve(workspace, targetPath);
 
-    if (existsSync(sarifPath)) {
-        const sarif = JSON.parse(readFileSync(sarifPath, 'utf8'));
-        let results: any[] = [];
-        sarif.runs.forEach((run: any) => {
-            if (run.results) {
-                results = results.concat(run.results);
-            }
-        });
-
-        if (results && results.length > 0) {
-            results.forEach(result => {
-                const ruleId = result.ruleId;
-                const rawMessage = result.message.text || '';
-                const message = Array.from(new Set(rawMessage.split('\n').map((s: string) => s.trim()))).filter(Boolean).join(' ');
-                const location = result.locations[0].physicalLocation;
-                const file = location.artifactLocation.uri;
-                const line = location.region.startLine;
-
-                let rule: any = null;
-                sarif.runs.forEach((run: any) => {
-                    if (run.tool.driver.rules) {
-                        const found = run.tool.driver.rules.find((r: any) => r.id === ruleId);
-                        if (found) rule = found;
-                    }
-                });
-
-                const severityLevel = rule?.defaultConfiguration?.level || 'warning';
-                const icon = severityLevel === 'error' ? '🔴 CRITICAL' : (severityLevel === 'warning' ? '🟡 WARNING' : '🔵 INFO');
-                const title = rule?.shortDescription?.text || rule?.name || ruleId;
-
-                body += `### ${icon}: ${title}\n`;
-                body += `* **Rule Violated:** \`${ruleId}\`\n`;
-                body += `* **Flagged For:** ${message}\n`;
-                body += `* **Location:** [\`${file}#L${line}\`](${repoUrl}/blob/${commitHash}/${file}#L${line})\n\n`;
-            });
-        } else {
-            body += `✅ **No vulnerabilities detected by CodeQL.**\n`;
-        }
-    } else {
-        body += `❌ **Failed to generate SARIF report or CodeQL analysis failed.**\n`;
+    if (!isInside(workspace, targetRoot) || !existsSync(targetRoot) || !statSync(targetRoot).isDirectory()) {
+        return await failWithIssueComment(
+            { github, context, core },
+            commentId,
+            'Security Scan Failed',
+            `Target repository path is invalid: ${targetPath}`,
+        );
     }
 
-    await github.rest.issues.updateComment({
-        owner: (context as any).repo.owner,
-        repo: (context as any).repo.repo,
-        comment_id: parseInt(comment_id, 10),
-        body: body
+    const sourceFiles = findSourceFiles(targetRoot);
+
+    if (sourceFiles.length === 0) {
+        return await failWithIssueComment(
+            { github, context, core },
+            commentId,
+            'Security Scan Rejected',
+            'The target repository does not contain JavaScript or TypeScript source files outside generated/test directories.',
+        );
+    }
+
+    core.setOutput('source_file_count', sourceFiles.length.toString());
+    core.setOutput('handled_failure', 'false');
+
+    return { source_file_count: sourceFiles.length };
+};
+
+export const generateFinalReport = async (
+    { github, context }: GithubApiContext,
+    commentId: string,
+    sarifPath: string,
+    repoUrl: string,
+    commitHash: string,
+) => {
+    const body = renderFinalReport({
+        sarifPath,
+        repoUrl,
+        commitHash,
+        runUrl: runUrlFor(context),
     });
+
+    await updateComment(github, context, commentId, body);
+};
+
+export const handleWorkflowFailure = async ({ github, context }: GithubApiContext, commentId: string) => {
+    await updateComment(
+        github,
+        context,
+        commentId,
+        `# Security Scan Failed
+
+The workflow encountered a system error before it could complete.
+
+**Workflow Run:** [View Logs](${runUrlFor(context)})`,
+    );
 };

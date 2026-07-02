@@ -1,0 +1,181 @@
+import { existsSync, readFileSync } from 'fs';
+import type {
+    FinalReportInput,
+    GithubActionContext,
+    PhaseMap,
+    ReportMetadata,
+    SarifReport,
+    SarifRule,
+    SarifResult,
+} from './types';
+
+const phaseCount = 5;
+const targetPluginPathMarker = '/target-plugin/';
+
+const escapeMarkdownText = (value: string) => {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+};
+
+const escapeInlineCode = (value: string) => {
+    return value.replace(/`/g, '\\`');
+};
+
+const escapeMarkdownUrl = (value: string) => {
+    return value.replace(/\(/g, '%28').replace(/\)/g, '%29');
+};
+
+const statusLabel = (phase: number, currentPhase: number) => {
+    if (phase < currentPhase) return '[OK]';
+    if (phase === currentPhase) return '[RUNNING]';
+    return '[PENDING]';
+};
+
+export const runUrlFor = (context: GithubActionContext) => {
+    return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+};
+
+export const getPhases = (currentPhase: number) => {
+    const phases: PhaseMap = {};
+
+    for (let phase = 1; phase <= phaseCount; phase++) {
+        phases[phase] = statusLabel(phase, currentPhase);
+    }
+
+    if (currentPhase > phaseCount) {
+        for (let phase = 1; phase <= phaseCount; phase++) {
+            phases[phase] = '[OK]';
+        }
+    }
+
+    return phases;
+};
+
+export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: string, phases: PhaseMap | null) => {
+    const targetText = escapeMarkdownText(`${repoUrl}/commit/${commitHash}`);
+    const targetUrl = escapeMarkdownUrl(`${repoUrl}/commit/${commitHash}`);
+    const workflowRunUrl = escapeMarkdownUrl(runUrl);
+
+    const base = `# Security Scan Report
+
+**Target:** [${targetText}](${targetUrl})
+**Workflow Run:** [View Logs](${workflowRunUrl})
+`;
+
+    if (!phases) return base;
+
+    return `${base}
+# Pipeline Status
+* ${phases[1]} **Phase 1: Identity & Uniqueness Check**
+* ${phases[2]} **Phase 2: Environment Provisioning**
+* ${phases[3]} **Phase 3: CodeQL Database Compilation**
+* ${phases[4]} **Phase 4: SAST Taint Analysis**
+* ${phases[5]} **Phase 5: Final Report Generation**
+`;
+};
+
+export const extractReportMetadata = (body: string): ReportMetadata => {
+    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/commit\//);
+    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/commit\/([^\]]+)\]/);
+    const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
+
+    return {
+        repoUrl: repoUrlMatch ? repoUrlMatch[1] : '',
+        commitHash: commitHashMatch ? commitHashMatch[1] : '',
+        runUrl: runUrlMatch ? runUrlMatch[1] : '',
+    };
+};
+
+const toRepoRelativeFile = (uri: string) => {
+    const normalized = uri.replace(/\\/g, '/');
+    const markerIndex = normalized.indexOf(targetPluginPathMarker);
+
+    if (markerIndex >= 0) {
+        return normalized.slice(markerIndex + targetPluginPathMarker.length);
+    }
+
+    if (normalized.startsWith('target-plugin/')) {
+        return normalized.slice('target-plugin/'.length);
+    }
+
+    return normalized.replace(/^\/+/, '');
+};
+
+const toGitHubBlobUrl = (repoUrl: string, commitHash: string, file: string, line: number) => {
+    const filePath = file.split('/').map(encodeURIComponent).join('/');
+    return `${repoUrl}/blob/${commitHash}/${filePath}#L${line}`;
+};
+
+const readSarif = (sarifPath: string) => {
+    return JSON.parse(readFileSync(sarifPath, 'utf8')) as SarifReport;
+};
+
+const sarifResults = (sarif: SarifReport) => {
+    return sarif.runs.flatMap(run => run.results ?? []);
+};
+
+const findRule = (sarif: SarifReport, ruleId: string) => {
+    for (const run of sarif.runs) {
+        const rules = run.tool?.driver?.rules ?? [];
+        const foundRule = rules.find(rule => rule.id === ruleId);
+
+        if (foundRule) return foundRule;
+    }
+
+    return null;
+};
+
+const severityIcon = (rule: SarifRule | null) => {
+    const severityLevel = rule?.defaultConfiguration?.level ?? 'warning';
+
+    if (severityLevel === 'error') return '[CRITICAL]';
+    if (severityLevel === 'warning') return '[WARNING]';
+    return '[INFO]';
+};
+
+const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: string, commitHash: string) => {
+    const rule = findRule(sarif, result.ruleId);
+    const rawMessage = result.message?.text ?? '';
+    const message = Array.from(new Set(rawMessage.split('\n').map(value => value.trim())))
+        .filter(Boolean)
+        .join(' ');
+    const location = result.locations?.[0]?.physicalLocation;
+    const file = toRepoRelativeFile(location?.artifactLocation?.uri ?? '');
+    const line = location?.region?.startLine ?? 1;
+    const title = rule?.shortDescription?.text ?? rule?.name ?? result.ruleId;
+    const locationUrl = escapeMarkdownUrl(toGitHubBlobUrl(repoUrl, commitHash, file, line));
+
+    return `### ${severityIcon(rule)}: ${escapeMarkdownText(title)}
+* **Rule Violated:** \`${escapeInlineCode(result.ruleId)}\`
+* **Flagged For:** ${escapeMarkdownText(message)}
+* **Location:** [\`${escapeInlineCode(`${file}#L${line}`)}\`](${locationUrl})
+
+`;
+};
+
+export const renderFinalReport = ({ sarifPath, repoUrl, commitHash, runUrl }: FinalReportInput) => {
+    const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null)}
+
+---
+
+# Findings
+
+`;
+
+    if (!existsSync(sarifPath)) {
+        return `${reportHeader}[FAILED] Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
+    }
+
+    const sarif = readSarif(sarifPath);
+    const results = sarifResults(sarif);
+
+    if (results.length === 0) {
+        return `${reportHeader}[OK] No vulnerabilities detected by CodeQL.\n`;
+    }
+
+    const findings = results.map(result => renderSarifFinding(sarif, result, repoUrl, commitHash)).join('');
+
+    return `${reportHeader}${findings}`;
+};

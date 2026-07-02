@@ -78,4 +78,4 @@ import UiPhishing::PathGraph
 
 from UiPhishing::PathNode source, UiPhishing::PathNode sink
 where UiPhishing::flowPath(source, sink)
-select sink.getNode(), source, sink, "UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. \\n**Reviewer Action:** Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials (like GitHub or Dropbox) over an untrusted connection."
+select sink.getNode(), source, sink, "UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials."

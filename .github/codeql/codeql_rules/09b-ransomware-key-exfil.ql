@@ -29,4 +29,4 @@ import RansomwareKeyExfil::PathGraph
 
 from RansomwareKeyExfil::PathNode source, RansomwareKeyExfil::PathNode sink
 where RansomwareKeyExfil::flowPath(source, sink)
-select sink.getNode(), source, sink, "Critical Ransomware Indicator: Encryption key material is flowing to an external network endpoint. \\n**Reviewer Action:** This confirms malicious intent. An attacker is attempting to hold notes hostage by exfiltrating the decryption key."
+select sink.getNode(), source, sink, "Critical Ransomware Indicator: Encryption key material is flowing to an external network endpoint."

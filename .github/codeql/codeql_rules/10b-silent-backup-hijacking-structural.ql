@@ -44,4 +44,4 @@ where
       not ContextTaint::flow(_, dangerousCall.getArgument(0))
     )
   )
-select dangerousCall, "[Low Confidence] Backup Hijacking Indicator: A network, execution, or file-write call exists lexically inside an export callback, but direct data flow isn't confirmed by taint tracking. \\n**Reviewer Action:** Manual trace required. Verify if the execution/network call is legitimately part of the export process or if it is acting as a blind trigger/exfiltration vector."
+select dangerousCall, "[Low Confidence] Backup Hijacking Indicator: A network, terminal execution, or file-write call exists inside an export callback, but direct data flow isn't confirmed by taint tracking. \\n**Reviewer Action:** Manual trace required. Verify if the execution/network call is legitimately part of the export process."

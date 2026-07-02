@@ -42,4 +42,4 @@ where
   ) and
   sink = call.getArgument(1) and
   hasExternalWebviewSrc(sink)
-select call, "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe, script, link, or meta refresh tags). \\n**Reviewer Action:** Confirm the URL points to a trusted, known-good domain (like a CDN or official docs). Loading unverified remote scripts allows an attacker to bypass plugin updates and dynamically execute malicious UI code."
+select call, "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe, script, link, or meta refresh tags). Confirm the URL points to a trusted, known-good domain."

@@ -5,212 +5,163 @@ on:
     types: [opened, edited]
 
 permissions:
-  issues: write
   contents: read
+  issues: write
   security-events: write
 
 jobs:
   scan:
     if: contains(github.event.issue.title, '[Plugin Submission]')
     runs-on: ubuntu-latest
+    env:
+      SCAN_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/code-scan/scanManager.js
     steps:
-      - name: Acknowledge Scan Initialization
-        id: ack
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const comment = await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: "⏳ **Security Scan Initializing...**\n\nSetting up environment and fetching payload..."
-            });
-            return comment.data.id;
-
-      - name: Pre-flight Metadata Validation
-        id: preflight
-        env:
-          ACK_COMMENT_ID: ${{ steps.ack.outputs.result }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const title = context.payload.issue.title;
-            const body = context.payload.issue.body;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const commentId = process.env.ACK_COMMENT_ID;
-            
-            const fail = async (msg) => {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: parseInt(commentId),
-                body: `❌ **Security Scan Rejected**\n\n${msg}\n\n**Workflow Run:** [View Logs](${runUrl})`
-              });
-              core.setOutput('handled_failure', 'true');
-              core.setFailed(msg);
-            };
-
-            const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9\.]+.*$/;
-            if (!titleRegex.test(title)) {
-              await fail("Invalid issue title format. Must begin with `[Plugin Submission]` followed by the plugin name and version.");
-              return;
-            }
-
-            const jsonMatch = body.match(/```json\s*([\s\S]*?)\s*```/);
-            if (!jsonMatch) {
-              await fail("Could not find JSON payload in the issue body. Please ensure you included a ` ```json ` block.");
-              return;
-            }
-
-            let payload;
-            try {
-              payload = JSON.parse(jsonMatch[1]);
-            } catch (e) {
-              await fail("Invalid JSON payload. Please check for syntax errors.");
-              return;
-            }
-
-            const { plugin_name, repository_url, commit_hash } = payload;
-            
-            if (!plugin_name || !repository_url || !commit_hash) {
-              await fail("Missing required fields in payload. Ensure `plugin_name`, `repository_url`, and `commit_hash` are provided.");
-              return;
-            }
-
-            const urlRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?\/?$/;
-            if (!urlRegex.test(repository_url)) {
-              await fail(`Invalid repository URL: \`${repository_url}\`. Must be a valid GitHub repository URL.`);
-              return;
-            }
-
-            const hashRegex = /^[a-fA-F0-9]{40}$/;
-            if (!hashRegex.test(commit_hash)) {
-              await fail(`Invalid commit hash: \`${commit_hash}\`. Must be a full 40-character SHA-1 hash.`);
-              return;
-            }
-
       - name: Checkout plugins-test registry
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: plugins-test
 
-      - name: Setup Node.js and TypeScript
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: plugins-test/scripts/package-lock.json
 
-      - name: Compile TypeScript Script
+      - name: Install and build scan scripts
+        working-directory: plugins-test/scripts
         run: |
-          cd plugins-test/scripts
           npm ci
-          npx tsc code-scan/scanManager.ts --esModuleInterop --skipLibCheck || true
+          npm run build
 
-      - name: Phase 1 - Parse payload and Initial Check
+      - name: Acknowledge scan initialization
+        id: ack
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            return await scan.acknowledgeScanInitialization({github, context, core});
+
+      - name: Pre-flight metadata validation
+        id: preflight
+        env:
+          ACK_COMMENT_ID: ${{ steps.ack.outputs.result }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            return await scan.preflightMetadataValidation({github, context, core});
+
+      - name: Phase 1 - Parse payload and initial check
         id: init
         env:
           INITIAL_COMMENT_ID: ${{ steps.ack.outputs.result }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            return await script.initialize({github, context, core});
-        
-      - name: Phase 2 - Environment Provisioning
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            return await scan.initialize({github, context, core});
+
+      - name: Phase 2 - Environment provisioning
         if: success() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            await script.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 2);
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 2);
 
-      - name: Checkout Target Plugin Repository
+      - name: Checkout target plugin repository
         if: success() && steps.init.outputs.should_proceed == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: ${{ steps.init.outputs.repo_name }}
           ref: ${{ steps.init.outputs.commit_hash }}
           path: target-plugin
 
-      - name: Isolate Source Directory
-        if: success() && steps.init.outputs.should_proceed == 'true'
-        run: |
-          cd target-plugin
-          find . -mindepth 1 -maxdepth 1 ! -name 'src' ! -name 'package.json' ! -name '.git' -exec rm -rf {} +
-
-      - name: Phase 3 - CodeQL Initialization (Database Compile)
+      - name: Validate target repository source
+        id: sourcecheck
         if: success() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            await script.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 3);
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            return await scan.validateTargetRepository({github, context, core}, process.env.INIT_COMMENT_ID, 'target-plugin');
+
+      - name: Phase 3 - CodeQL initialization
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        env:
+          INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 3);
 
       - name: Initialize CodeQL
         if: success() && steps.init.outputs.should_proceed == 'true'
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript
           source-root: target-plugin
           config-file: ./plugins-test/.github/codeql/codeql-config.yml
           queries: ./plugins-test/.github/codeql/codeql_rules/combined-threats.qls
 
-      - name: Phase 4 - SAST Analysis (Taint Tracking & Data Flow)
+      - name: Phase 4 - SAST analysis
         if: success() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            await script.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 4);
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 4);
 
-      - name: Perform CodeQL Analysis
+      - name: Perform CodeQL analysis
         if: success() && steps.init.outputs.should_proceed == 'true'
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:javascript"
+          category: /language:javascript
           output: codeql-results
           upload: false
 
-      - name: Phase 5 - Report Generation
+      - name: Phase 5 - Report generation
         if: always() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            await script.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 5);
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 5);
 
-      - name: Finalize Report
+      - name: Finalize report
         if: always() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
           INIT_REPO_URL: ${{ steps.init.outputs.repository_url }}
           INIT_COMMIT_HASH: ${{ steps.init.outputs.commit_hash }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const script = await import(`${process.env.GITHUB_WORKSPACE}/plugins-test/scripts/code-scan/scanManager.js`);
-            await script.generateFinalReport({github, context}, process.env.INIT_COMMENT_ID, 'codeql-results/javascript.sarif', process.env.INIT_REPO_URL, process.env.INIT_COMMIT_HASH);
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.generateFinalReport(
+              {github, context},
+              process.env.INIT_COMMENT_ID,
+              'codeql-results/javascript.sarif',
+              process.env.INIT_REPO_URL,
+              process.env.INIT_COMMIT_HASH
+            );
 
-      - name: Handle Workflow Failure
-        if: failure() && steps.ack.outputs.result && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true'
+      - name: Handle workflow failure
+        if: failure() && steps.ack.outputs.result && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
           ACK_COMMENT_ID: ${{ steps.ack.outputs.result }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
-            const commentId = process.env.ACK_COMMENT_ID;
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            await github.rest.issues.updateComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: parseInt(commentId),
-              body: `❌ **Security Scan Failed**\n\nThe workflow encountered a critical system error before completion.\n\n[View Workflow Logs for Details](${runUrl})`
-            });
-
+            const scan = require(process.env.SCAN_MANAGER_PATH);
+            await scan.handleWorkflowFailure({github, context}, process.env.ACK_COMMENT_ID);

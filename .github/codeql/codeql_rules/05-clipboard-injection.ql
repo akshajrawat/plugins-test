@@ -30,4 +30,4 @@ import ClipboardInjectionFlow::PathGraph
 
 from ClipboardInjectionFlow::PathNode source, ClipboardInjectionFlow::PathNode sink
 where ClipboardInjectionFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Clipboard Hijacking Risk: The plugin is reading external remote data or the user's current clipboard and replacing the clipboard contents. \\n**Reviewer Action:** Verify that this is triggered by a deliberate user action (like clicking a \"Copy\" button). If this happens silently in the background, it may be attempting to swap copied text (e.g., injecting cryptocurrency wallet addresses or malicious URLs)."
+select sink.getNode(), source, sink, "Clipboard Hijacking Risk: The plugin is reading external remote or the user's current clipboard data and replacing the clipboard contents. Verify that this is triggered by a safe user action (like clicking a \"Copy\" button). If this happens silently in the background, it may be attempting to swap copied text."

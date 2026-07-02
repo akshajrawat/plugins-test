@@ -20,4 +20,4 @@ from DataFlow::Node sink
 where
   isFileSystemPathSink(sink) and
   targetsConfigLiteral(sink)
-select sink, "Sensitive Path Targeting: The plugin contains a hardcoded operation targeting a sensitive user configuration or database path. \\n**Reviewer Action:** This is a severe threat indicator for data theft or tampering. Verify this immediately."
+select sink, "Sensitive Path Targeting: The plugin contains a hardcoded operation targeting a sensitive user configuration or database path. This is a severe threat indicator for data theft or tampering the data. Verify this immediately."

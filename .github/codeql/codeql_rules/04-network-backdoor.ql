@@ -57,7 +57,7 @@ where
   call.getMethodName() in ["listen", "bind", "start"] and
   (
     if isSafeLocalHostBind(call)
-    then msg = "Localhost Bind Detected: The plugin is opening a local listening port restricted to localhost. \\n**Reviewer Action:** Check if the plugin explicitly advertises running a local server (e.g., a companion web app). While bound locally, ensure it requires explicit authentication if sensitive data can be queried."
-    else msg = "[PUBLIC/DYNAMIC BIND DETECTED] Network Backdoor: The plugin is opening a listening port that may be accessible externally (e.g., 0.0.0.0 or unspecified host). \\n**Reviewer Action:** This is a severe threat indicator. An externally accessible listening port exposes the plugin and potentially Joplin to the local network or internet. Verify this is strictly required and heavily authenticated."
+    then msg = "Localhost Bind Detected: The plugin is opening a local listening port restricted to localhost. Check if the plugin explicitly advertises running a local server."
+    else msg = "Network Backdoor: The plugin is opening a listening port that may be accessible externally.This is a severe threat indicator. Verify if this is strictly required and is heavily authenticated."
   )
 select sink.getNode(), source, sink, msg
