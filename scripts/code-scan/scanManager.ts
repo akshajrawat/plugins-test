@@ -62,16 +62,12 @@ const failWithIssueComment = async (
     message: string,
 ) => {
     if (commentId) {
-        await updateComment(
-            github,
-            context,
-            commentId,
-            `# ${heading}
-
-${message}
-
-**Workflow Run:** [View Logs](${runUrlFor(context)})`,
-        );
+        const body = `
+            # ${heading}
+            ${message}
+            **Workflow Run:** [View Logs](${runUrlFor(context)})
+            `
+        await updateComment(github, context, commentId, body);
     }
 
     core.setOutput('handled_failure', 'true');
@@ -80,13 +76,15 @@ ${message}
     return { should_proceed: false };
 };
 
+// Parse the issue body to find the JSON block and relavent meta data
+// Checks if all the data is in correct form and returns the payload
 const parseIssuePayload = (body: string | null | undefined): ValidationResult => {
     const jsonMatch = (body ?? '').match(/```json\s*([\s\S]*?)\s*```/);
 
     if (!jsonMatch) {
         return {
             ok: false,
-            error: 'Could not find a JSON payload in the issue body. Include a fenced ```json block.',
+            error: 'Could not find a JSON payload in the issue body. Include a ```json block.',
         };
     }
 
@@ -97,7 +95,7 @@ const parseIssuePayload = (body: string | null | undefined): ValidationResult =>
     } catch {
         return {
             ok: false,
-            error: 'Invalid JSON payload. Check the fenced JSON block for syntax errors.',
+            error: 'Invalid JSON payload. Check the JSON block for syntax errors.',
         };
     }
 
@@ -124,7 +122,7 @@ const parseIssuePayload = (body: string | null | undefined): ValidationResult =>
     if (!hashRegex.test(commit_hash)) {
         return {
             ok: false,
-            error: `Invalid commit hash: ${commit_hash}. It must be a full 40-character SHA-1 hash.`,
+            error: `Invalid commit hash: ${commit_hash}.`,
         };
     }
 
@@ -146,6 +144,7 @@ const validateTitle = (title: string | null | undefined) => {
     return 'Invalid issue title format. It must begin with [Plugin Submission] and include the plugin name and version.';
 };
 
+// Gets the path to manifest.json
 const getRegistryPath = (relativePath: string) => {
     const workspace = process.env.GITHUB_WORKSPACE;
     const candidates = [
@@ -158,6 +157,7 @@ const getRegistryPath = (relativePath: string) => {
     return candidates.find(candidate => existsSync(candidate)) ?? candidates[0];
 };
 
+// checks if the plugin already exists in the manifest.json
 const existingPluginFor = (pluginName: string) => {
     const manifestsPath = getRegistryPath('manifests.json');
 
@@ -185,14 +185,18 @@ const closeOwnershipMismatchIssue = async (
     registeredUrl: string,
     repositoryUrl: string,
 ) => {
-    const rejectMsg = `Security reject: plugin ${pluginName} already exists, but the repository URL does not match the registered owner.
+    const rejectMsg = `
+    Security reject: plugin ${pluginName} already exists, but the repository URL does not match the registered owner.
+    Expected: ${registeredUrl}
+    Provided: ${repositoryUrl}
+    `;
 
-Expected: ${registeredUrl}
-Provided: ${repositoryUrl}`;
+    const body = `
+    ${commentBody}
+    ${rejectMsg}
+    `
 
-    await updateComment(github, context, commentId, `${commentBody}
-
-${rejectMsg}`);
+    await updateComment(github, context, commentId, body);
 
     await github.rest.issues.update({
         owner: context.repo.owner,
@@ -234,19 +238,24 @@ const findSourceFiles = (root: string) => {
     return files;
 };
 
+// Created a comment in the issue body to indicate the scanning workflow has been started 
 export const acknowledgeScanInitialization = async ({ github, context }: GithubContext) => {
+    const body = `
+    # Security Scan Initializing
+    Setting up the scanner and validating the submission payload.
+    `
     const comment = await github.rest.issues.createComment({
         owner: context.repo.owner,
         repo: context.repo.repo,
         issue_number: context.issue.number,
-        body: `# Security Scan Initializing
-
-Setting up the scanner and validating the submission payload.`,
+        body: body,
     });
 
     return comment.data.id;
 };
 
+// Checks if the title contains `[Plugin Submission]`
+// Checks if the issue body is in perfect form 
 export const preflightMetadataValidation = async ({ github, context, core }: GithubContext) => {
     const titleError = validateTitle(context.payload.issue.title);
 
@@ -275,6 +284,7 @@ export const preflightMetadataValidation = async ({ github, context, core }: Git
     return { should_proceed: true };
 };
 
+
 export const initialize = async ({ github, context, core }: GithubContext) => {
     const validation = parseIssuePayload(context.payload.issue.body);
     const initialCommentId = process.env.INITIAL_COMMENT_ID;
@@ -293,6 +303,7 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
     const phases = getPhases(1);
     const commentBody = statusTemplate(repository_url, commit_hash, runUrl, phases);
 
+    // Update or create the comment in the body 
     const comment = initialCommentId
         ? await github.rest.issues.updateComment({
             owner: context.repo.owner,

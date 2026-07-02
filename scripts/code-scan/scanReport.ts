@@ -33,10 +33,12 @@ const statusLabel = (phase: number, currentPhase: number) => {
     return '[PENDING]';
 };
 
+// Give the url of current workflow run in actions tab 
 export const runUrlFor = (context: GithubActionContext) => {
     return `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 };
 
+// Keeps
 export const getPhases = (currentPhase: number) => {
     const phases: PhaseMap = {};
 
@@ -53,27 +55,29 @@ export const getPhases = (currentPhase: number) => {
     return phases;
 };
 
+// Creates the comment template that helps us track what Phase is currently going on 
 export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: string, phases: PhaseMap | null) => {
     const targetText = escapeMarkdownText(`${repoUrl}/commit/${commitHash}`);
     const targetUrl = escapeMarkdownUrl(`${repoUrl}/commit/${commitHash}`);
     const workflowRunUrl = escapeMarkdownUrl(runUrl);
 
-    const base = `# Security Scan Report
-
-**Target:** [${targetText}](${targetUrl})
-**Workflow Run:** [View Logs](${workflowRunUrl})
-`;
+    const base = `
+    # Security Scan Report
+    **Target:** [${targetText}](${targetUrl})
+    **Workflow Run:** [View Logs](${workflowRunUrl})
+    `;
 
     if (!phases) return base;
 
-    return `${base}
-# Pipeline Status
-* ${phases[1]} **Phase 1: Identity & Uniqueness Check**
-* ${phases[2]} **Phase 2: Environment Provisioning**
-* ${phases[3]} **Phase 3: CodeQL Database Compilation**
-* ${phases[4]} **Phase 4: SAST Taint Analysis**
-* ${phases[5]} **Phase 5: Final Report Generation**
-`;
+    return `
+    ${base}
+    # Pipeline Status
+    * ${phases[1]} **Phase 1: Identity & Uniqueness Check**
+    * ${phases[2]} **Phase 2: Environment Provisioning**
+    * ${phases[3]} **Phase 3: CodeQL Database Compilation**
+    * ${phases[4]} **Phase 4: SAST Taint Analysis**
+    * ${phases[5]} **Phase 5: Final Report Generation**
+    `;
 };
 
 export const extractReportMetadata = (body: string): ReportMetadata => {
