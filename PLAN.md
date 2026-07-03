@@ -58,8 +58,8 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
   - Build the workflow YAML so that every new open issue with [Plugin Submission] in the title runs through an automated scanning workflow and generates a scanning report as a comment.
   - When the accepted label is added to the issue it runs through another workflow to update the repository with the accepted plugin data.
   - Implement the **Split-Job Architecture**:
-    1. _Build Job:_ Builds the untrusted code and run it through scan for the report.
-    2. _Publish Job:_ Triggered by `status: approved` label; uploads `.jpl` to GitHub Releases and the `/plugin` folder in the repository.
+    1. _Build Job:_ Builds the untrusted code.
+    2. _Publish Job:_ Uploads `.jpl` to GitHub Releases and the `/plugin` folder in the repository.
 - **Deliverable:** Automated, structured security reports posted directly to submission issues comments, after review is done add `status: approved` label to get the plugin into the repository.
 
 ### Milestone 3: Joplin Plugin Cli update (1 PR LEFT)
@@ -100,7 +100,6 @@ Here on we can also focus on getting the PR for `plugin-repo-cli` merge as the r
 With the end of week 8 all the testing will be completed and we will have rules that does what their description says. I will update the official `Plugins-test` repository with the scanning logic and open the test issues for all the test plugin I wrote in the official repository for logs.
 
 I will start working on the update registry workflow with the intented logic (predicting that the pr for `plugin-repo-cli` was merged).
-
 
 ### Week 10 - 12 :
 
