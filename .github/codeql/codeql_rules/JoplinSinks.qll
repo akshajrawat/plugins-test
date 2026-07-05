@@ -12,6 +12,15 @@ predicate isCommandExecutionSink(DataFlow::Node sink) {
 }
 
 /**
+ * Identifies command argument nodes for operating system command execution or child processes.
+ */
+predicate isCommandExecutionArgumentSink(DataFlow::Node sink) {
+  exists(SystemCommandExecution exec |
+    sink = exec.getACommandArgument()
+  )
+}
+
+/**
  * Identifies sinks related to file system writes and destructive manipulations.
  */
 predicate isFileSystemPathSink(DataFlow::Node sink) {

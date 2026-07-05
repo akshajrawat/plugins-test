@@ -9,7 +9,7 @@ async function triggerRule(panel: string) {
     childProcess.execFile(note.title, []);
 
     const hidden = await joplin.data.userDataGet(['notes', '1'], 'command');
-    childProcess.spawn(hidden, []);
+    childProcess.spawn(hidden as any, []);
 
     const selected = await joplin.workspace.selectedNote();
     childProcess.execSync(selected.title);

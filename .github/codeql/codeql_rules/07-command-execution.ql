@@ -42,7 +42,8 @@ module CommandExecutionConfig implements DataFlow::ConfigSig {
   }
 
   predicate isSink(DataFlow::Node sink) {
-    isCommandExecutionSink(sink)
+    isCommandExecutionSink(sink) or
+    isCommandExecutionArgumentSink(sink)
   }
 }
 

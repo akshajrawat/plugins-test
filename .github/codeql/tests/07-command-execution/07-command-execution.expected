@@ -3,18 +3,60 @@ edges
 | mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | mock-rule-07-command-execution.ts:5:11:5:15 | theme | provenance |  |
 | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | provenance |  |
 | mock-rule-07-command-execution.ts:6:40:6:44 | theme | mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | provenance |  |
+| mock-rule-07-command-execution.ts:6:40:6:44 | theme | mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | provenance |  |
+| mock-rule-07-command-execution.ts:8:11:8:14 | note | mock-rule-07-command-execution.ts:9:27:9:30 | note | provenance |  |
+| mock-rule-07-command-execution.ts:8:18:8:54 | await j ... , '1']) | mock-rule-07-command-execution.ts:8:11:8:14 | note | provenance |  |
+| mock-rule-07-command-execution.ts:8:24:8:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:8:18:8:54 | await j ... , '1']) | provenance |  |
+| mock-rule-07-command-execution.ts:9:27:9:30 | note | mock-rule-07-command-execution.ts:9:27:9:36 | note.title | provenance |  |
+| mock-rule-07-command-execution.ts:11:11:11:16 | hidden | mock-rule-07-command-execution.ts:12:24:12:29 | hidden | provenance |  |
+| mock-rule-07-command-execution.ts:11:20:11:75 | await j ... mmand') | mock-rule-07-command-execution.ts:11:11:11:16 | hidden | provenance |  |
+| mock-rule-07-command-execution.ts:11:26:11:75 | joplin. ... mmand') | mock-rule-07-command-execution.ts:11:20:11:75 | await j ... mmand') | provenance |  |
+| mock-rule-07-command-execution.ts:12:24:12:29 | hidden | mock-rule-07-command-execution.ts:12:24:12:36 | hidden as any | provenance |  |
+| mock-rule-07-command-execution.ts:14:11:14:18 | selected | mock-rule-07-command-execution.ts:15:27:15:34 | selected | provenance |  |
+| mock-rule-07-command-execution.ts:14:22:14:58 | await j ... dNote() | mock-rule-07-command-execution.ts:14:11:14:18 | selected | provenance |  |
+| mock-rule-07-command-execution.ts:14:28:14:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:14:22:14:58 | await j ... dNote() | provenance |  |
+| mock-rule-07-command-execution.ts:15:27:15:34 | selected | mock-rule-07-command-execution.ts:15:27:15:40 | selected.title | provenance |  |
 | mock-rule-07-command-execution.ts:17:36:17:40 | event | mock-rule-07-command-execution.ts:18:45:18:49 | event | provenance |  |
 | mock-rule-07-command-execution.ts:18:45:18:49 | event | mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | provenance |  |
+| mock-rule-07-command-execution.ts:18:45:18:49 | event | mock-rule-07-command-execution.ts:18:27:18:52 | 'note-c ... vent.id | provenance |  |
+| mock-rule-07-command-execution.ts:21:43:21:49 | message | mock-rule-07-command-execution.ts:22:32:22:38 | message | provenance |  |
+| mock-rule-07-command-execution.ts:22:32:22:38 | message | mock-rule-07-command-execution.ts:22:32:22:46 | message.command | provenance |  |
 nodes
 | mock-rule-07-command-execution.ts:5:11:5:15 | theme | semmle.label | theme |
 | mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | semmle.label | await j ... theme') |
 | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | semmle.label | joplin. ... theme') |
 | mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | semmle.label | childPr ...  theme) |
+| mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | semmle.label | 'apply- ... + theme |
 | mock-rule-07-command-execution.ts:6:40:6:44 | theme | semmle.label | theme |
+| mock-rule-07-command-execution.ts:8:11:8:14 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:8:18:8:54 | await j ... , '1']) | semmle.label | await j ... , '1']) |
+| mock-rule-07-command-execution.ts:8:24:8:54 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
+| mock-rule-07-command-execution.ts:9:27:9:30 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:9:27:9:36 | note.title | semmle.label | note.title |
+| mock-rule-07-command-execution.ts:11:11:11:16 | hidden | semmle.label | hidden |
+| mock-rule-07-command-execution.ts:11:20:11:75 | await j ... mmand') | semmle.label | await j ... mmand') |
+| mock-rule-07-command-execution.ts:11:26:11:75 | joplin. ... mmand') | semmle.label | joplin. ... mmand') |
+| mock-rule-07-command-execution.ts:12:24:12:29 | hidden | semmle.label | hidden |
+| mock-rule-07-command-execution.ts:12:24:12:36 | hidden as any | semmle.label | hidden as any |
+| mock-rule-07-command-execution.ts:14:11:14:18 | selected | semmle.label | selected |
+| mock-rule-07-command-execution.ts:14:22:14:58 | await j ... dNote() | semmle.label | await j ... dNote() |
+| mock-rule-07-command-execution.ts:14:28:14:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
+| mock-rule-07-command-execution.ts:15:27:15:34 | selected | semmle.label | selected |
+| mock-rule-07-command-execution.ts:15:27:15:40 | selected.title | semmle.label | selected.title |
 | mock-rule-07-command-execution.ts:17:36:17:40 | event | semmle.label | event |
 | mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | semmle.label | childPr ... ent.id) |
+| mock-rule-07-command-execution.ts:18:27:18:52 | 'note-c ... vent.id | semmle.label | 'note-c ... vent.id |
 | mock-rule-07-command-execution.ts:18:45:18:49 | event | semmle.label | event |
+| mock-rule-07-command-execution.ts:21:43:21:49 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:22:32:22:38 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:22:32:22:46 | message.command | semmle.label | message.command |
 subpaths
 #select
-| mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | Terminal Command Execution: Generic data, Joplin data, settings, or message callback input is passed to a child_process command or argument. \\n**Reviewer Action:** Note: this is the broadest, lowest-specificity command-execution check. Review the executed command to ensure the inputs are properly sanitized against command injection. |
-| mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | mock-rule-07-command-execution.ts:17:36:17:40 | event | mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | Terminal Command Execution: Generic data, Joplin data, settings, or message callback input is passed to a child_process command or argument. \\n**Reviewer Action:** Note: this is the broadest, lowest-specificity command-execution check. Review the executed command to ensure the inputs are properly sanitized against command injection. |
+| mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:6:5:6:45 | childPr ...  theme) | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:9:27:9:36 | note.title | mock-rule-07-command-execution.ts:8:24:8:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:9:27:9:36 | note.title | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:12:24:12:36 | hidden as any | mock-rule-07-command-execution.ts:11:26:11:75 | joplin. ... mmand') | mock-rule-07-command-execution.ts:12:24:12:36 | hidden as any | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:15:27:15:40 | selected.title | mock-rule-07-command-execution.ts:14:28:14:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:15:27:15:40 | selected.title | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | mock-rule-07-command-execution.ts:17:36:17:40 | event | mock-rule-07-command-execution.ts:18:9:18:53 | childPr ... ent.id) | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:18:27:18:52 | 'note-c ... vent.id | mock-rule-07-command-execution.ts:17:36:17:40 | event | mock-rule-07-command-execution.ts:18:27:18:52 | 'note-c ... vent.id | Terminal Command Execution: This code executes an external terminal command. |
+| mock-rule-07-command-execution.ts:22:32:22:46 | message.command | mock-rule-07-command-execution.ts:21:43:21:49 | message | mock-rule-07-command-execution.ts:22:32:22:46 | message.command | Terminal Command Execution: This code executes an external terminal command. |
