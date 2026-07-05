@@ -10,10 +10,32 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
+predicate isKeyMaterialUse(DataFlow::Node key) {
+  exists(DataFlow::CallNode call |
+    call.getCalleeName() in ["createCipher", "createCipheriv"] and
+    key = call.getArgument(1)
+  ) or
+  exists(DataFlow::MethodCallNode call |
+    call.getMethodName() = "encrypt" and
+    key = call.getArgument(1)
+  ) or
+  exists(DataFlow::MethodCallNode call |
+    call.getMethodName() = "importKey" and
+    (
+      key = call.getArgument(1) or
+      key = call.getArgument(2)
+    )
+  )
+}
+
 predicate isKeyMaterialSource(DataFlow::Node key) {
-  exists(DataFlow::CallNode call | call.getCalleeName() in ["createCipher", "createCipheriv"] and key = call.getArgument(1)) or
-  exists(DataFlow::MethodCallNode call | call.getMethodName() = "encrypt" and key = call.getArgument(1)) or
-  exists(DataFlow::MethodCallNode call | call.getMethodName() = "importKey" and key = call.getArgument(2))
+  exists(DataFlow::Node keyUse |
+    isKeyMaterialUse(keyUse) and
+    (
+      key = keyUse or
+      key = keyUse.getALocalSource()
+    )
+  )
 }
 
 module RansomwareKeyExfilConfig implements DataFlow::ConfigSig {

@@ -25,6 +25,15 @@ predicate isCommandExecutionArgumentSink(DataFlow::Node sink) {
  */
 predicate isFileSystemPathSink(DataFlow::Node sink) {
   sink = any(FileSystemWriteAccess acc).getAPathArgument() or
+  exists(DataFlow::CallNode call, string moduleName |
+    (moduleName = "fs" or moduleName = "fs-extra" or moduleName = "node:fs" or moduleName = "node:fs/promises" or moduleName = "fs/promises") and
+    call = DataFlow::moduleMember(moduleName, _).getACall() and
+    call.getCalleeName() in [
+      "writeFile", "writeFileSync",
+      "appendFile", "appendFileSync"
+    ] and
+    sink = call.getArgument(0)
+  ) or
   exists(DataFlow::MethodCallNode mc |
     mc.getMethodName() = "archiveExtract" and
     mc.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("fs") and
@@ -34,6 +43,7 @@ predicate isFileSystemPathSink(DataFlow::Node sink) {
     call.getCalleeName() in [
       "outputFile", "outputFileSync",
       "move", "moveSync",
+      "copyFile", "copyFileSync",
       "copy", "copySync",
       "remove", "removeSync",
       "emptyDir", "emptyDirSync",
@@ -53,7 +63,17 @@ predicate isFileSystemPathSink(DataFlow::Node sink) {
  * Identifies sinks related to file system writes where data is being written (argument 1).
  */
 predicate isFileSystemDataSink(DataFlow::Node sink) {
-  sink = any(FileSystemWriteAccess acc).getADataNode()
+  sink = any(FileSystemWriteAccess acc).getADataNode() or
+  exists(DataFlow::CallNode call, string moduleName |
+    (moduleName = "fs" or moduleName = "fs-extra" or moduleName = "node:fs" or moduleName = "node:fs/promises" or moduleName = "fs/promises") and
+    call = DataFlow::moduleMember(moduleName, _).getACall() and
+    call.getCalleeName() in [
+      "writeFile", "writeFileSync",
+      "appendFile", "appendFileSync",
+      "outputFile", "outputFileSync"
+    ] and
+    sink = call.getArgument(1)
+  )
 }
 
 /**

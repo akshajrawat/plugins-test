@@ -61,6 +61,7 @@ module BackupHijackingConfig implements DataFlow::ConfigSig {
   predicate isSink(DataFlow::Node sink) {
     isNetworkExfiltrationSink(sink) or
     isCommandExecutionSink(sink) or
+    isCommandExecutionArgumentSink(sink) or
     (
       isFileSystemDataSink(sink) and
       exists(DataFlow::CallNode call | call.getArgument(1) = sink |

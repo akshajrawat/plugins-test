@@ -1,4 +1,26 @@
 edges
+| mock-rule-09b-ransomware-key-exfil.ts:3:28:3:33 | rawKey | mock-rule-09b-ransomware-key-exfil.ts:9:71:9:76 | rawKey | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:4:11:4:18 | password | mock-rule-09b-ransomware-key-exfil.ts:6:45:6:52 | password | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:4:22:4:41 | 'hold-notes-hostage' | mock-rule-09b-ransomware-key-exfil.ts:4:11:4:18 | password | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:6:45:6:52 | password | mock-rule-09b-ransomware-key-exfil.ts:6:11:6:52 | 'https: ... assword | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:9:71:9:76 | rawKey | mock-rule-09b-ransomware-key-exfil.ts:9:71:9:83 | rawKey as any | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:11:11:11:19 | algorithm | mock-rule-09b-ransomware-key-exfil.ts:15:30:15:38 | algorithm | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:11:23:11:41 | { name: 'AES-GCM' } | mock-rule-09b-ransomware-key-exfil.ts:11:11:11:19 | algorithm | provenance |  |
+| mock-rule-09b-ransomware-key-exfil.ts:15:30:15:38 | algorithm | mock-rule-09b-ransomware-key-exfil.ts:15:15:15:39 | JSON.st ... orithm) | provenance |  |
 nodes
+| mock-rule-09b-ransomware-key-exfil.ts:3:28:3:33 | rawKey | semmle.label | rawKey |
+| mock-rule-09b-ransomware-key-exfil.ts:4:11:4:18 | password | semmle.label | password |
+| mock-rule-09b-ransomware-key-exfil.ts:4:22:4:41 | 'hold-notes-hostage' | semmle.label | 'hold-notes-hostage' |
+| mock-rule-09b-ransomware-key-exfil.ts:6:11:6:52 | 'https: ... assword | semmle.label | 'https: ... assword |
+| mock-rule-09b-ransomware-key-exfil.ts:6:45:6:52 | password | semmle.label | password |
+| mock-rule-09b-ransomware-key-exfil.ts:9:71:9:76 | rawKey | semmle.label | rawKey |
+| mock-rule-09b-ransomware-key-exfil.ts:9:71:9:83 | rawKey as any | semmle.label | rawKey as any |
+| mock-rule-09b-ransomware-key-exfil.ts:11:11:11:19 | algorithm | semmle.label | algorithm |
+| mock-rule-09b-ransomware-key-exfil.ts:11:23:11:41 | { name: 'AES-GCM' } | semmle.label | { name: 'AES-GCM' } |
+| mock-rule-09b-ransomware-key-exfil.ts:15:15:15:39 | JSON.st ... orithm) | semmle.label | JSON.st ... orithm) |
+| mock-rule-09b-ransomware-key-exfil.ts:15:30:15:38 | algorithm | semmle.label | algorithm |
 subpaths
 #select
+| mock-rule-09b-ransomware-key-exfil.ts:6:11:6:52 | 'https: ... assword | mock-rule-09b-ransomware-key-exfil.ts:4:22:4:41 | 'hold-notes-hostage' | mock-rule-09b-ransomware-key-exfil.ts:6:11:6:52 | 'https: ... assword | Critical Ransomware Indicator: Encryption key material is flowing to an external network endpoint. |
+| mock-rule-09b-ransomware-key-exfil.ts:9:71:9:83 | rawKey as any | mock-rule-09b-ransomware-key-exfil.ts:3:28:3:33 | rawKey | mock-rule-09b-ransomware-key-exfil.ts:9:71:9:83 | rawKey as any | Critical Ransomware Indicator: Encryption key material is flowing to an external network endpoint. |
+| mock-rule-09b-ransomware-key-exfil.ts:15:15:15:39 | JSON.st ... orithm) | mock-rule-09b-ransomware-key-exfil.ts:11:23:11:41 | { name: 'AES-GCM' } | mock-rule-09b-ransomware-key-exfil.ts:15:15:15:39 | JSON.st ... orithm) | Critical Ransomware Indicator: Encryption key material is flowing to an external network endpoint. |

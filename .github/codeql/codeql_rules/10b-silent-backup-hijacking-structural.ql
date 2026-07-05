@@ -38,7 +38,8 @@ where
   isExportModuleCallbackAST(dangerousCall.getEnclosingFunction()) and
   (
     isNetworkExfiltrationCall(dangerousCall) or
-    isCommandExecutionSink(dangerousCall.getAnArgument()) or
+    isCommandExecutionSink(dangerousCall) or
+    isCommandExecutionArgumentSink(dangerousCall.getAnArgument()) or
     (
       isFileSystemPathSink(dangerousCall.getArgument(0)) and
       not ContextTaint::flow(_, dangerousCall.getArgument(0))
