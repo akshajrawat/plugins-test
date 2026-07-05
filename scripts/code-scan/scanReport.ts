@@ -66,8 +66,8 @@ export const getPhases = (currentPhase: number) => {
 
 // Creates the comment template that helps us track what Phase is currently going on 
 export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: string, phases: PhaseMap | null) => {
-    const targetText = escapeMarkdownText(`${repoUrl}/commit/${commitHash}`);
-    const targetUrl = escapeMarkdownUrl(`${repoUrl}/commit/${commitHash}`);
+    const targetText = escapeMarkdownText(`${repoUrl}/tree/${commitHash}`);
+    const targetUrl = escapeMarkdownUrl(`${repoUrl}/tree/${commitHash}`);
     const workflowRunUrl = escapeMarkdownUrl(runUrl);
 
     const base = `# Security Scan Report
@@ -87,8 +87,8 @@ export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: stri
 };
 
 export const extractReportMetadata = (body: string): ReportMetadata => {
-    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/commit\//);
-    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/commit\/([^\]]+)\]/);
+    const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/(?:commit|tree)\//);
+    const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/(?:commit|tree)\/([^\]]+)\]/);
     const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
 
     return {
@@ -195,11 +195,7 @@ const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: st
 };
 
 export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl }: FinalReportInput) => {
-    const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null)}
-    ---
-    # Findings
-
-    `;
+    const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null)}\n\n---\n# Findings\n\n`;
 
     if (!(await fileExists(sarifPath))) {
         return `${reportHeader}❌ Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
