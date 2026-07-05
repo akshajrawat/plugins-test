@@ -101,6 +101,15 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
     )
   }
 
+  predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
+    // Propagate taint from axios response object to its `.data` property
+    exists(DataFlow::PropRead read |
+      read.getBase() = pred and
+      read.getPropertyName() = "data" and
+      succ = read
+    )
+  }
+
 }
 
 module DynCodeExecFlow = TaintTracking::Global<DynamicCodeExecutionConfig>;
@@ -108,4 +117,4 @@ import DynCodeExecFlow::PathGraph
 
 from DynCodeExecFlow::PathNode source, DynCodeExecFlow::PathNode sink
 where DynCodeExecFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Remote data flows to dynamic code execution. If code execution is intended, check for hash validation or sandboxing."
+select sink.getNode(), source, sink, "Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server."

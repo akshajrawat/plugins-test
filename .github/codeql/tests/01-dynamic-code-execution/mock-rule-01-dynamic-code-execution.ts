@@ -11,8 +11,11 @@ async function triggerRule(url: string, panel: string) {
     const ax = await axios.get(url);
     new Function(ax.data)();
 
+    let body = '';
     http.get(url).on('data', (chunk: any) => {
-        setTimeout(chunk);
+        body += chunk;
+    }).on('end', () => {
+        setTimeout(body);
     });
 
     superagent.get(url).then((reply: any) => {
