@@ -14,7 +14,7 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 
   predicate isSource(DataFlow::Node source) {
     Joplin::isRemoteDataSource(source) or
-    
+
     // Direct http/https
     exists(DataFlow::CallNode call |
       call = DataFlow::moduleMember("http", "get").getACall() or
@@ -81,9 +81,10 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
     sink = DataFlow::globalVarRef("eval").getAnInvocation().getAnArgument() or
     
     // Function sink - last argument is the body
-    exists(DataFlow::CallNode fnCall |
+    exists(DataFlow::InvokeNode fnCall |
       fnCall = DataFlow::globalVarRef("Function").getAnInstantiation() or
-      fnCall = DataFlow::globalVarRef("Function").getACall()
+      fnCall = DataFlow::globalVarRef("Function").getACall() or
+      fnCall.getCalleeName() = "Function"
     |
       sink = fnCall.getLastArgument()
     ) or
@@ -106,13 +107,8 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 class AxiosDataTaintStep extends TaintTracking::SharedTaintStep {
   override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
     exists(DataFlow::PropRead read |
-      read.getBase().getALocalSource() = pred.getALocalSource() and
       read.getPropertyName() = "data" and
-      succ = read
-    ) or
-    exists(DataFlow::PropRead read |
       read.getBase() = pred and
-      read.getPropertyName() = "data" and
       succ = read
     )
   }

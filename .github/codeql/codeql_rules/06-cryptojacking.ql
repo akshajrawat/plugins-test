@@ -25,23 +25,29 @@ predicate isRemoteDataSource(DataFlow::Node source) {
   )
 }
 
+class CommandExecutionTaintStep extends TaintTracking::SharedTaintStep {
+  override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
+    exists(DataFlow::CallNode call |
+      call instanceof SystemCommandExecution and
+      pred = call.getAnArgument() and
+      succ = call
+    )
+  }
+}
+
 predicate isElevatedSpawn(DataFlow::Node sink) {
-  exists(DataFlow::CallNode call, DataFlow::Node options |
-    sink = call.getAnArgument() and
-    isCommandExecutionSink(sink) and
+  exists(DataFlow::CallNode call |
+    sink = call and
     (
-      (call.getCalleeName() = "exec" or call.getCalleeName() = "execSync")
+      call.getCalleeName() in ["exec", "execSync"]
       or
       (
-        (
-          call.getCalleeName() = "spawn" or call.getCalleeName() = "spawnSync" or
-          call.getCalleeName() = "execFile" or call.getCalleeName() = "execFileSync"
-        ) and
-        options = call.getArgument(2) and
-        exists(Property prop |
+        call.getCalleeName() in ["spawn", "spawnSync", "execFile", "execFileSync"] and
+        exists(DataFlow::Node options, Property prop |
+          options = call.getArgument(2) and
           prop = options.getALocalSource().asExpr().(ObjectExpr).getAProperty() and
           prop.getName() = "shell" and
-          prop.getInit().(BooleanLiteral).getBoolValue() = true
+          prop.getInit().toString() = "true"
         )
       )
     )

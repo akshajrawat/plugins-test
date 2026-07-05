@@ -102,9 +102,9 @@ module Joplin {
   predicate isRemoteDataSource(DataFlow::Node source) {
     exists(DataFlow::CallNode call | 
       call = DataFlow::globalVarRef("fetch").getACall() or
-      call = DataFlow::moduleMember("axios", "get").getACall() or
-      call = DataFlow::moduleMember("axios", "post").getACall() or
-      call = DataFlow::globalVarRef("axios").getACall() or
+      call = DataFlow::moduleImport("axios").getAMethodCall("get") or
+      call = DataFlow::moduleImport("axios").getAMethodCall("post") or
+      call = DataFlow::moduleImport("axios").getACall() or
       call = DataFlow::moduleMember("http", "get").getACall() or
       call = DataFlow::moduleMember("http", "request").getACall() or
       call = DataFlow::moduleMember("https", "get").getACall() or

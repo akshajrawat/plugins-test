@@ -14,4 +14,4 @@ function triggerRule() {
     (new WebSocketServer({ noServer: true }) as any).listen(3005);
 }
 
-export {};
+export { };
