@@ -11,7 +11,7 @@ function triggerRule() {
     dgram.createSocket('udp4').bind(3002);
     express().listen(3003);
     fastify().listen({ port: 3004 });
-    new WebSocketServer({ noServer: true }).listen(3005 as any);
+    (new WebSocketServer({ noServer: true }) as any).listen(3005);
 }
 
 export {};

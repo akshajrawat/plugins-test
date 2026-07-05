@@ -101,15 +101,21 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
-    // Propagate taint from axios response object to its `.data` property
+}
+
+class AxiosDataTaintStep extends TaintTracking::SharedTaintStep {
+  override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
+    exists(DataFlow::PropRead read |
+      read.getBase().getALocalSource() = pred.getALocalSource() and
+      read.getPropertyName() = "data" and
+      succ = read
+    ) or
     exists(DataFlow::PropRead read |
       read.getBase() = pred and
       read.getPropertyName() = "data" and
       succ = read
     )
   }
-
 }
 
 module DynCodeExecFlow = TaintTracking::Global<DynamicCodeExecutionConfig>;
