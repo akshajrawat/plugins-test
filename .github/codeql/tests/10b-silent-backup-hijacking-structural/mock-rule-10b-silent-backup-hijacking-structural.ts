@@ -5,8 +5,8 @@ import * as joplin from 'api';
 
 async function triggerRule() {
     await joplin.interop.registerExportModule({
-        format: 'json',
-        description: 'JSON Export',
+        format: 'attacker',
+        description: 'Attacker Export',
         target: FileSystemItem.Directory,
         isNoteArchive: false,
         async onInit(context: any) {
@@ -16,8 +16,14 @@ async function triggerRule() {
             fs.writeFileSync(context.destPath + '/manifest.txt', 'ok');
         },
 
-        async onProcessItem() {
+        async onProcessItem(context: any, itemType: number, item: any) {
             fs.writeFileSync('/tmp/export-item.txt', 'item');
+        },
+
+        async onProcessResource(context: any, resource: any, filePath: string) {
+        },
+
+        async onClose(context: any) {
         },
     });
 }

@@ -9,6 +9,68 @@
 import javascript
 import JoplinSources
 
+bindingset[value]
+predicate containsExternalWebviewUrlAttribute(string value) {
+  exists(string remoteUrlPattern |
+    remoteUrlPattern = "https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$))" |
+    value.regexpMatch("(?is).*<(script|iframe|img)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<link\\b[^>]*\\bhref\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<meta\\b[^>]*\\bcontent\\s*=\\s*[\"']?[^>]*\\burl\\s*=\\s*" + remoteUrlPattern + ".*")
+  )
+}
+
+predicate isJoplinSetHtmlCall(DataFlow::CallNode call) {
+  call.getCalleeName() = "setHtml" and
+  (
+    call.getReceiver().getALocalSource() = Joplin::panels() or 
+    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs") or
+    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("editors")
+  )
+}
+
+bindingset[name]
+predicate isSensitiveEnvironmentVariableName(string name) {
+  name.regexpMatch("(?i).*(token|secret|key|password|passwd|passphrase|credential|auth|session|cookie|private).*")
+}
+
+predicate isSensitiveEnvironmentVariableAccess(DataFlow::Node source) {
+  exists(DataFlow::PropRead envRead, string name |
+    envRead = DataFlow::globalVarRef("process").getAPropertyRead("env").getAPropertyRead() and
+    name = envRead.getPropertyName() and
+    isSensitiveEnvironmentVariableName(name) and
+    source = envRead
+  )
+}
+
+predicate externalUrlPrefixBefore(Expr expr) {
+  exists(StringLiteral str |
+    expr.getAChildExpr*() = str and
+    containsExternalWebviewUrlAttribute(str.getStringValue())
+  )
+}
+
+predicate htmlRootExpr(DataFlow::Node html, Expr root) {
+  root = html.asExpr() or
+  root = html.getALocalSource().asExpr()
+}
+
+predicate isDynamicExternalUrlPart(DataFlow::Node html, DataFlow::Node sink) {
+  exists(Expr root, AddExpr add |
+    htmlRootExpr(html, root) and
+    add = root.getAChildExpr*() and
+    sink.asExpr() = add.getRightOperand() and
+    externalUrlPrefixBefore(add.getLeftOperand())
+  )
+  or
+  exists(Expr root, TemplateLiteral tpl, TemplateElement elem |
+    htmlRootExpr(html, root) and
+    tpl = root.getAChildExpr*() and
+    sink.asExpr() = tpl.getAChildExpr() and
+    elem = tpl.getAnElement() and
+    containsExternalWebviewUrlAttribute(elem.getValue())
+  )
+}
+
 module UrlSmugglingConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
     // Joplin data
@@ -22,37 +84,14 @@ module UrlSmugglingConfig implements DataFlow::ConfigSig {
       source = call
     ) or
     // Environment variables
-    source = DataFlow::globalVarRef("process").getAPropertyRead("env").getAPropertyRead()
+    isSensitiveEnvironmentVariableAccess(source)
   }
 
   predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode call, DataFlow::Node setHtmlArg, DataFlow::Node concatNode, string remotePattern |
-      remotePattern = "(?is).*<(script|iframe|img|link|meta)\\b[^>]*\\b(src|href|content|url)\\s*=\\s*[\"']?\\s*https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$)).*" and
-      call.getCalleeName() = "setHtml" and
-      (
-        call.getReceiver().getALocalSource() = Joplin::panels() or 
-        call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs") or
-        call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("editors")
-      ) and
+    exists(DataFlow::CallNode call, DataFlow::Node setHtmlArg |
+      isJoplinSetHtmlCall(call) and
       setHtmlArg = call.getArgument(1) and
-      
-      (
-        exists(AddExpr add, Expr left |
-          concatNode.asExpr() = add and
-          sink.asExpr() = add.getRightOperand() and
-          left = add.getLeftOperand() and
-          left.getStringValue().regexpMatch(remotePattern)
-        )
-        or
-        exists(TemplateLiteral tpl, TemplateElement elem |
-          concatNode.asExpr() = tpl and
-          sink.asExpr() = tpl.getAChildExpr() and
-          elem = tpl.getAnElement() and
-          elem.getValue().regexpMatch(remotePattern)
-        )
-      ) and
-      // The concatenated string flows into the setHtml argument
-      concatNode = setHtmlArg.getALocalSource()
+      isDynamicExternalUrlPart(setHtmlArg, sink)
     )
   }
 }

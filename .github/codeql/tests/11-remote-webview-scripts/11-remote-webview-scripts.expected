@@ -1,12 +1,24 @@
 edges
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:11:4:14 | note | mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:58 | note | provenance |  |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:18:4:54 | await j ... , '1']) | mock-rule-11-remote-webview-scripts-taint-structural.ts:4:11:4:14 | note | provenance |  |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:24:4:54 | joplin. ... , '1']) | mock-rule-11-remote-webview-scripts-taint-structural.ts:4:18:4:54 | await j ... , '1']) | provenance |  |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:58 | note | mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:63 | note.body | provenance |  |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:11:10:15 | token | mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | provenance |  |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:19:10:64 | await j ... token') | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:11:10:15 | token | provenance |  |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:25:10:64 | joplin. ... token') | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:19:10:64 | await j ... token') | provenance |  |
 nodes
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:11:4:14 | note | semmle.label | note |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:18:4:54 | await j ... , '1']) | semmle.label | await j ... , '1']) |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:4:24:4:54 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:58 | note | semmle.label | note |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:63 | note.body | semmle.label | note.body |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:11:10:15 | token | semmle.label | token |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:19:10:64 | await j ... token') | semmle.label | await j ... token') |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:25:10:64 | joplin. ... token') | semmle.label | joplin. ... token') |
 | mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | semmle.label | token |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:18:56:18:77 | process ... C_TOKEN | semmle.label | process ... C_TOKEN |
 subpaths
 #select
-| mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:25:10:64 | joplin. ... token') | mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://..."`) in a Webview. \\n**Reviewer Action:** This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch. |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:63 | note.body | mock-rule-11-remote-webview-scripts-taint-structural.ts:4:24:4:54 | joplin. ... , '1']) | mock-rule-11-remote-webview-scripts-taint-structural.ts:7:55:7:63 | note.body | URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://..."`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch. |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | mock-rule-11-remote-webview-scripts-taint-structural.ts:10:25:10:64 | joplin. ... token') | mock-rule-11-remote-webview-scripts-taint-structural.ts:13:50:13:54 | token | URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://..."`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch. |
+| mock-rule-11-remote-webview-scripts-taint-structural.ts:18:56:18:77 | process ... C_TOKEN | mock-rule-11-remote-webview-scripts-taint-structural.ts:18:56:18:77 | process ... C_TOKEN | mock-rule-11-remote-webview-scripts-taint-structural.ts:18:56:18:77 | process ... C_TOKEN | URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://..."`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch. |
