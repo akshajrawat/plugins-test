@@ -66,7 +66,8 @@ module ArchiveEntryConfig implements DataFlow::ConfigSig {
 
   predicate isSink(DataFlow::Node sink) {
     isFileSystemPathSink(sink) or
-    isCommandExecutionSink(sink)
+    isCommandExecutionSink(sink) or
+    isCommandExecutionArgumentSink(sink)
   }
 }
 

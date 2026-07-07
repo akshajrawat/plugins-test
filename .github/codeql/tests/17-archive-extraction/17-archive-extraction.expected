@@ -1,22 +1,24 @@
 edges
-| mock-rule-17-archive-extraction.ts:5:11:5:18 | response | mock-rule-17-archive-extraction.ts:7:41:7:48 | response | provenance |  |
+| mock-rule-17-archive-extraction.ts:5:11:5:18 | response | mock-rule-17-archive-extraction.ts:7:53:7:60 | response | provenance |  |
 | mock-rule-17-archive-extraction.ts:5:22:5:72 | await f ... e.zip') | mock-rule-17-archive-extraction.ts:5:11:5:18 | response | provenance |  |
 | mock-rule-17-archive-extraction.ts:5:28:5:72 | fetch(' ... e.zip') | mock-rule-17-archive-extraction.ts:5:22:5:72 | await f ... e.zip') | provenance |  |
-| mock-rule-17-archive-extraction.ts:7:41:7:48 | response | mock-rule-17-archive-extraction.ts:7:41:7:55 | response.blob() | provenance |  |
-| mock-rule-17-archive-extraction.ts:7:41:7:55 | response.blob() | mock-rule-17-archive-extraction.ts:7:35:7:55 | await r ... .blob() | provenance |  |
+| mock-rule-17-archive-extraction.ts:7:47:7:74 | await r ... uffer() | mock-rule-17-archive-extraction.ts:7:35:7:75 | Buffer. ... ffer()) | provenance |  |
+| mock-rule-17-archive-extraction.ts:7:53:7:60 | response | mock-rule-17-archive-extraction.ts:7:53:7:74 | respons ... uffer() | provenance |  |
+| mock-rule-17-archive-extraction.ts:7:53:7:74 | respons ... uffer() | mock-rule-17-archive-extraction.ts:7:47:7:74 | await r ... uffer() | provenance |  |
 | mock-rule-17-archive-extraction.ts:10:49:10:55 | message | mock-rule-17-archive-extraction.ts:11:40:11:46 | message | provenance |  |
 | mock-rule-17-archive-extraction.ts:11:40:11:46 | message | mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | provenance |  |
 nodes
 | mock-rule-17-archive-extraction.ts:5:11:5:18 | response | semmle.label | response |
 | mock-rule-17-archive-extraction.ts:5:22:5:72 | await f ... e.zip') | semmle.label | await f ... e.zip') |
 | mock-rule-17-archive-extraction.ts:5:28:5:72 | fetch(' ... e.zip') | semmle.label | fetch(' ... e.zip') |
-| mock-rule-17-archive-extraction.ts:7:35:7:55 | await r ... .blob() | semmle.label | await r ... .blob() |
-| mock-rule-17-archive-extraction.ts:7:41:7:48 | response | semmle.label | response |
-| mock-rule-17-archive-extraction.ts:7:41:7:55 | response.blob() | semmle.label | response.blob() |
+| mock-rule-17-archive-extraction.ts:7:35:7:75 | Buffer. ... ffer()) | semmle.label | Buffer. ... ffer()) |
+| mock-rule-17-archive-extraction.ts:7:47:7:74 | await r ... uffer() | semmle.label | await r ... uffer() |
+| mock-rule-17-archive-extraction.ts:7:53:7:60 | response | semmle.label | response |
+| mock-rule-17-archive-extraction.ts:7:53:7:74 | respons ... uffer() | semmle.label | respons ... uffer() |
 | mock-rule-17-archive-extraction.ts:10:49:10:55 | message | semmle.label | message |
 | mock-rule-17-archive-extraction.ts:11:40:11:46 | message | semmle.label | message |
 | mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | semmle.label | message.archivePath |
 subpaths
 #select
-| mock-rule-17-archive-extraction.ts:7:35:7:55 | await r ... .blob() | mock-rule-17-archive-extraction.ts:5:28:5:72 | fetch(' ... e.zip') | mock-rule-17-archive-extraction.ts:7:35:7:55 | await r ... .blob() | Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination without an apparent integrity check. \\n**Reviewer Action:** This can lead to arbitrary file overwrites. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping. |
-| mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | mock-rule-17-archive-extraction.ts:10:49:10:55 | message | mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination without an apparent integrity check. \\n**Reviewer Action:** This can lead to arbitrary file overwrites. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping. |
+| mock-rule-17-archive-extraction.ts:7:35:7:75 | Buffer. ... ffer()) | mock-rule-17-archive-extraction.ts:5:28:5:72 | fetch(' ... e.zip') | mock-rule-17-archive-extraction.ts:7:35:7:75 | Buffer. ... ffer()) | Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping. |
+| mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | mock-rule-17-archive-extraction.ts:10:49:10:55 | message | mock-rule-17-archive-extraction.ts:11:40:11:58 | message.archivePath | Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping. |

