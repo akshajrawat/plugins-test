@@ -578,16 +578,16 @@ export const finishPublish = async (
         : payload?.plugin_name ?? 'the plugin';
     const pluginDirectory = summary.pluginDirectory ?? (summary.pluginId ? `plugins/${summary.pluginId}` : 'plugins/');
 
-    const body = `# Plugin Published Successfully
-
-The plugin **${escapeMarkdownText(pluginLabel)}** has been added to the registry.
+    const details = `The plugin **${escapeMarkdownText(pluginLabel)}** has been added to the registry.
 
 * Registry folder: \`${escapeInlineCode(pluginDirectory)}\` ${summary.registryUpdated ? 'updated' : 'not verified'}
 * README.md: ${summary.readmeUpdated ? 'updated' : 'no file change detected'}
 * GitHub release assets: ${summary.releaseUpdated ? 'updated' : 'no asset change detected'}
-* stats.json: ${summary.statsUpdated ? 'updated' : 'no file change detected'}
+* stats.json: ${summary.statsUpdated ? 'updated' : 'no file change detected'}`;
 
-**Workflow Run:** [View Logs](${escapeMarkdownUrl(runUrlFor(context))})`;
+    const body = payload
+        ? statusTemplate(payload, runUrlFor(context), 7, details)
+        : `# Plugin Published Successfully\n\n${details}\n\n**Workflow Run:** [View Logs](${escapeMarkdownUrl(runUrlFor(context))})`;
 
     await updateComment(github, context, commentId, body);
 
