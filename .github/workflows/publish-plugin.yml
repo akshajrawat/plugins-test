@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   initialize-publish:
-    if: ${{ github.event.label.name == 'status: approved' && contains(github.event.issue.title, '[Plugin Submission]') }}
+    if: "github.event.label.name == 'status: approved' && contains(github.event.issue.title, '[Plugin Submission]')"
     runs-on: ubuntu-latest
     permissions:
       contents: read
