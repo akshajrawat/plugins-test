@@ -9,8 +9,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-plugin:
-    if: github.event.label.name == 'status: approved' && contains(github.event.issue.title, '[Plugin Submission]')
+  initialize-publish:
+    if: ${{ github.event.label.name == 'status: approved' && contains(github.event.issue.title, '[Plugin Submission]') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,14 +18,29 @@ jobs:
     outputs:
       plugin_name: ${{ steps.init.outputs.plugin_name }}
       repository_url: ${{ steps.init.outputs.repository_url }}
+      repo_name: ${{ steps.init.outputs.repo_name }}
       commit_hash: ${{ steps.init.outputs.commit_hash }}
-      comment_id: ${{ steps.init.outputs.comment_id }}
+      comment_id: ${{ steps.init.outputs.comment_id || steps.ack.outputs.comment_id }}
       should_proceed: ${{ steps.init.outputs.should_proceed }}
     steps:
+      - name: Acknowledge publish initialization
+        id: ack
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "# Plugin Publish Status\nValidating the approved submission."
+            });
+            core.setOutput('comment_id', comment.data.id.toString());
+
       - name: Checkout plugins-test registry
         uses: actions/checkout@v4
         with:
           path: plugins-test
+          persist-credentials: false
 
       - name: Setup Node.js for scripts
         uses: actions/setup-node@v4
@@ -42,50 +57,98 @@ jobs:
 
       - name: Initialize publish
         id: init
+        uses: actions/github-script@v7
         env:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-        uses: actions/github-script@v7
+          INITIAL_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
             return await publish.acknowledgePublishInitialization({github, context, core});
 
+      - name: Handle initialization failure
+        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.should_proceed == ''
+        uses: actions/github-script@v7
+        env:
+          COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
+        with:
+          script: |
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: Number.parseInt(process.env.COMMENT_ID, 10),
+              body: `# Plugin Publish Failed
+
+The publish workflow failed while initializing the trusted publish scripts.
+
+**Workflow Run:** [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            });
+
+  build-plugin:
+    needs: initialize-publish
+    if: ${{ always() && needs.initialize-publish.outputs.should_proceed == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
       - name: Checkout target plugin repository
-        if: success() && steps.init.outputs.should_proceed == 'true'
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.init.outputs.repository_url }}
-          ref: ${{ steps.init.outputs.commit_hash }}
+          repository: ${{ needs.initialize-publish.outputs.repo_name }}
+          ref: ${{ needs.initialize-publish.outputs.commit_hash }}
           path: target-plugin
+          persist-credentials: false
 
       - name: Setup Node.js for plugin
-        if: success() && steps.init.outputs.should_proceed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "18"
 
       - name: Install plugin dependencies
-        if: success() && steps.init.outputs.should_proceed == 'true'
         working-directory: target-plugin
-        run: npm install --ignore-scripts
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
 
       - name: Build plugin
-        if: success() && steps.init.outputs.should_proceed == 'true'
         working-directory: target-plugin
         run: npm run dist
 
+      - name: Validate plugin artifacts
+        working-directory: target-plugin
+        run: |
+          set -euo pipefail
+          jpl_count=$(find publish -maxdepth 1 -type f -name "*.jpl" | wc -l | tr -d ' ')
+          manifest_count=$(find publish -maxdepth 1 -type f -name "*.json" | wc -l | tr -d ' ')
+
+          if [ "$jpl_count" -ne 1 ]; then
+            echo "Expected exactly one .jpl artifact in publish/, found $jpl_count"
+            exit 1
+          fi
+
+          if [ "$manifest_count" -ne 1 ]; then
+            echo "Expected exactly one manifest JSON artifact in publish/, found $manifest_count"
+            exit 1
+          fi
+
       - name: Upload plugin artifacts
-        if: success() && steps.init.outputs.should_proceed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: plugin-artifacts
+          if-no-files-found: error
+          retention-days: 1
           path: |
             target-plugin/publish/*.jpl
-            target-plugin/publish/manifest.json
+            target-plugin/publish/*.json
 
   publish-plugin:
-    needs: build-plugin
-    if: needs.build-plugin.outputs.should_proceed == 'true'
+    needs:
+      - initialize-publish
+      - build-plugin
+    if: ${{ always() && needs.initialize-publish.outputs.should_proceed == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -110,15 +173,28 @@ jobs:
           npm ci
           npm run build
 
-      - name: Update phase to Download
+      - name: Stop if build failed
+        if: ${{ needs.build-plugin.result != 'success' }}
         uses: actions/github-script@v7
         env:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
+          FAILURE_MESSAGE: The plugin artifact build failed in the untrusted build job. Check the build-plugin logs.
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
-            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, "Phase 2: Downloading compiled artifacts from build job...");
+            await publish.handleWorkflowFailure({github, context, core}, process.env.COMMENT_ID, process.env.FAILURE_MESSAGE);
+            core.setFailed(process.env.FAILURE_MESSAGE);
+
+      - name: Update phase to artifact download
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, 3, "Build completed. Downloading the compiled artifact.");
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -126,56 +202,188 @@ jobs:
           name: plugin-artifacts
           path: plugin-artifacts
 
-      - name: Update phase to Publish
+      - name: Locate plugin artifacts
+        id: artifacts
+        run: |
+          set -euo pipefail
+          jpl_file=$(find plugin-artifacts -maxdepth 1 -type f -name "*.jpl" | head -n 1)
+          manifest_file=$(find plugin-artifacts -maxdepth 1 -type f -name "*.json" | head -n 1)
+
+          if [ -z "$jpl_file" ] || [ -z "$manifest_file" ]; then
+            echo "Downloaded artifacts are missing a .jpl or manifest JSON file."
+            exit 1
+          fi
+
+          echo "jpl_file=$jpl_file" >> "$GITHUB_OUTPUT"
+          echo "manifest_file=$manifest_file" >> "$GITHUB_OUTPUT"
+
+      - name: Update phase to registry publish
         uses: actions/github-script@v7
         env:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
-            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, "Phase 3: Publishing to registry...");
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, 4, "Publishing plugin files into the registry.");
+
+      - name: Install publish CLI
+        run: npm install -g @akshajrawat/plugin-repo-cli@1.0.1
 
       - name: Execute publish CLI command
         working-directory: plugins-test
+        run: plugin-repo-cli publish-plugin . "../${{ steps.artifacts.outputs.manifest_file }}" "../${{ steps.artifacts.outputs.jpl_file }}"
+
+      - name: Mark plugin as approved
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.markPublishedPluginApproved(
+              `${process.env.GITHUB_WORKSPACE}/plugins-test`,
+              process.env.MANIFEST_FILE
+            );
+
+      - name: Verify published registry files
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
+          JPL_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.jpl_file }}
+          EXPECTED_REPOSITORY_URL: ${{ needs.initialize-publish.outputs.repository_url }}
+          EXPECTED_COMMIT_HASH: ${{ needs.initialize-publish.outputs.commit_hash }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.verifyPublishedRegistry(
+              {github, context, core},
+              `${process.env.GITHUB_WORKSPACE}/plugins-test`,
+              process.env.MANIFEST_FILE,
+              process.env.JPL_FILE,
+              process.env.EXPECTED_REPOSITORY_URL,
+              process.env.EXPECTED_COMMIT_HASH
+            );
+
+      - name: Capture registry file changes
+        id: registry_changes
+        working-directory: plugins-test
         run: |
-          npm install -g @akshajrawat/plugin-repo-cli
-          JPL_FILE=$(find ../plugin-artifacts -name "*.jpl" | head -n 1)
-          MANIFEST_FILE=$(find ../plugin-artifacts -name "manifest.json" | head -n 1)
-          plugin-repo-cli publish-plugin . "$MANIFEST_FILE" "$JPL_FILE"
+          set -euo pipefail
+
+          if git diff --quiet -- README.md; then
+            echo "readme_updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "readme_updated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if git diff --quiet -- manifests.json plugins; then
+            echo "registry_updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "registry_updated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update phase to release update
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, 5, "Updating GitHub release assets and download stats.");
 
       - name: Execute update-release CLI command
         working-directory: plugins-test
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JOPLIN_GITHUB_OAUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          plugin-repo-cli update-release .
+          set -o pipefail
+          plugin-repo-cli update-release . 2>&1 | tee ../update-release.log
+
+      - name: Capture release and stats changes
+        id: release_changes
+        working-directory: plugins-test
+        run: |
+          set -euo pipefail
+
+          if grep -Eq "Uploading|Deleting old asset" ../update-release.log; then
+            echo "release_updated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_updated=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if git diff --quiet -- stats.json; then
+            echo "stats_updated=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "stats_updated=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summarize publish result
+        id: summary
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
+          RELEASE_LOG: ${{ github.workspace }}/update-release.log
+          README_UPDATED: ${{ steps.registry_changes.outputs.readme_updated }}
+          STATS_UPDATED: ${{ steps.release_changes.outputs.stats_updated }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.summarizePublishResult(
+              {github, context, core},
+              `${process.env.GITHUB_WORKSPACE}/plugins-test`,
+              process.env.MANIFEST_FILE,
+              process.env.RELEASE_LOG,
+              process.env.README_UPDATED,
+              process.env.STATS_UPDATED
+            );
+
+      - name: Update phase to commit
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, 6, "Committing registry, README, plugin files, and stats changes.");
 
       - name: Commit and push changes
         working-directory: plugins-test
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add plugins/ manifests.json README.md stats.json manifestOverrides.json || true
-          git commit -m "Publish plugin ${{ needs.build-plugin.outputs.plugin_name }}" || true
-          git push
+          git add README.md manifests.json manifestOverrides.json stats.json plugins
+
+          if git diff --cached --quiet; then
+            echo "No registry changes to commit."
+          else
+            git commit -m "Publish plugin ${{ needs.initialize-publish.outputs.plugin_name }}"
+            git push
+          fi
 
       - name: Finish publish
         uses: actions/github-script@v7
         env:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
+          SUMMARY_JSON: ${{ steps.summary.outputs.summary }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
-            await publish.finishPublish({github, context, core}, process.env.COMMENT_ID);
+            await publish.finishPublish({github, context, core}, process.env.COMMENT_ID, process.env.SUMMARY_JSON);
 
       - name: Handle failure
-        if: failure()
+        if: failure() && needs.build-plugin.result == 'success'
         uses: actions/github-script@v7
         env:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
+          COMMENT_ID: ${{ needs.initialize-publish.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
