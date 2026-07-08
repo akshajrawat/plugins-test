@@ -90,9 +90,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-    env:
-      PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
-      COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
     steps:
       - name: Checkout plugins-test registry
         uses: actions/checkout@v4
@@ -115,6 +112,9 @@ jobs:
 
       - name: Update phase to Download
         uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
@@ -128,6 +128,9 @@ jobs:
 
       - name: Update phase to Publish
         uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
@@ -159,6 +162,9 @@ jobs:
 
       - name: Finish publish
         uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
@@ -167,6 +173,9 @@ jobs:
       - name: Handle failure
         if: failure()
         uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+          COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
