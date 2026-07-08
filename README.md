@@ -1,1 +1,1 @@
-# Joplin Plugins Test
+# Joplin Plugins Repository

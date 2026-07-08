@@ -1,0 +1,173 @@
+name: Plugin Publish
+
+on:
+  issues:
+    types: [labeled]
+
+concurrency:
+  group: global-joplin-registry-mutation
+  cancel-in-progress: false
+
+jobs:
+  build-plugin:
+    if: github.event.label.name == 'status: approved' && contains(github.event.issue.title, '[Plugin Submission]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      plugin_name: ${{ steps.init.outputs.plugin_name }}
+      repository_url: ${{ steps.init.outputs.repository_url }}
+      commit_hash: ${{ steps.init.outputs.commit_hash }}
+      comment_id: ${{ steps.init.outputs.comment_id }}
+      should_proceed: ${{ steps.init.outputs.should_proceed }}
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v4
+        with:
+          path: plugins-test
+
+      - name: Setup Node.js for scripts
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: plugins-test/scripts/package-lock.json
+
+      - name: Install and build scripts
+        working-directory: plugins-test/scripts
+        run: |
+          npm ci
+          npm run build
+
+      - name: Initialize publish
+        id: init
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.acknowledgePublishInitialization({github, context, core});
+
+      - name: Checkout target plugin repository
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.init.outputs.repository_url }}
+          ref: ${{ steps.init.outputs.commit_hash }}
+          path: target-plugin
+
+      - name: Setup Node.js for plugin
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install plugin dependencies
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        working-directory: target-plugin
+        run: npm install --ignore-scripts
+
+      - name: Build plugin
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        working-directory: target-plugin
+        run: npm run dist
+
+      - name: Upload plugin artifacts
+        if: success() && steps.init.outputs.should_proceed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-artifacts
+          path: |
+            target-plugin/publish/*.jpl
+            target-plugin/publish/manifest.json
+
+  publish-plugin:
+    needs: build-plugin
+    if: needs.build-plugin.outputs.should_proceed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    env:
+      PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/publish/publishManager.js
+      COMMENT_ID: ${{ needs.build-plugin.outputs.comment_id }}
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v4
+        with:
+          path: plugins-test
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js for scripts
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: plugins-test/scripts/package-lock.json
+
+      - name: Install and build scripts
+        working-directory: plugins-test/scripts
+        run: |
+          npm ci
+          npm run build
+
+      - name: Update phase to Download
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, "Phase 2: Downloading compiled artifacts from build job...");
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: plugin-artifacts
+          path: plugin-artifacts
+
+      - name: Update phase to Publish
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, "Phase 3: Publishing to registry...");
+
+      - name: Execute publish CLI command
+        working-directory: plugins-test
+        run: |
+          npm install -g @akshajrawat/plugin-repo-cli
+          JPL_FILE=$(find ../plugin-artifacts -name "*.jpl" | head -n 1)
+          MANIFEST_FILE=$(find ../plugin-artifacts -name "manifest.json" | head -n 1)
+          plugin-repo-cli publish-plugin . "$MANIFEST_FILE" "$JPL_FILE"
+
+      - name: Execute update-release CLI command
+        working-directory: plugins-test
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          plugin-repo-cli update-release .
+
+      - name: Commit and push changes
+        working-directory: plugins-test
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add plugins/ manifests.json README.md stats.json manifestOverrides.json || true
+          git commit -m "Publish plugin ${{ needs.build-plugin.outputs.plugin_name }}" || true
+          git push
+
+      - name: Finish publish
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.finishPublish({github, context, core}, process.env.COMMENT_ID);
+
+      - name: Handle failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            await publish.handleWorkflowFailure({github, context, core}, process.env.COMMENT_ID);
