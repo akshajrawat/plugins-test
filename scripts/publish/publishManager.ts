@@ -49,9 +49,9 @@ const runUrlFor = (context: any) => {
 };
 
 const statusLabel = (phase: number, currentPhase: number) => {
-    if (phase < currentPhase) return '[done]';
-    if (phase === currentPhase) return '[running]';
-    return '[pending]';
+    if (phase < currentPhase) return '✅';
+    if (phase === currentPhase) return '⏳';
+    return '⚪';
 };
 
 const getPhases = (currentPhase: number) => {
@@ -63,7 +63,7 @@ const getPhases = (currentPhase: number) => {
 
     if (currentPhase > phaseCount) {
         for (let phase = 1; phase <= phaseCount; phase++) {
-            phases[phase] = '[done]';
+            phases[phase] = '✅';
         }
     }
 
