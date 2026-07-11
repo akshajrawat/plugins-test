@@ -1,0 +1,78 @@
+[
+  {
+    "name": "joplin-inline-tags-plugin",
+    "repo": "roman-r-m/joplin-inline-tags-plugin"
+  },
+  {
+    "name": "joplin-inline-todo",
+    "repo": "CalebJohn/joplin-inline-todo"
+  },
+  {
+    "name": "joplin-math-mode",
+    "repo": "CalebJohn/joplin-math-mode"
+  },
+  {
+    "name": "joplin-note-tabs",
+    "repo": "benji300/joplin-note-tabs"
+  },
+  {
+    "name": "joplin-plugin-combine-notes",
+    "repo": "JackGruber/joplin-plugin-combine-notes"
+  },
+  {
+    "name": "joplin-plugin-diff-tool",
+    "repo": "personalizedrefrigerator/joplin-plugin-diff-tool"
+  },
+  {
+    "name": "joplin-plugin-extra-editor-settings",
+    "repo": "personalizedrefrigerator/joplin-plugin-extra-editor-settings"
+  },
+  {
+    "name": "joplin-plugin-extra-viewer-settings",
+    "repo": "personalizedrefrigerator/joplin-plugin-extra-viewer-settings"
+  },
+  {
+    "name": "joplin-plugin-hotfolder",
+    "repo": "JackGruber/joplin-plugin-hotfolder"
+  },
+  {
+    "name": "joplin-plugin-menu-shortcut-toolbar",
+    "repo": "tessus/joplin-plugin-menu-shortcut-toolbar"
+  },
+  {
+    "name": "joplin-plugin-note-overview",
+    "repo": "JackGruber/joplin-plugin-note-overview"
+  },
+  {
+    "name": "joplin-plugin-notelistpreview",
+    "repo": "JackGruber/joplin-plugin-notelistpreview"
+  },
+  {
+    "name": "joplin-plugin-quick-links",
+    "repo": "roman-r-m/joplin-plugin-quick-links"
+  },
+  {
+    "name": "joplin-plugin-table-formatter",
+    "repo": "roman-r-m/joplin-plugin-table-formatter"
+  },
+  {
+    "name": "joplin-plugin-tagging",
+    "repo": "JackGruber/joplin-plugin-tagging"
+  },
+  {
+    "name": "joplin-rich-markdown",
+    "repo": "CalebJohn/joplin-rich-markdown"
+  },
+  {
+    "name": "plugin-conflict-resolution",
+    "repo": "joplin/plugin-conflict-resolution"
+  },
+  {
+    "name": "plugin-templates",
+    "repo": "joplin/plugin-templates"
+  },
+  {
+    "name": "plugin-yesyoukan",
+    "repo": "joplin/plugin-yesyoukan"
+  }
+]

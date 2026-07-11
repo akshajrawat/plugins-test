@@ -1,14 +1,4 @@
 name: "Joplin Plugin Security Scan"
 
 paths:
-  - .
-
-paths-ignore:
-  - .github
-  - node_modules
-  - dist
-  - build
-  - out
-  - coverage
-  - tests
-  - test
+  - src

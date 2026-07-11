@@ -2,7 +2,7 @@ import type { GithubContext } from '../types/types';
 import type { PublishPayload } from '../types/publishTypes';
 import { normalizeRepositoryUrl } from '../utils/payload';
 
-export const scanReportMatchesPayload = async (body: string, payload: PublishPayload) => {
+export const scanReportMatchesPayload = (body: string, payload: PublishPayload) => {
     if (!body.includes('# Security Scan Report') || !body.includes('# Findings')) return false;
     if (body.includes('Failed to generate a SARIF report') || body.includes('# Security Scan Failed')) return false;
 
@@ -15,8 +15,8 @@ export const scanReportMatchesPayload = async (body: string, payload: PublishPay
     const scannedRepoUrl = targetMatch[1];
     const scannedCommitHash = targetMatch[2].toLowerCase();
 
-    const normalizedScannedUrl = await normalizeRepositoryUrl(scannedRepoUrl);
-    const normalizedPayloadUrl = await normalizeRepositoryUrl(payload.repository_url);
+    const normalizedScannedUrl = normalizeRepositoryUrl(scannedRepoUrl);
+    const normalizedPayloadUrl = normalizeRepositoryUrl(payload.repository_url);
 
     return normalizedScannedUrl === normalizedPayloadUrl
         && scannedCommitHash === payload.commit_hash.toLowerCase();
@@ -31,7 +31,7 @@ export const hasCompletedScanReport = async ({ github, context }: GithubContext,
     });
 
     for (const comment of comments) {
-        if (await scanReportMatchesPayload(comment.body ?? '', payload)) {
+        if (scanReportMatchesPayload(comment.body ?? '', payload)) {
             return true;
         }
     }

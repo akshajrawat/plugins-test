@@ -76,7 +76,7 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
 ### Milestone 4: Validation & Tuning (Top 20 + Threats)
 
 - **Tasks:**
-  - Run the scanner against the Top 20 Joplin plugins. Adjust rules to ensure close to zero false positives.
+  - Run the scanner against the Top 20 Joplin plugins. Adjust rules to ensure zero false positives.
   - Deploy 5-10 test malicious plugins covering the Phase 1 & Phase 2 Threat Model to verify 100% catch rate.
 
 - **Deliverable:** Documented proof of scanner accuracy and PoC readiness for maintainer evaluation.

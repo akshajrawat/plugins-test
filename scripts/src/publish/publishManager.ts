@@ -29,7 +29,7 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 
     core.setOutput('comment_id', commentId.toString());
 
-    const validation = await parseIssuePayload(context.payload.issue.body);
+    const validation = parseIssuePayload(context.payload.issue.body);
 
     if ('error' in validation) {
         const template = await failureTemplate('Plugin Publish Rejected', validation.error ?? '', runUrl);
@@ -143,8 +143,8 @@ export const verifyPublishedRegistry = async (
         throw new Error('Artifact manifest is missing id or version.');
     }
 
-    const artifactUrl = await normalizeRepositoryUrl(artifactManifest.repository_url);
-    const expectedUrl = await normalizeRepositoryUrl(expectedRepositoryUrl);
+    const artifactUrl = normalizeRepositoryUrl(artifactManifest.repository_url);
+    const expectedUrl = normalizeRepositoryUrl(expectedRepositoryUrl);
 
     if (artifactUrl !== expectedUrl) {
         throw new Error(`Artifact repository_url does not match the approved issue payload for ${pluginId}.`);
@@ -185,7 +185,7 @@ export const verifyPublishedRegistry = async (
         throw new Error(`Published registry manifest hash does not match the compiled JPL bytes for ${pluginId}.`);
     }
 
-    const registryUrl = await normalizeRepositoryUrl(registryManifest.repository_url);
+    const registryUrl = normalizeRepositoryUrl(registryManifest.repository_url);
     if (registryUrl !== expectedUrl) {
         throw new Error(`Published registry manifest repository_url does not match the approved issue payload for ${pluginId}.`);
     }

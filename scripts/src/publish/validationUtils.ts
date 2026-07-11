@@ -1,9 +1,7 @@
-import type { SubmissionPayload, ValidationResult } from '../types/types';
+import type { SubmissionPayload } from '../types/types';
 import type { PublishPayload, PublishSummary } from '../types/publishTypes';
 import { getRegistryPath, readJsonFile } from '../utils/utils';
 import { parseGithubRepository, normalizeRepositoryUrl, parseIssuePayload } from '../utils/payload';
-
-
 
 export const existingPluginFor = async (pluginName: string) => {
     const manifestsPath = await getRegistryPath('manifests.json');
@@ -25,8 +23,8 @@ export const validateRegistryOwnership = async (payload: PublishPayload) => {
     const registeredUrl = existingPlugin?.repository_url;
 
     if (registeredUrl) {
-        const normalizedRegisteredUrl = await normalizeRepositoryUrl(registeredUrl);
-        const normalizedPayloadUrl = await normalizeRepositoryUrl(payload.repository_url);
+        const normalizedRegisteredUrl = normalizeRepositoryUrl(registeredUrl);
+        const normalizedPayloadUrl = normalizeRepositoryUrl(payload.repository_url);
 
         if (normalizedRegisteredUrl !== normalizedPayloadUrl) {
             return `Security reject: plugin ${payload.plugin_name} already exists, but the repository URL does not match the registered owner.\nExpected: ${registeredUrl}\nProvided: ${payload.repository_url}`;
@@ -37,7 +35,7 @@ export const validateRegistryOwnership = async (payload: PublishPayload) => {
 };
 
 export const toPublishPayload = async (payload: SubmissionPayload): Promise<PublishPayload> => {
-    const repository = await parseGithubRepository(payload.repository_url);
+    const repository = parseGithubRepository(payload.repository_url);
     if (!repository) throw new Error(`Invalid repository URL: ${payload.repository_url}`);
 
     return {
@@ -48,7 +46,7 @@ export const toPublishPayload = async (payload: SubmissionPayload): Promise<Publ
 };
 
 export const parsePayloadFromContext = async (context: any): Promise<PublishPayload | null> => {
-    const validation = await parseIssuePayload(context.payload.issue.body);
+    const validation = parseIssuePayload(context.payload.issue.body);
     if (!validation.ok) return null;
     return await toPublishPayload(validation.payload);
 };

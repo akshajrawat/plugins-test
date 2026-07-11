@@ -1,14 +1,5 @@
-import { access, readFile, readdir, stat } from 'fs/promises';
+import { readFile, readdir, stat } from 'fs/promises';
 import { join, relative, resolve, sep } from 'path';
-
-const fileExists = async (path: string) => {
-    try {
-        await access(path);
-        return true;
-    } catch {
-        return false;
-    }
-};
 import {
     extractReportMetadata,
     getPhases,
@@ -19,11 +10,10 @@ import {
 import type {
     GithubApiContext,
     GithubContext,
-    SubmissionPayload,
-    ValidationResult,
 } from '../types/types';
 import { updateComment, failWithIssueComment } from '../utils/github';
 import { parseIssuePayload } from '../utils/payload';
+import { fileExists } from '../utils/utils';
 
 const ignoredSourceDirectories = new Set([
     '.git',
@@ -51,8 +41,6 @@ const repoNameFromUrl = (repositoryUrl: string) => {
     const urlParts = normalizeUrl(repositoryUrl).split('/');
     return urlParts.slice(-2).join('/');
 };
-
-
 
 const validateTitle = (title: string | null | undefined) => {
     const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9.]+.*$/;

@@ -1,0 +1,66 @@
+name: CodeQL Rule Regression Tests
+
+on:
+  push:
+    paths:
+      - '.github/codeql/**'
+  pull_request:
+    paths:
+      - '.github/codeql/**'
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v7
+
+      - name: Build plugin matrix
+        id: set-matrix
+        shell: bash
+        run: echo "matrix=$(jq -c '{plugin: .}' .github/codeql/target-plugins.json)" >> "$GITHUB_OUTPUT"
+
+  scan:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v7
+        with:
+          path: plugins-test
+
+      - name: Checkout target plugin
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ matrix.plugin.repo }}
+          path: target-plugin
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: plugins-test/scripts/package-lock.json
+
+      - name: Install and build regression scanner
+        working-directory: plugins-test/scripts
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run CodeQL regression scan
+        working-directory: plugins-test/scripts
+        env:
+          TARGET_PLUGIN_DIR: ${{ github.workspace }}/target-plugin
+          RULES_DIR: ${{ github.workspace }}/plugins-test/.github/codeql/codeql_rules
+          CODEQL_DB_PATH: ${{ runner.temp }}/codeql-regression-db
+          RESULTS_SARIF: ${{ github.workspace }}/results.sarif
+        run: node src/code-scan/regressionScan.js
