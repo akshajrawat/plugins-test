@@ -7,7 +7,7 @@ import type {
     SarifReport,
     SarifRule,
     SarifResult,
-} from './types';
+} from '../types/types';
 
 const phaseCount = 5;
 const targetPluginPathMarker = '/target-plugin/';

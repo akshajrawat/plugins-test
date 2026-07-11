@@ -1,4 +1,4 @@
-import type { SubmissionPayload } from '../code-scan/types';
+import type { SubmissionPayload } from './types';
 
 export interface PublishPayload extends SubmissionPayload {
     repo_name: string;

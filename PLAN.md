@@ -60,6 +60,8 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
   - Implement the **Split-Job Architecture**:
     1. _Build Job:_ Builds the untrusted code.
     2. _Publish Job:_ Uploads `.jpl` to GitHub Releases and the `/plugin` folder in the repository.
+  - Create an action that fetches all the top 20 plugins and run the rules against them. There should be no error or warning
+  - Setup the GitHub Actions so that the workflow runs every time a rule is changed or added.
 - **Deliverable:** Automated, structured security reports posted directly to submission issues comments, after review is done add `status: approved` label to get the plugin into the repository.
 
 ### Milestone 3: Joplin Plugin Cli update (1 PR LEFT)

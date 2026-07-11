@@ -1,5 +1,5 @@
-import type { PublishPayload } from './types';
-import { escapeMarkdownText, escapeMarkdownUrl } from './markdownUtils';
+import type { PublishPayload } from '../types/publishTypes';
+import { escapeMarkdownText, escapeMarkdownUrl } from '../utils/utils';
 
 const phaseCount = 6;
 

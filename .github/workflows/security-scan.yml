@@ -14,7 +14,7 @@ jobs:
     if: contains(github.event.issue.title, '[Plugin Submission]')
     runs-on: ubuntu-latest
     env:
-      SCAN_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/code-scan/scanManager.js
+      SCAN_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/src/code-scan/scanManager.js
     steps:
       - name: Acknowledge scan initialization
         id: ack

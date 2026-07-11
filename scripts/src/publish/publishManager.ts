@@ -1,12 +1,13 @@
 import { join } from 'path';
-import type { GithubContext } from '../code-scan/types';
-import type { PublishSummary } from './types';
-import { runUrlFor, updateComment, normalizeRepositoryUrl } from './githubUtils';
+import type { GithubContext } from '../types/types';
+import type { PublishSummary } from '../types/publishTypes';
+import { runUrlFor, updateComment } from '../utils/github';
+import { normalizeRepositoryUrl } from '../utils/payload';
 import { statusTemplate, failureTemplate } from './publishTemplates';
-import { parsePayloadFromContext, validateRegistryOwnership, parseIssuePayload, parseSummary, commitHashFromPublishCommit, parseBoolean, toPublishPayload } from './validationUtils';
+import { parsePayloadFromContext, validateRegistryOwnership, parseSummary, commitHashFromPublishCommit, parseBoolean, toPublishPayload } from './validationUtils';
+import { parseIssuePayload } from '../utils/payload';
 import { hasCompletedScanReport } from './scanUtils';
-import { fileExists, readJsonFromFile, writeJsonFile, sha256File } from './fileUtils';
-import { escapeMarkdownUrl, escapeMarkdownText, escapeInlineCode } from './markdownUtils';
+import { fileExists, readJsonFromFile, writeJsonFile, sha256File, escapeMarkdownUrl, escapeMarkdownText, escapeInlineCode } from '../utils/utils';
 
 export const acknowledgePublishInitialization = async ({ github, context, core }: GithubContext) => {
     const runUrl = await runUrlFor(context);
@@ -217,7 +218,7 @@ export const summarizePublishResult = async (
     const pluginJplPath = join(pluginDirectory, 'plugin.jpl');
     const pluginManifestPath = join(pluginDirectory, 'manifest.json');
     let releaseLog = '';
-    
+
     if (await fileExists(releaseLogPath)) {
         const { readFile } = await import('fs/promises');
         releaseLog = await readFile(releaseLogPath, 'utf8');
@@ -258,7 +259,7 @@ export const finishPublish = async (
 
     const escapedLabel = await escapeMarkdownText(pluginLabel);
     const escapedDir = await escapeInlineCode(pluginDirectory);
-    
+
     const registryStatus = summary.registryUpdated ? 'updated' : 'not verified';
     const readmeStatus = summary.readmeUpdated ? 'updated' : 'no file change detected';
     const releaseStatus = summary.releaseUpdated ? 'updated' : 'no asset change detected';

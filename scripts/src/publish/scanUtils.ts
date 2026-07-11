@@ -1,6 +1,6 @@
-import type { GithubContext } from '../code-scan/types';
-import type { PublishPayload } from './types';
-import { normalizeRepositoryUrl } from './githubUtils';
+import type { GithubContext } from '../types/types';
+import type { PublishPayload } from '../types/publishTypes';
+import { normalizeRepositoryUrl } from '../utils/payload';
 
 export const scanReportMatchesPayload = async (body: string, payload: PublishPayload) => {
     if (!body.includes('# Security Scan Report') || !body.includes('# Findings')) return false;
@@ -35,6 +35,6 @@ export const hasCompletedScanReport = async ({ github, context }: GithubContext,
             return true;
         }
     }
-    
+
     return false;
 };

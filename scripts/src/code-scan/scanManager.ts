@@ -21,7 +21,9 @@ import type {
     GithubContext,
     SubmissionPayload,
     ValidationResult,
-} from './types';
+} from '../types/types';
+import { updateComment, failWithIssueComment } from '../utils/github';
+import { parseIssuePayload } from '../utils/payload';
 
 const ignoredSourceDirectories = new Set([
     '.git',
@@ -50,93 +52,7 @@ const repoNameFromUrl = (repositoryUrl: string) => {
     return urlParts.slice(-2).join('/');
 };
 
-const updateComment = async (github: any, context: any, commentId: string | number, body: string) => {
-    await github.rest.issues.updateComment({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        comment_id: typeof commentId === 'number' ? commentId : parseInt(commentId, 10),
-        body,
-    });
-};
 
-const failWithIssueComment = async (
-    { github, context, core }: GithubContext,
-    commentId: string | undefined,
-    heading: string,
-    message: string,
-) => {
-    if (commentId) {
-        const body = `# ${heading}
-${message}
-**Workflow Run:** [View Logs](${runUrlFor(context)})`;
-        await updateComment(github, context, commentId, body);
-    }
-
-    core.setOutput('handled_failure', 'true');
-    core.setFailed(message);
-
-    return { should_proceed: false };
-};
-
-// Parse the issue body to find the JSON block and relavent meta data
-// Checks if all the data is in correct form and returns the payload
-const parseIssuePayload = (body: string | null | undefined): ValidationResult => {
-    const jsonMatch = (body ?? '').match(/```json\s*([\s\S]*?)\s*```/);
-
-    if (!jsonMatch) {
-        return {
-            ok: false,
-            error: 'Could not find a JSON payload in the issue body. Include a ```json block.',
-        };
-    }
-
-    let payload: Partial<SubmissionPayload>;
-
-    try {
-        payload = JSON.parse(jsonMatch[1]) as Partial<SubmissionPayload>;
-    } catch {
-        return {
-            ok: false,
-            error: 'Invalid JSON payload. Check the JSON block for syntax errors.',
-        };
-    }
-
-    const { plugin_name, repository_url, commit_hash } = payload;
-
-    if (!plugin_name || !repository_url || !commit_hash) {
-        return {
-            ok: false,
-            error: 'Missing required fields. Provide plugin_name, repository_url, and commit_hash.',
-        };
-    }
-
-    const urlRegex = /^https?:\/\/(www\.)?github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+(\.git)?\/?$/;
-
-    if (!urlRegex.test(repository_url)) {
-        return {
-            ok: false,
-            error: `Invalid repository URL: ${repository_url}. It must be a GitHub repository URL.`,
-        };
-    }
-
-    const hashRegex = /^[a-fA-F0-9]{40}$/;
-
-    if (!hashRegex.test(commit_hash)) {
-        return {
-            ok: false,
-            error: `Invalid commit hash: ${commit_hash}.`,
-        };
-    }
-
-    return {
-        ok: true,
-        payload: {
-            plugin_name,
-            repository_url: canonicalRepositoryUrl(repository_url),
-            commit_hash,
-        },
-    };
-};
 
 const validateTitle = (title: string | null | undefined) => {
     const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9.]+.*$/;
