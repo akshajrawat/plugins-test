@@ -64,7 +64,7 @@ jobs:
           languages: javascript
           source-root: target-plugin
           config-file: ./plugins-test/.github/codeql/codeql-config.yml
-          queries: ./plugins-test/.github/codeql/codeql_rules
+          queries: ./plugins-test/.github/codeql/codeql_rules/combined-threats.qls
 
       - name: Perform CodeQL analysis
         uses: github/codeql-action/analyze@v4
@@ -78,4 +78,39 @@ jobs:
         env:
           TARGET_PLUGIN_DIR: ${{ github.workspace }}/target-plugin
           RESULTS_SARIF: ${{ github.workspace }}/codeql-results/javascript.sarif
+          PLUGIN_NAME: ${{ matrix.plugin.repo }}
         run: node dist/code-scan/regressionScan.js
+
+      - name: Upload findings
+        uses: actions/upload-artifact@v4
+        with:
+          name: findings-${{ strategy.job-index }}
+          path: plugins-test/scripts/findings.json
+
+  aggregate:
+    needs: scan
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout plugins-test registry
+        uses: actions/checkout@v7
+        with:
+          path: plugins-test
+
+      - name: Download findings
+        uses: actions/download-artifact@v4
+        with:
+          pattern: findings-*
+          path: findings
+          merge-multiple: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Run CodeQL regression scan
+        working-directory: plugins-test/scripts
+        env:
+          ARTIFACTS_DIR: ${{ github.workspace }}/findings
+        run: node dist/code-scan/aggregateFindings.js

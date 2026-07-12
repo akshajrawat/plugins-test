@@ -1,6 +1,5 @@
-import { execSync } from 'node:child_process';
-import { appendFileSync, mkdirSync, readFileSync } from 'node:fs';
-import { basename, dirname, resolve } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { basename, resolve } from 'node:path';
 
 export interface SarifLocation {
     physicalLocation?: {
@@ -28,7 +27,6 @@ export interface SarifReport {
 }
 
 export interface ScanOptions {
-    targetPluginDir: string;
     resultsSarif: string;
 }
 
@@ -81,20 +79,14 @@ export const resolveScanOptions = (
 ): ScanOptions => {
     const positional = positionalArguments(args);
 
-    const targetPluginDir = requiredOption(
-        'target plugin directory',
-        valueForFlag(args, '--target-plugin-dir'),
-        positional[0],
-        environment.TARGET_PLUGIN_DIR,
-    );
     const resultsSarif = resolve(
         valueForFlag(args, '--results-sarif') ??
-        positional[1] ??
+        positional[0] ??
         environment.RESULTS_SARIF ??
         'results.sarif',
     );
 
-    return { targetPluginDir, resultsSarif };
+    return { resultsSarif };
 };
 
 
@@ -139,45 +131,9 @@ const fileNameFor = (uri: string | undefined): string => {
     return normalized || basename(uri);
 };
 
-const markdownCell = (value: string): string => value.replace(/\|/g, '\\|').replace(/\r?\n/g, ' ');
 
-export const formatFindings = (findings: SarifResult[]): string => {
-    const rows = findings.flatMap(finding => {
-        const locations = finding.locations ?? [];
-        const ruleId = markdownCell(ruleIdFor(finding));
-
-        if (locations.length === 0) {
-            return [`| ${ruleId} | unknown file | - |`];
-        }
-
-        return locations.map(location => {
-            const file = markdownCell(fileNameFor(location.physicalLocation?.artifactLocation?.uri));
-            const line = location.physicalLocation?.region?.startLine?.toString() ?? '-';
-            return `| ${ruleId} | ${file} | ${line} |`;
-        });
-    });
-
-    return [
-        '## CodeQL regression findings',
-        '',
-        `Found ${findings.length} finding${findings.length === 1 ? '' : 's'} in a safe plugin.`,
-        '',
-        '| Rule ID | File | Line |',
-        '| --- | --- | ---: |',
-        ...rows,
-    ].join('\n');
-};
-
-export const appendStepSummary = (content: string, summaryPath = process.env.GITHUB_STEP_SUMMARY): void => {
-    if (!summaryPath) {
-        throw new Error('GITHUB_STEP_SUMMARY is not set; cannot write the regression result to the Actions summary.');
-    }
-
-    appendFileSync(summaryPath, `${content.trimEnd()}\n\n`, 'utf8');
-};
 
 export const runCodeqlScan = (options: ScanOptions): SarifReport => {
-    // We now rely on github/codeql-action to generate the SARIF file
     return parseSarif(options.resultsSarif);
 };
 
@@ -186,24 +142,27 @@ export const main = (): void => {
         const options = resolveScanOptions();
         const report = runCodeqlScan(options);
         const findings = findingsFrom(report);
+        const pluginName = process.env.PLUGIN_NAME || 'unknown-plugin';
 
-        if (findings.length === 0) {
-            appendStepSummary('## CodeQL regression scan passed\n\nNo findings were reported for this safe plugin.');
-            process.exit(0);
-        }
+        const extractedFindings = findings.flatMap(finding => {
+            const locations = finding.locations ?? [];
+            const ruleId = ruleIdFor(finding);
 
-        appendStepSummary(formatFindings(findings));
-        process.exit(1);
+            if (locations.length === 0) {
+                return [{ plugin: pluginName, ruleId, file: 'unknown file', line: '-' }];
+            }
+
+            return locations.map(location => {
+                const file = fileNameFor(location.physicalLocation?.artifactLocation?.uri);
+                const line = location.physicalLocation?.region?.startLine?.toString() ?? '-';
+                return { plugin: pluginName, ruleId, file, line };
+            });
+        });
+
+        writeFileSync('findings.json', JSON.stringify(extractedFindings, null, 2));
+        process.exit(0);
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        console.error(`CodeQL regression scan failed: ${message}`);
-
-        try {
-            appendStepSummary(`## CodeQL regression scan failed\n\n${markdownCell(message)}`);
-        } catch (summaryError) {
-            console.error(`Unable to append to GITHUB_STEP_SUMMARY: ${String(summaryError)}`);
-        }
-
+        console.error(`CodeQL regression scan failed:`, error);
         process.exit(1);
     }
 };
