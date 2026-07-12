@@ -57,11 +57,24 @@ jobs:
           npm ci
           npm run build
 
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          source-root: target-plugin
+          config-file: ./plugins-test/.github/codeql/codeql-config.yml
+          queries: ./plugins-test/.github/codeql/codeql_rules
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript
+          output: codeql-results
+          upload: false
+
       - name: Run CodeQL regression scan
         working-directory: plugins-test/scripts
         env:
           TARGET_PLUGIN_DIR: ${{ github.workspace }}/target-plugin
-          RULES_DIR: ${{ github.workspace }}/plugins-test/.github/codeql/codeql_rules
-          CODEQL_DB_PATH: ${{ runner.temp }}/codeql-regression-db
-          RESULTS_SARIF: ${{ github.workspace }}/results.sarif
+          RESULTS_SARIF: ${{ github.workspace }}/codeql-results/javascript.sarif
         run: node dist/code-scan/regressionScan.js

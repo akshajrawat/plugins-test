@@ -210,13 +210,7 @@ export const appendStepSummary = (content: string, summaryPath = process.env.GIT
 };
 
 export const runCodeqlScan = (options: ScanOptions): SarifReport => {
-    mkdirSync(dirname(options.databasePath), { recursive: true });
-    mkdirSync(dirname(options.resultsSarif), { recursive: true });
-
-    const [createCommand, analyzeCommand] = codeqlCommandsFor(options);
-    execSync(createCommand, { stdio: 'inherit' });
-    execSync(analyzeCommand, { stdio: 'inherit' });
-
+    // We now rely on github/codeql-action to generate the SARIF file
     return parseSarif(options.resultsSarif);
 };
 

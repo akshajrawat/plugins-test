@@ -107,7 +107,7 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
 class AxiosDataTaintStep extends TaintTracking::SharedTaintStep {
   override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
     exists(DataFlow::PropRead read |
-      
+      read.getPropertyName() = "data" and
       read.getBase() = pred and
       succ = read
     )
