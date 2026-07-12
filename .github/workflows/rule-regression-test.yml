@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   setup:
@@ -58,7 +59,7 @@ jobs:
           npm run build
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript
           source-root: target-plugin
@@ -66,7 +67,7 @@ jobs:
           queries: ./plugins-test/.github/codeql/codeql_rules
 
       - name: Perform CodeQL analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           category: /language:javascript
           output: codeql-results

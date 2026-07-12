@@ -29,8 +29,6 @@ export interface SarifReport {
 
 export interface ScanOptions {
     targetPluginDir: string;
-    rulesDir: string;
-    databasePath: string;
     resultsSarif: string;
 }
 
@@ -89,48 +87,17 @@ export const resolveScanOptions = (
         positional[0],
         environment.TARGET_PLUGIN_DIR,
     );
-    const rulesDir = requiredOption(
-        'rules directory',
-        valueForFlag(args, '--rules-dir'),
-        positional[1],
-        environment.RULES_DIR,
-    );
-    const databasePath = resolve(
-        valueForFlag(args, '--database-path') ??
-        positional[2] ??
-        environment.CODEQL_DB_PATH ??
-        '.codeql-regression-db',
-    );
     const resultsSarif = resolve(
         valueForFlag(args, '--results-sarif') ??
-        positional[3] ??
+        positional[1] ??
         environment.RESULTS_SARIF ??
         'results.sarif',
     );
 
-    return { targetPluginDir, rulesDir, databasePath, resultsSarif };
+    return { targetPluginDir, resultsSarif };
 };
 
-const shellQuote = (value: string): string => `'${value.replace(/'/g, `'\\''`)}'`;
 
-export const codeqlCommandsFor = (options: ScanOptions): [string, string] => {
-    const createCommand = [
-        'codeql database create',
-        shellQuote(options.databasePath),
-        '--language=javascript',
-        '--source-root',
-        shellQuote(options.targetPluginDir),
-    ].join(' ');
-    const analyzeCommand = [
-        'codeql database analyze',
-        shellQuote(options.databasePath),
-        shellQuote(options.rulesDir),
-        '--format=sarif-latest',
-        `--output=${shellQuote(options.resultsSarif)}`,
-    ].join(' ');
-
-    return [createCommand, analyzeCommand];
-};
 
 export const parseSarif = (resultsSarif: string): SarifReport => {
     const parsed: unknown = JSON.parse(readFileSync(resultsSarif, 'utf8'));
