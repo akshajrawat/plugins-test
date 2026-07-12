@@ -23,7 +23,8 @@ jobs:
       - name: Build plugin matrix
         id: set-matrix
         shell: bash
-        run: echo "matrix=$(jq -c '{plugin: .}' .github/codeql/target-plugins.json)" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "matrix=$(jq -c '{plugin: .}' .github/codeql/target-plugins.json)" >> "$GITHUB_OUTPUT"
 
   scan:
     needs: setup
@@ -63,4 +64,4 @@ jobs:
           RULES_DIR: ${{ github.workspace }}/plugins-test/.github/codeql/codeql_rules
           CODEQL_DB_PATH: ${{ runner.temp }}/codeql-regression-db
           RESULTS_SARIF: ${{ github.workspace }}/results.sarif
-        run: node src/code-scan/regressionScan.js
+        run: node dist/code-scan/regressionScan.js

@@ -79,7 +79,14 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
   - Run the scanner against the Top 20 Joplin plugins. Adjust rules to ensure zero false positives.
   - Deploy 5-10 test malicious plugins covering the Phase 1 & Phase 2 Threat Model to verify 100% catch rate.
 
-- **Deliverable:** Documented proof of scanner accuracy and PoC readiness for maintainer evaluation.
+- **Deliverable:** Documented proof of scanner accuracy and a video showing the complete workflow
+    - A developer runs npm run publish on a fresh plugin
+    - The issue is created on the repository
+    - The workflows run and check the plugin
+    - A report is generated for reviewers
+    - The reviewer approve the plugin with a "status: approved" label (for example)
+    - The .jpl artifact appears on the test registry's "plugins" folder
+    - The manifests.json file is updated with the new plugin entry
 
 ---
 
@@ -109,6 +116,28 @@ With the end of week 9 we will have the logic for the update registry workflow i
 
 In parallel, from here on we can focus on getting the last pr for `generator-joplin` merged, this can be done at last as it does not conflict or block any of the other code.
 
+---
+
+## 4. DELIVERABLE DATE :
+
+### 24 july : 
+- Finalize the code for plugin-repo-cli.
+- Get the plugin-repo-cli code merged.
+- Test the scan on the rest of the **Recommended** Plugins
+
+### 2 August : 
+- Get the top 20 plugins test workflow running (Which will run whenever there is change in codeql rules and it should find no findings)
+- Get the update repository manifest, README, github release and plugins folder update workflow done.
+
+### 10 August : 
+- Get the 2nd half of the `generator-joplin` code merged
+
+### 14 August : 
+- Do the final set of testings and record a video with the whole workflow  
+- Merge all the local code to the official plugins-test repository.
+- Open issues on the official repository with test-plugins to test the final workflow 
+- Deliver the video showing the whole workflow working correctly
+### 
 ---
 
 ## 5. Threat Model and Rules Summary
