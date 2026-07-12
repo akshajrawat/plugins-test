@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
     steps:
       - name: Checkout plugins-test registry
@@ -108,8 +109,16 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '20'
+          cache: npm
+          cache-dependency-path: plugins-test/scripts/package-lock.json
 
-      - name: Run CodeQL regression scan
+      - name: Install and build regression scanner
+        working-directory: plugins-test/scripts
+        run: |
+          npm ci
+          npm run build
+
+      - name: Aggregate CodeQL regression findings
         working-directory: plugins-test/scripts
         env:
           ARTIFACTS_DIR: ${{ github.workspace }}/findings
