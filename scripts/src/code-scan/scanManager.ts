@@ -289,6 +289,90 @@ export const validateTargetRepository = async (
         );
     }
 
+    const parsePayloadResult = parseIssuePayload(context.payload.issue.body);
+    if (!parsePayloadResult.ok) {
+        return await failWithIssueComment(
+            { github, context, core },
+            commentId,
+            'Security Scan Failed',
+            'Could not parse payload during target validation.',
+        );
+    }
+
+    const { plugin_name, repository_url } = parsePayloadResult.payload;
+    const packagePath = resolve(targetRoot, 'package.json');
+    let manifestPath = resolve(targetRoot, 'src', 'manifest.json');
+    if (!(await fileExists(manifestPath))) {
+        manifestPath = resolve(targetRoot, 'manifest.json');
+    }
+
+    if (await fileExists(packagePath)) {
+        try {
+            const packageContent = await readFile(packagePath, 'utf8');
+            const pkg = JSON.parse(packageContent);
+
+            if (pkg.name !== plugin_name) {
+                return await failWithIssueComment(
+                    { github, context, core },
+                    commentId,
+                    'Security Scan Rejected',
+                    `The plugin name in the issue payload (${plugin_name}) does not match the name in the repository's package.json (${pkg.name || 'unknown'}).`,
+                );
+            }
+        } catch (e) {
+            return await failWithIssueComment(
+                { github, context, core },
+                commentId,
+                'Security Scan Failed',
+                `Failed to parse package.json: ${e instanceof Error ? e.message : String(e)}`,
+            );
+        }
+    } else {
+        return await failWithIssueComment(
+            { github, context, core },
+            commentId,
+            'Security Scan Rejected',
+            'Could not find package.json in the target repository root.',
+        );
+    }
+
+    if (await fileExists(manifestPath)) {
+        try {
+            const manifestContent = await readFile(manifestPath, 'utf8');
+            const manifest = JSON.parse(manifestContent);
+
+            const manifestRepo = manifest.repository_url || manifest.repository;
+            if (manifestRepo) {
+                const rawManifestUrl = typeof manifestRepo === 'string' ? manifestRepo : (manifestRepo.url || '');
+                const normalizedManifestUrl = normalizeUrl(rawManifestUrl);
+                const normalizedPayloadUrl = normalizeUrl(repository_url);
+
+                if (normalizedManifestUrl && normalizedPayloadUrl && normalizedManifestUrl !== normalizedPayloadUrl) {
+                    return await failWithIssueComment(
+                        { github, context, core },
+                        commentId,
+                        'Security Scan Rejected',
+                        `The repository URL in the issue payload (${repository_url}) does not match the repository URL in the manifest.json (${rawManifestUrl}).`,
+                    );
+                }
+            }
+        } catch (e) {
+            return await failWithIssueComment(
+                { github, context, core },
+                commentId,
+                'Security Scan Failed',
+                `Failed to parse manifest.json: ${e instanceof Error ? e.message : String(e)}`,
+            );
+        }
+    } else {
+        return await failWithIssueComment(
+            { github, context, core },
+            commentId,
+            'Security Scan Rejected',
+            'Could not find manifest.json in the target repository root or src/ directory.',
+        );
+    }
+
     const sourceFiles = await findSourceFiles(targetRoot);
 
     if (sourceFiles.length === 0) {
