@@ -42,17 +42,6 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
     }
 
     const payload = await toPublishPayload(validation.payload);
-    const ownershipError = await validateRegistryOwnership(payload);
-
-    if (ownershipError) {
-        const template = await failureTemplate('Plugin Publish Rejected', ownershipError, runUrl);
-        await updateComment(github, context, commentId, template);
-
-        core.setOutput('should_proceed', 'false');
-        core.setFailed(ownershipError);
-
-        return { should_proceed: false, comment_id: commentId.toString() };
-    }
 
     if (!(await hasCompletedScanReport({ github, context, core }, payload))) {
         const scanError = 'No completed security scan report was found for this exact repository URL and commit hash. Re-run the scan before approving this submission.';

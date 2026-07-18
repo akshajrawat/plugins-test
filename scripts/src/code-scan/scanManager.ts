@@ -223,22 +223,6 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
             body: commentBody,
         });
 
-    const existingPlugin = await existingPluginFor(plugin_name);
-    const registeredUrl = existingPlugin?.repository_url;
-
-    if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
-        await closeOwnershipMismatchIssue(
-            { github, context, core },
-            comment.data.id,
-            commentBody,
-            plugin_name,
-            registeredUrl,
-            repository_url,
-        );
-
-        return { should_proceed: false };
-    }
-
     const repoName = repoNameFromUrl(repository_url);
 
     core.setOutput('repository_url', repository_url);
@@ -265,7 +249,7 @@ export const updatePhase = async ({ github, context }: GithubApiContext, comment
     });
     const metadata = extractReportMetadata(comment.data.body);
     const phases = getPhases(phase);
-    const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, phases);
+    const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, phases, metadata.isUpdate);
 
     await updateComment(github, context, commentId, newHeader);
 };
@@ -355,6 +339,44 @@ export const validateTargetRepository = async (
                         `The repository URL in the issue payload (${repository_url}) does not match the repository URL in the manifest.json (${rawManifestUrl}).`,
                     );
                 }
+
+                // Check ownership based on manifest.id and update comment body with Submission Type 
+                const existingPlugin = await existingPluginFor(manifest.id);
+                if (existingPlugin) {
+                    const registeredUrl = existingPlugin.repository_url;
+                    if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
+                        const comment = await github.rest.issues.getComment({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            comment_id: parseInt(commentId, 10),
+                        });
+                        
+                        // Parse package.json name again so we can pass it to closeOwnershipMismatchIssue
+                        const pkgContent = await readFile(packagePath, 'utf8');
+                        const pkgName = JSON.parse(pkgContent).name;
+                        
+                        await closeOwnershipMismatchIssue(
+                            { github, context, core },
+                            parseInt(commentId, 10),
+                            comment.data.body,
+                            pkgName,
+                            registeredUrl,
+                            repository_url,
+                        );
+                        return { source_file_count: 0, handled_failure: true };
+                    }
+                }
+
+                // Append the isUpdate flag to the comment body for the reviewer
+                const isUpdate = !!existingPlugin;
+                const comment = await github.rest.issues.getComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: parseInt(commentId, 10) });
+                const metadata = extractReportMetadata(comment.data.body);
+                metadata.isUpdate = isUpdate;
+                
+                // Using getPhases(2) since this function runs after Phase 2 (Environment Provisioning)
+                const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, getPhases(2), metadata.isUpdate);
+                await updateComment(github, context, commentId, newHeader);
+
             }
         } catch (e) {
             return await failWithIssueComment(

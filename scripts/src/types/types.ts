@@ -35,6 +35,7 @@ export interface ReportMetadata {
     repoUrl: string;
     commitHash: string;
     runUrl: string;
+    isUpdate?: boolean;
 }
 
 export interface FinalReportInput {
