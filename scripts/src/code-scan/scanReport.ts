@@ -205,8 +205,8 @@ const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: st
 `;
 };
 
-export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl }: FinalReportInput) => {
-    const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null)}\n\n---\n# Findings\n\n`;
+export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl, isUpdate }: FinalReportInput) => {
+    const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null, isUpdate)}\n\n---\n# Findings\n\n`;
 
     if (!(await fileExists(sarifPath))) {
         return `${reportHeader}❌ Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;

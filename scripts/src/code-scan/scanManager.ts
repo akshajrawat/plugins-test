@@ -419,11 +419,19 @@ export const generateFinalReport = async (
     repoUrl: string,
     commitHash: string,
 ) => {
+    const comment = await github.rest.issues.getComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: parseInt(commentId, 10),
+    });
+    const metadata = extractReportMetadata(comment.data.body);
+
     const body = await renderFinalReport({
         sarifPath,
         repoUrl,
         commitHash,
         runUrl: runUrlFor(context),
+        isUpdate: metadata.isUpdate,
     });
 
     await updateComment(github, context, commentId, body);

@@ -43,6 +43,7 @@ export interface FinalReportInput {
     repoUrl: string;
     commitHash: string;
     runUrl: string;
+    isUpdate?: boolean;
 }
 
 export interface SarifMessage {
