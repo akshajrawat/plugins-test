@@ -112,6 +112,13 @@ jobs:
         working-directory: target-plugin
         run: npm install --no-audit --no-fund
 
+      - name: Remove broken publish script
+        working-directory: target-plugin
+        run: |
+          if [ -f "script/index.ts" ] && grep -q "./publish/steps/" "script/index.ts"; then
+            rm "script/index.ts"
+          fi
+
       - name: Build plugin
         working-directory: target-plugin
         run: npm run dist
