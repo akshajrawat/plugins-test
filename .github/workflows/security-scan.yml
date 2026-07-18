@@ -134,7 +134,7 @@ jobs:
           upload: false
 
       - name: Phase 5 - Report generation
-        if: always() && steps.init.outputs.should_proceed == 'true'
+        if: always() && steps.init.outputs.should_proceed == 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
         uses: actions/github-script@v9
@@ -144,7 +144,7 @@ jobs:
             await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 5);
 
       - name: Finalize report
-        if: always() && steps.init.outputs.should_proceed == 'true'
+        if: always() && steps.init.outputs.should_proceed == 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
           INIT_REPO_URL: ${{ steps.init.outputs.repository_url }}
