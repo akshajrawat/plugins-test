@@ -365,6 +365,33 @@ export const validateTargetRepository = async (
                         );
                         return { source_file_count: 0, handled_failure: true };
                     }
+
+                    const newVersion = manifest.version || '0.0.0';
+                    const oldVersion = existingPlugin.version || '0.0.0';
+                    
+                    const parseVersion = (v: string) => v.split('.').map(x => parseInt(x, 10) || 0);
+                    const newParts = parseVersion(newVersion);
+                    const oldParts = parseVersion(oldVersion);
+                    
+                    let isGreater = false;
+                    const maxLen = Math.max(newParts.length, oldParts.length);
+                    for (let i = 0; i < maxLen; i++) {
+                        const n = newParts[i] || 0;
+                        const o = oldParts[i] || 0;
+                        if (n !== o) {
+                            isGreater = n > o;
+                            break;
+                        }
+                    }
+                    
+                    if (!isGreater) {
+                        return await failWithIssueComment(
+                            { github, context, core },
+                            commentId,
+                            'Security Scan Rejected',
+                            `This is an update job, but the plugin version in the manifest (${newVersion}) is not greater than the currently published version (${oldVersion}). Please bump the version number before submitting.`,
+                        );
+                    }
                 }
 
                 // Append the isUpdate flag to the comment body for the reviewer
