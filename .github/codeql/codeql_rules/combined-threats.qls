@@ -27,4 +27,9 @@
       - "*weak-crypto*"
       - "*insecure-download*"
       - "*http-to-file*"
+      - js/client-side-unvalidated-url-redirection
+      - js/xss-through-dom
+      - js/xss
+      - js/client-side-xss
+      - js/post-message-origin-verification
       - js/missing-origin-check

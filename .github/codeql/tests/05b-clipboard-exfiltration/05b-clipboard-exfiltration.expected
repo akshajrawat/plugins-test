@@ -11,4 +11,4 @@ nodes
 | mock-rule-05b-clipboard-exfiltration.ts:5:51:5:56 | copied | semmle.label | copied |
 subpaths
 #select
-| mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | mock-rule-05b-clipboard-exfiltration.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. \\n**Reviewer Action:** This is a severe privacy violation. Verify why the plugin needs to transmit clipboard contents and ensure the user explicitly authorized this data transfer. |
+| mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | mock-rule-05b-clipboard-exfiltration.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |

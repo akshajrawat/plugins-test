@@ -147,9 +147,10 @@ It is a structural command execution indicator when no taint source is needed.
 
 ### Flows :
 1. A string literal is passed directly to a command execution sink.
-2. Miner-related hardcoded commands are excluded here because Rule 6 covers those indicators.
+2. Standard safe system and file management utilities (`cp`, `mv`, `tar`, `zip`, `7z`, `git`, `rsync`, `chmod`, `chown`, `mkdir`, `diff`, `pandoc`, `ffmpeg`) and command option flags (e.g. `-r`, `--force`) are excluded as safe utility operations.
+3. Miner-related hardcoded commands are excluded here because Rule 6 covers those indicators.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 8 : Data Exfiltration
 Detects note, folder, or resource data being sent to external network endpoints.
@@ -161,7 +162,7 @@ It covers bulk Joplin data reads and the currently selected note.
 3. `joplin.data.get(["resources", ...])` flows into network request data or URLs.
 4. `joplin.workspace.selectedNote()` flows into non-localhost network request data or URLs.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 9 : Mass Encryption / Ransomware
 Detects note data being encrypted and written back over the original note.
@@ -173,7 +174,7 @@ It models a multi-stage ransomware pattern rather than a single sink.
 3. The read note ID and written note ID are correlated, including bulk note reads.
 4. Writes inside loops are included in the detected pattern.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 9b : Ransomware Key Exfiltration
 Detects encryption key material being sent over the network.
@@ -184,7 +185,7 @@ It focuses on keys used for local encryption operations.
 2. Key arguments to `encrypt()` flow into network request data or URLs.
 3. Key arguments to `importKey()` flow into network request data or URLs.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 10 : Silent Backup Hijacking (Taint)
 Detects export module data flowing into destinations outside the normal export path.
@@ -196,7 +197,7 @@ It tracks data from registered Joplin export callbacks to dangerous sinks.
 3. `onProcessResource` callback parameters flow into network, command, or unauthorized filesystem sinks.
 4. File writes and file copies are excluded when their destination is derived from the export context destination path.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 10b : Silent Backup Hijacking (Structural)
 Detects dangerous operations inside export module callbacks without requiring proven taint flow.
@@ -207,7 +208,7 @@ It is a lower-confidence structural companion to Rule 10.
 2. A command execution sink appears inside a `registerExportModule()` callback.
 3. A filesystem path sink appears inside a `registerExportModule()` callback when the path is not derived from the export context.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 11 : Remote Webview Scripts
 Detects sensitive data being injected into external URLs inside Joplin webview HTML.
@@ -219,7 +220,7 @@ It covers URL-based exfiltration through dynamic HTML attributes.
 3. `process.env` values flow into externally hosted URL attributes passed to `setHtml()`.
 4. Panel, dialog, and editor `setHtml()` calls are covered.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 11b : Remote Webview Scripts (Structural)
 Detects webview HTML that directly references remote external resources.
@@ -231,7 +232,7 @@ It is a structural rule for literal or embedded HTML passed to Joplin webviews.
 3. `setHtml()` receives HTML containing external meta refresh URLs.
 4. `setHtml()` receives HTML containing external CSS `url(...)` references.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 12 : Sync Smuggling (Intra-API Exfiltration)
 Detects sensitive Joplin data being hidden in sync metadata or executed after retrieval.
@@ -243,7 +244,7 @@ It models abuse of `userDataSet()` and `userDataGet()` as an intra-API smuggling
 3. `joplin.data.userDataGet()` flows into command execution.
 4. `joplin.data.userDataGet()` flows into `eval`, `Function`, `setTimeout`, or `setInterval`.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 13 : Social Engineering & UI Phishing
 Detects credential-looking Joplin dialogs or panels whose submitted data leaves over the network.
@@ -254,7 +255,7 @@ It tracks form or message data from phishing-like UI into network sinks.
 2. Panel HTML containing password fields or credential keywords is paired with `onMessage()` and submitted data flows into network request data or URLs.
 3. The rule follows awaited dialog results and `.formData` property reads.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 14 : Asynchronous Tag Flooding & Search Poisoning
 Detects high-volume Joplin data creation or disk writes inside loops.
@@ -265,7 +266,7 @@ It focuses on resource exhaustion through unbounded or repeated work.
 2. Filesystem writes appear inside an unbounded loop or background interval.
 3. Large string or `Buffer.alloc()` payloads are written to disk inside any loop.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 15 : Semantic Integrity Sabotage (Gaslighting)
 Detects note mutation performed directly inside Joplin workspace event hooks.
@@ -276,7 +277,7 @@ It is a structural rule for silent note changes triggered by user activity.
 2. `joplin.data.delete(["notes", ...])` appears inside those workspace callbacks.
 3. `joplin.commands.execute("insertText", ...)` or `replaceSelection` appears inside those workspace callbacks.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 16 : Electron Main Process Takeover
 Detects direct access to Electron remote APIs.
@@ -286,7 +287,7 @@ It flags imports or member access that can bypass normal plugin isolation.
 1. Code imports `@electron/remote`.
 2. Code accesses `electron.remote`.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 16b : Unauthorized Electron API Usage
 Detects direct imports or member access on the native Electron module.
@@ -296,7 +297,7 @@ It flags Electron APIs that bypass the Joplin plugin API surface.
 1. Code imports the raw `electron` module.
 2. Code accesses `electron.BrowserWindow`, `dialog`, `app`, `clipboard`, `shell`, `ipcRenderer`, `ipcMain`, or `screen`.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 17 : Untrusted Archive Extraction
 Detects remote or message-controlled archive input being extracted to unsafe destinations.
@@ -308,7 +309,7 @@ It excludes flows that pass through a crypto hash update barrier.
 3. Remote or message-controlled data flows directly into the archive path argument of `archiveExtract()`.
 4. The destination is considered unsafe when no same-context `joplin.plugins.dataDir()` destination is found.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 17b : Unsafe Archive Extraction Destination
 Detects archive extraction destinations derived from unsafe path sources.
@@ -319,7 +320,7 @@ It focuses on destinations outside the plugin data directory.
 2. Hardcoded absolute paths flow into the destination argument of `archiveExtract()`.
 3. Remote or user-controlled input flows into the destination argument of `archiveExtract()`.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 17c : Archive Entry Traversal
 Detects archive entry names flowing into filesystem or command sinks.
@@ -331,30 +332,32 @@ It models Zip Slip-style use of extracted entry names without sanitization.
 3. Extracted entry `name` or `entryName` properties flow into command execution sinks.
 4. `path.basename()` is treated as a sanitization barrier.
 
-### SEVERTY : WARNING
+### SEVERITY : WARNING
 
 # Rule 18 : Mass Data Destruction
 Detects destructive Joplin data operations that can wipe or corrupt many records.
 It is a structural rule for folder deletion, repeated deletion, and repeated destructive updates.
 
 ### Flows :
-1. Any `joplin.data.delete(["folders", ...])` call is reported.
+1. Any `joplin.data.delete(["folders", ...])` call is reported unless preceded by explicit user confirmation.
 2. Any `joplin.data.delete()` call inside an unbounded loop or background interval is reported.
 3. `joplin.data.put()` inside a loop is reported when the payload sets `deleted_time`, sets `is_conflict`, or replaces `body` with an empty string.
+4. Operations explicitly guarded by user confirmation dialogs (`joplin.views.dialogs.open(...)`) prior to execution are recognized as user-initiated bulk actions and excluded.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 19 : Keylogging & Silent Surveillance
 Detects event-driven user data capture that is sent over the network.
 It tracks live Joplin hook data and data reads performed inside hook callbacks.
 
 ### Flows :
-1. Parameters from workspace, settings, filter, panel, content script, or editor hooks flow into network request data or URLs.
+1. Parameters from workspace note hooks (`onNoteContentChange`, `onNoteChange`, `onNoteSelectionChange`, `onSyncComplete`, `onResourceChange`), `settings.onChange`, `filters.on`, or `editors.onUpdate` flow into network request data or URLs.
 2. `selectedNote()` or `selectedNoteIds()` reads inside those hooks flow into network request data or URLs.
 3. `joplin.data.get()` or `joplin.data.search()` reads inside those hooks flow into network request data or URLs.
 4. Editor registration callbacks such as `onActivationCheck` and `onSetup` are included.
+5. Generic UI message handlers (`contentScripts.onMessage` or `panels.onMessage`) are excluded from surveillance tracking.
 
-### SEVERTY : ERROR
+### SEVERITY : ERROR
 
 # Rule 20 : Malicious Import Module
 Detects imported file data flowing from a custom import module into dangerous sinks.

@@ -16,9 +16,7 @@ predicate isJoplinHookCallback(DataFlow::FunctionNode callback) {
       (hook.getReceiver().getALocalSource() = Joplin::workspace() and methodName in ["onNoteContentChange", "onNoteChange", "onNoteSelectionChange", "onSyncComplete", "onSyncStart", "onResourceChange", "onNoteAlarmTrigger"] and callback = hook.getArgument(0).getAFunctionValue()) or
       (hook.getReceiver().getALocalSource() = Joplin::settings() and methodName = "onChange" and callback = hook.getArgument(0).getAFunctionValue()) or
       (hook.getReceiver().getALocalSource() = Joplin::filters() and methodName = "on" and callback = hook.getArgument(1).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::panels() and methodName = "onMessage" and callback = hook.getArgument(1).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::contentScripts() and methodName = "onMessage" and callback = hook.getArgument(1).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::editors() and methodName in ["onUpdate", "onMessage"] and callback = hook.getArgument(1).getAFunctionValue())
+      (hook.getReceiver().getALocalSource() = Joplin::editors() and methodName = "onUpdate" and callback = hook.getArgument(1).getAFunctionValue())
     )
   ) or
   // Register editors via object literal

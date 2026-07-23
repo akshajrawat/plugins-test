@@ -41,6 +41,11 @@ module Joplin {
     result = joplin().getAPropertyRead("views").getAPropertyRead("editors")
   }
 
+  /** Gets a reference to `joplin.views.dialogs`. */
+  DataFlow::SourceNode dialogs() {
+    result = joplin().getAPropertyRead("views").getAPropertyRead("dialogs")
+  }
+
   /** Gets a reference to `joplin.filters`. */
   DataFlow::SourceNode filters() {
     result = joplin().getAPropertyRead("filters")
