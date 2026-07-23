@@ -19,6 +19,8 @@
       - js/useless-regexp-character-escape
       - js/overly-large-range
       - js/file-system-race
+      - "*incomplete-sanitization*"
+      - "*sanitization*"
       - js/incomplete-url-substring-sanitization
       - js/incomplete-sanitization
       - js/double-escaping
