@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - '.github/codeql/**'
+      - '!.github/codeql/tests/**'
   pull_request:
     paths:
       - '.github/codeql/**'
+      - '!.github/codeql/tests/**'
 
 permissions:
   contents: read
