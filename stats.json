@@ -1,14 +1,1 @@
-{
-	"com.example.test1": {
-		"1.0.0": {
-			"downloadCount": 0,
-			"createdAt": "2026-07-18T07:56:38Z"
-		}
-	},
-	"com.example.test": {
-		"1.0.0": {
-			"downloadCount": 0,
-			"createdAt": "2026-07-18T08:13:30Z"
-		}
-	}
-}
+{}
