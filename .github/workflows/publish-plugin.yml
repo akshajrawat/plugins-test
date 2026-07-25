@@ -253,15 +253,12 @@ jobs:
           PUBLISH_LOG_PATH: ${{ github.workspace }}/publish-cli.log
         with:
           script: |
-            const fs = require('fs');
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
-            const log = fs.readFileSync(process.env.PUBLISH_LOG_PATH, 'utf8');
-            const errorMatch = log.match(/(?:^|\n)Error:\s*([^\r\n]+)/);
-            const fallback = log.trim().split(/\r?\n/).slice(-3).join(' ');
-            const reason = (errorMatch?.[1] || fallback || 'The publish CLI rejected the plugin.').slice(0, 1000);
-            const message = `The plugin was rejected by plugin-repo-cli: ${reason}`;
-            await publish.handleWorkflowFailure({github, context, core}, process.env.COMMENT_ID, message);
-            core.setFailed(message);
+            return await publish.reportCliPublishFailure(
+              {github, context, core},
+              process.env.COMMENT_ID,
+              process.env.PUBLISH_LOG_PATH
+            );
 
       - name: Mark plugin as approved
         uses: actions/github-script@v7

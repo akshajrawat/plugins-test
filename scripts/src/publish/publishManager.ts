@@ -1,4 +1,5 @@
 import { join } from 'path';
+import { readFile } from 'fs/promises';
 import type { GithubContext } from '../types/types';
 import type { PublishSummary } from '../types/publishTypes';
 import { runUrlFor, updateComment } from '../utils/github';
@@ -209,7 +210,6 @@ export const summarizePublishResult = async (
     let releaseLog = '';
 
     if (await fileExists(releaseLogPath)) {
-        const { readFile } = await import('fs/promises');
         releaseLog = await readFile(releaseLogPath, 'utf8');
     }
 
@@ -296,4 +296,25 @@ export const handleWorkflowFailure = async (
         issue_number: context.issue.number,
         body,
     });
+};
+
+export const cliPublishFailureReason = (log: string) => {
+    const errorMatch = log.match(/(?:^|\n)Error:\s*([^\r\n]+)/);
+    const fallback = log.trim().split(/\r?\n/).slice(-3).join(' ');
+    return (errorMatch?.[1] || fallback || 'The publish CLI rejected the plugin.').slice(0, 1000);
+};
+
+export const reportCliPublishFailure = async (
+    githubContext: GithubContext,
+    commentId: string | number | undefined,
+    logPath: string,
+) => {
+    const log = await readFile(logPath, 'utf8');
+    const reason = cliPublishFailureReason(log);
+    const message = `The plugin was rejected by plugin-repo-cli: ${reason}`;
+
+    await handleWorkflowFailure(githubContext, commentId, message);
+    githubContext.core.setFailed(message);
+
+    return { reason };
 };
