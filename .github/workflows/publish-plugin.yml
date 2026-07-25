@@ -234,7 +234,7 @@ jobs:
             await publish.updatePublishPhase({github, context, core}, process.env.COMMENT_ID, 4, "Publishing plugin files into the registry.");
 
       - name: Install publish CLI
-        run: npm install -g @akshajrawatt/plugin-repo-cli@1.0.4
+        run: npm install -g @akshajrawatt/plugin-repo-cli@1.0.5
 
       - name: Execute publish CLI command
         id: publish_cli

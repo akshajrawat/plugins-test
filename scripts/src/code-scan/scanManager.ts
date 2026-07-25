@@ -50,38 +50,6 @@ const validateTitle = (title: string | null | undefined) => {
     return 'Invalid issue title format. It must begin with [Plugin Submission] and include the plugin name and version.';
 };
 
-export const repositorySubmissionManifestError = (manifest: unknown) => {
-    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
-        return 'The repository manifest must be a JSON object.';
-    }
-
-    const manifestRecord = manifest as Record<string, unknown>;
-
-    if (Object.prototype.hasOwnProperty.call(manifestRecord, '_npm_package_name')) {
-        return 'Repository submissions cannot include _npm_package_name in manifest.json.';
-    }
-
-    if (typeof manifestRecord.repository_url !== 'string' || !manifestRecord.repository_url.trim()) {
-        return 'Repository submissions must specify repository_url in manifest.json.';
-    }
-
-    return '';
-};
-
-export const legacyRepositoryMigrationError = (
-    pluginId: string,
-    existingPlugin: Record<string, unknown>,
-) => {
-    const registeredUrl = existingPlugin.repository_url;
-    const registeredNpmPackage = existingPlugin._npm_package_name;
-
-    if (!registeredUrl && typeof registeredNpmPackage === 'string' && registeredNpmPackage.trim()) {
-        return `Plugin "${pluginId}" has already been published from npm package "${registeredNpmPackage}". A maintainer must verify and register its repository URL before it can be published from a repository.`;
-    }
-
-    return '';
-};
-
 // Gets the path to manifest.json
 const getRegistryPath = async (relativePath: string) => {
     const workspace = process.env.GITHUB_WORKSPACE;
@@ -357,17 +325,7 @@ export const validateTargetRepository = async (
             const manifestContent = await readFile(manifestPath, 'utf8');
             const manifest = JSON.parse(manifestContent);
 
-            const manifestError = repositorySubmissionManifestError(manifest);
-            if (manifestError) {
-                return await failWithIssueComment(
-                    { github, context, core },
-                    commentId,
-                    'Security Scan Rejected',
-                    manifestError,
-                );
-            }
-
-            const manifestRepo = manifest.repository_url;
+            const manifestRepo = manifest.repository_url || manifest.repository;
             if (manifestRepo) {
                 const rawManifestUrl = typeof manifestRepo === 'string' ? manifestRepo : (manifestRepo.url || '');
                 const normalizedManifestUrl = normalizeUrl(rawManifestUrl);
@@ -386,17 +344,6 @@ export const validateTargetRepository = async (
                 const existingPlugin = await existingPluginFor(manifest.id);
                 if (existingPlugin) {
                     const registeredUrl = existingPlugin.repository_url;
-                    const migrationError = legacyRepositoryMigrationError(manifest.id, existingPlugin);
-
-                    if (migrationError) {
-                        return await failWithIssueComment(
-                            { github, context, core },
-                            commentId,
-                            'Security Scan Rejected',
-                            migrationError,
-                        );
-                    }
-
                     if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
                         const comment = await github.rest.issues.getComment({
                             owner: context.repo.owner,
