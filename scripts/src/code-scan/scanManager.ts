@@ -68,6 +68,20 @@ export const repositorySubmissionManifestError = (manifest: unknown) => {
     return '';
 };
 
+export const legacyRepositoryMigrationError = (
+    pluginId: string,
+    existingPlugin: Record<string, unknown>,
+) => {
+    const registeredUrl = existingPlugin.repository_url;
+    const registeredNpmPackage = existingPlugin._npm_package_name;
+
+    if (!registeredUrl && typeof registeredNpmPackage === 'string' && registeredNpmPackage.trim()) {
+        return `Plugin "${pluginId}" has already been published from npm package "${registeredNpmPackage}". A maintainer must verify and register its repository URL before it can be published from a repository.`;
+    }
+
+    return '';
+};
+
 // Gets the path to manifest.json
 const getRegistryPath = async (relativePath: string) => {
     const workspace = process.env.GITHUB_WORKSPACE;
@@ -372,6 +386,17 @@ export const validateTargetRepository = async (
                 const existingPlugin = await existingPluginFor(manifest.id);
                 if (existingPlugin) {
                     const registeredUrl = existingPlugin.repository_url;
+                    const migrationError = legacyRepositoryMigrationError(manifest.id, existingPlugin);
+
+                    if (migrationError) {
+                        return await failWithIssueComment(
+                            { github, context, core },
+                            commentId,
+                            'Security Scan Rejected',
+                            migrationError,
+                        );
+                    }
+
                     if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
                         const comment = await github.rest.issues.getComment({
                             owner: context.repo.owner,
