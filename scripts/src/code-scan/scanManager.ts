@@ -50,6 +50,24 @@ const validateTitle = (title: string | null | undefined) => {
     return 'Invalid issue title format. It must begin with [Plugin Submission] and include the plugin name and version.';
 };
 
+export const repositorySubmissionManifestError = (manifest: unknown) => {
+    if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
+        return 'The repository manifest must be a JSON object.';
+    }
+
+    const manifestRecord = manifest as Record<string, unknown>;
+
+    if (Object.prototype.hasOwnProperty.call(manifestRecord, '_npm_package_name')) {
+        return 'Repository submissions cannot include _npm_package_name in manifest.json.';
+    }
+
+    if (typeof manifestRecord.repository_url !== 'string' || !manifestRecord.repository_url.trim()) {
+        return 'Repository submissions must specify repository_url in manifest.json.';
+    }
+
+    return '';
+};
+
 // Gets the path to manifest.json
 const getRegistryPath = async (relativePath: string) => {
     const workspace = process.env.GITHUB_WORKSPACE;
@@ -325,7 +343,17 @@ export const validateTargetRepository = async (
             const manifestContent = await readFile(manifestPath, 'utf8');
             const manifest = JSON.parse(manifestContent);
 
-            const manifestRepo = manifest.repository_url || manifest.repository;
+            const manifestError = repositorySubmissionManifestError(manifest);
+            if (manifestError) {
+                return await failWithIssueComment(
+                    { github, context, core },
+                    commentId,
+                    'Security Scan Rejected',
+                    manifestError,
+                );
+            }
+
+            const manifestRepo = manifest.repository_url;
             if (manifestRepo) {
                 const rawManifestUrl = typeof manifestRepo === 'string' ? manifestRepo : (manifestRepo.url || '');
                 const normalizedManifestUrl = normalizeUrl(rawManifestUrl);
