@@ -1,18 +1,1 @@
-{
-	"com.example.testid": {
-		"manifest_version": 1,
-		"id": "com.example.testid",
-		"app_min_version": "3.7",
-		"version": "0.9.0",
-		"name": "testtes",
-		"description": "Legacy ownership migration test fixture",
-		"author": "test",
-		"homepage_url": "",
-		"keywords": [],
-		"categories": [],
-		"screenshots": [],
-		"icons": {},
-		"promo_tile": {},
-		"_npm_package_name": "joplin-plugin-testtes-legacy"
-	}
-}
+{}
