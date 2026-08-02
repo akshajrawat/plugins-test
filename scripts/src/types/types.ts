@@ -13,6 +13,7 @@ export interface GithubContext extends GithubApiContext {
 
 export interface SubmissionPayload {
     plugin_name: string;
+    version: string;
     repository_url: string;
     commit_hash: string;
 }

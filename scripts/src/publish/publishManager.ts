@@ -32,7 +32,7 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 
     const validation = parseIssuePayload(context.payload.issue.body);
 
-    if ('error' in validation) {
+    if (validation.ok === false) {
         const template = await failureTemplate('Plugin Publish Rejected', validation.error ?? '', runUrl);
         await updateComment(github, context, commentId, template);
 
@@ -59,6 +59,7 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
     await updateComment(github, context, commentId, template);
 
     core.setOutput('plugin_name', payload.plugin_name);
+    core.setOutput('version', payload.version);
     core.setOutput('repository_url', payload.repository_url);
     core.setOutput('repo_name', payload.repo_name);
     core.setOutput('commit_hash', payload.commit_hash);
@@ -67,6 +68,7 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 
     return {
         plugin_name: payload.plugin_name,
+        version: payload.version,
         repository_url: payload.repository_url,
         repo_name: payload.repo_name,
         commit_hash: payload.commit_hash,
@@ -122,6 +124,7 @@ export const verifyPublishedRegistry = async (
     repoDir: string,
     artifactManifestFile: string,
     artifactJplFile: string,
+    expectedVersion: string,
     expectedRepositoryUrl: string,
     expectedCommitHash: string,
 ) => {
@@ -131,6 +134,10 @@ export const verifyPublishedRegistry = async (
 
     if (!pluginId || !pluginVersion) {
         throw new Error('Artifact manifest is missing id or version.');
+    }
+
+    if (pluginVersion !== expectedVersion) {
+        throw new Error(`Artifact version ${pluginVersion} does not match the approved issue payload version ${expectedVersion} for ${pluginId}.`);
     }
 
     const artifactUrl = normalizeRepositoryUrl(artifactManifest.repository_url);

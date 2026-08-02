@@ -17,6 +17,7 @@ jobs:
       issues: write
     outputs:
       plugin_name: ${{ steps.init.outputs.plugin_name }}
+      version: ${{ steps.init.outputs.version }}
       repository_url: ${{ steps.init.outputs.repository_url }}
       repo_name: ${{ steps.init.outputs.repo_name }}
       commit_hash: ${{ steps.init.outputs.commit_hash }}
@@ -111,13 +112,6 @@ jobs:
       - name: Install plugin dependencies
         working-directory: target-plugin
         run: npm install --no-audit --no-fund
-
-      - name: Remove broken publish script
-        working-directory: target-plugin
-        run: |
-          if [ -f "script/index.ts" ] && grep -q "./publish/steps/" "script/index.ts"; then
-            rm "script/index.ts"
-          fi
 
       - name: Build plugin
         working-directory: target-plugin
@@ -279,6 +273,7 @@ jobs:
           PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/dist/publish/publishManager.js
           MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
           JPL_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.jpl_file }}
+          EXPECTED_VERSION: ${{ needs.initialize-publish.outputs.version }}
           EXPECTED_REPOSITORY_URL: ${{ needs.initialize-publish.outputs.repository_url }}
           EXPECTED_COMMIT_HASH: ${{ needs.initialize-publish.outputs.commit_hash }}
         with:
@@ -289,6 +284,7 @@ jobs:
               `${process.env.GITHUB_WORKSPACE}/plugins-test`,
               process.env.MANIFEST_FILE,
               process.env.JPL_FILE,
+              process.env.EXPECTED_VERSION,
               process.env.EXPECTED_REPOSITORY_URL,
               process.env.EXPECTED_COMMIT_HASH
             );

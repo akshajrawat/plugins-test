@@ -13,11 +13,13 @@ jobs:
   scan:
     if: contains(github.event.issue.title, '[Plugin Submission]')
     runs-on: ubuntu-latest
+
     env:
       SCAN_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/dist/code-scan/scanManager.js
     steps:
       - name: Acknowledge scan initialization
         id: ack
+
         uses: actions/github-script@v9
         with:
           script: |
@@ -47,17 +49,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Pre-flight metadata validation
-        id: preflight
-        env:
-          ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const scan = require(process.env.SCAN_MANAGER_PATH);
-            return await scan.preflightMetadataValidation({github, context, core});
-
-      - name: Phase 1 - Parse payload and initial check
+      - name: Metadata validation and initial check
         id: init
         env:
           INITIAL_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
@@ -162,7 +154,7 @@ jobs:
             );
 
       - name: Handle workflow failure
-        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.preflight.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
+        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
           ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9

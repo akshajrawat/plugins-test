@@ -42,12 +42,12 @@ const repoNameFromUrl = (repositoryUrl: string) => {
     return urlParts.slice(-2).join('/');
 };
 
-const validateTitle = (title: string | null | undefined) => {
-    const titleRegex = /^\[Plugin Submission\]\s+.+\s+v[0-9.]+.*$/;
+const validateTitle = (title: string | null | undefined, pluginName: string, version: string) => {
+    const expectedTitle = `[Plugin Submission] ${pluginName} v${version}`;
 
-    if (titleRegex.test(title ?? '')) return '';
+    if (title === expectedTitle) return '';
 
-    return 'Invalid issue title format. It must begin with [Plugin Submission] and include the plugin name and version.';
+    return `Invalid issue title. Expected: ${expectedTitle}`;
 };
 
 export const repositorySubmissionManifestError = (manifest: unknown) => {
@@ -191,42 +191,11 @@ Setting up the scanner and validating the submission payload.`;
     return comment.data.id;
 };
 
-// Checks if the title contains `[Plugin Submission]`
-// Checks if the issue body is in perfect form 
-export const preflightMetadataValidation = async ({ github, context, core }: GithubContext) => {
-    const titleError = validateTitle(context.payload.issue.title);
-
-    if (titleError) {
-        return await failWithIssueComment(
-            { github, context, core },
-            process.env.ACK_COMMENT_ID,
-            'Security Scan Rejected',
-            titleError,
-        );
-    }
-
-    const validation = parseIssuePayload(context.payload.issue.body);
-
-    if ('error' in validation) {
-        return await failWithIssueComment(
-            { github, context, core },
-            process.env.ACK_COMMENT_ID,
-            'Security Scan Rejected',
-            validation.error,
-        );
-    }
-
-    core.setOutput('handled_failure', 'false');
-
-    return { should_proceed: true };
-};
-
-
 export const initialize = async ({ github, context, core }: GithubContext) => {
     const validation = parseIssuePayload(context.payload.issue.body);
     const initialCommentId = process.env.INITIAL_COMMENT_ID;
 
-    if ('error' in validation) {
+    if (validation.ok === false) {
         return await failWithIssueComment(
             { github, context, core },
             initialCommentId,
@@ -235,7 +204,18 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
         );
     }
 
-    const { plugin_name, repository_url, commit_hash } = validation.payload;
+    const { plugin_name, version, repository_url, commit_hash } = validation.payload;
+    const titleError = validateTitle(context.payload.issue.title, plugin_name, version);
+
+    if (titleError) {
+        return await failWithIssueComment(
+            { github, context, core },
+            initialCommentId,
+            'Security Scan Rejected',
+            titleError,
+        );
+    }
+
     const runUrl = runUrlFor(context);
     const phases = getPhases(1);
     const commentBody = statusTemplate(repository_url, commit_hash, runUrl, phases);
@@ -258,6 +238,7 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
     const repoName = repoNameFromUrl(repository_url);
 
     core.setOutput('repository_url', repository_url);
+    core.setOutput('version', version);
     core.setOutput('commit_hash', commit_hash);
     core.setOutput('repo_name', repoName);
     core.setOutput('comment_id', comment.data.id.toString());
@@ -266,6 +247,7 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
 
     return {
         repository_url,
+        version,
         commit_hash,
         repo_name: repoName,
         comment_id: comment.data.id,
@@ -306,7 +288,7 @@ export const validateTargetRepository = async (
     }
 
     const parsePayloadResult = parseIssuePayload(context.payload.issue.body);
-    if (!parsePayloadResult.ok) {
+    if (parsePayloadResult.ok === false) {
         return await failWithIssueComment(
             { github, context, core },
             commentId,
@@ -315,7 +297,7 @@ export const validateTargetRepository = async (
         );
     }
 
-    const { plugin_name, repository_url } = parsePayloadResult.payload;
+    const { plugin_name, version, repository_url } = parsePayloadResult.payload;
     const packagePath = resolve(targetRoot, 'package.json');
     let manifestPath = resolve(targetRoot, 'src', 'manifest.json');
     if (!(await fileExists(manifestPath))) {
@@ -367,6 +349,15 @@ export const validateTargetRepository = async (
                 );
             }
 
+            if (manifest.version !== version) {
+                return await failWithIssueComment(
+                    { github, context, core },
+                    commentId,
+                    'Security Scan Rejected',
+                    `The plugin version in the issue payload (${version}) does not match the version in manifest.json (${manifest.version || 'unknown'}).`,
+                );
+            }
+
             const manifestRepo = manifest.repository_url;
             if (manifestRepo) {
                 const rawManifestUrl = typeof manifestRepo === 'string' ? manifestRepo : (manifestRepo.url || '');
@@ -403,11 +394,11 @@ export const validateTargetRepository = async (
                             repo: context.repo.repo,
                             comment_id: parseInt(commentId, 10),
                         });
-                        
+
                         // Parse package.json name again so we can pass it to closeOwnershipMismatchIssue
                         const pkgContent = await readFile(packagePath, 'utf8');
                         const pkgName = JSON.parse(pkgContent).name;
-                        
+
                         await closeOwnershipMismatchIssue(
                             { github, context, core },
                             parseInt(commentId, 10),
@@ -421,11 +412,11 @@ export const validateTargetRepository = async (
 
                     const newVersion = manifest.version || '0.0.0';
                     const oldVersion = existingPlugin.version || '0.0.0';
-                    
+
                     const parseVersion = (v: string) => v.split('.').map(x => parseInt(x, 10) || 0);
                     const newParts = parseVersion(newVersion);
                     const oldParts = parseVersion(oldVersion);
-                    
+
                     let isGreater = false;
                     const maxLen = Math.max(newParts.length, oldParts.length);
                     for (let i = 0; i < maxLen; i++) {
@@ -436,7 +427,7 @@ export const validateTargetRepository = async (
                             break;
                         }
                     }
-                    
+
                     if (!isGreater) {
                         return await failWithIssueComment(
                             { github, context, core },
@@ -452,7 +443,7 @@ export const validateTargetRepository = async (
                 const comment = await github.rest.issues.getComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: parseInt(commentId, 10) });
                 const metadata = extractReportMetadata(comment.data.body);
                 metadata.isUpdate = isUpdate;
-                
+
                 // Using getPhases(2) since this function runs after Phase 2 (Environment Provisioning)
                 const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, getPhases(2), metadata.isUpdate);
                 await updateComment(github, context, commentId, newHeader);

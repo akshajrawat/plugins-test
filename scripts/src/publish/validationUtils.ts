@@ -47,7 +47,7 @@ export const toPublishPayload = async (payload: SubmissionPayload): Promise<Publ
 
 export const parsePayloadFromContext = async (context: any): Promise<PublishPayload | null> => {
     const validation = parseIssuePayload(context.payload.issue.body);
-    if (!validation.ok) return null;
+    if (validation.ok === false) return null;
     return await toPublishPayload(validation.payload);
 };
 

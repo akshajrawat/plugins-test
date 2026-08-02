@@ -25,6 +25,8 @@ export const normalizeRepositoryUrl = (repositoryUrl: string) => {
     return canonicalRepositoryUrl(repositoryUrl).toLowerCase();
 };
 
+const pluginVersionPattern = /^\d+\.\d+\.\d+(?:-[\w.]+)?(?:\+[\w.]+)?$/;
+
 export const parseIssuePayload = (body: string | null | undefined): ValidationResult => {
     const jsonMatch = (body ?? '').match(/```json\s*([\s\S]*?)\s*```/);
 
@@ -38,7 +40,16 @@ export const parseIssuePayload = (body: string | null | undefined): ValidationRe
     let payload: Partial<SubmissionPayload>;
 
     try {
-        payload = JSON.parse(jsonMatch[1]) as Partial<SubmissionPayload>;
+        const parsedPayload: unknown = JSON.parse(jsonMatch[1]);
+
+        if (!parsedPayload || typeof parsedPayload !== 'object' || Array.isArray(parsedPayload)) {
+            return {
+                ok: false,
+                error: 'Invalid JSON payload. The JSON block must contain an object.',
+            };
+        }
+
+        payload = parsedPayload as Partial<SubmissionPayload>;
     } catch {
         return {
             ok: false,
@@ -46,12 +57,41 @@ export const parseIssuePayload = (body: string | null | undefined): ValidationRe
         };
     }
 
-    const { plugin_name, repository_url, commit_hash } = payload;
+    const { plugin_name, version, repository_url, commit_hash } = payload;
 
-    if (!plugin_name || !repository_url || !commit_hash) {
+    if (!plugin_name || !version || !repository_url || !commit_hash) {
         return {
             ok: false,
-            error: 'Missing required fields. Provide plugin_name, repository_url, and commit_hash.',
+            error: 'Missing required fields. Provide `plugin_name`, `version`, `repository_url`, and `commit_hash`',
+        };
+    }
+
+    if (
+        typeof plugin_name !== 'string'
+        || typeof version !== 'string'
+        || typeof repository_url !== 'string'
+        || typeof commit_hash !== 'string'
+    ) {
+        return {
+            ok: false,
+            error: 'Invalid payload field types. plugin_name, version, repository_url, and commit_hash must be strings.',
+        };
+    }
+
+    const normalizedPluginName = plugin_name.trim();
+    const normalizedVersion = version.trim();
+
+    if (!normalizedPluginName) {
+        return {
+            ok: false,
+            error: 'Invalid plugin_name. It must be a non-empty string.',
+        };
+    }
+
+    if (!pluginVersionPattern.test(normalizedVersion)) {
+        return {
+            ok: false,
+            error: `Invalid plugin version: ${version}. It must follow semantic version format (for example, 1.2.3).`,
         };
     }
 
@@ -74,7 +114,8 @@ export const parseIssuePayload = (body: string | null | undefined): ValidationRe
     return {
         ok: true,
         payload: {
-            plugin_name,
+            plugin_name: normalizedPluginName,
+            version: normalizedVersion,
             repository_url: repository.canonicalUrl,
             commit_hash,
         },
