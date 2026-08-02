@@ -1,5 +1,5 @@
-import { readFile, readdir, stat } from 'fs/promises';
-import { join, relative, resolve, sep } from 'path';
+import { readFile, stat } from 'fs/promises';
+import { relative, resolve, sep } from 'path';
 import {
     extractReportMetadata,
     getPhases,
@@ -14,20 +14,6 @@ import type {
 import { updateComment, failWithIssueComment } from '../utils/github';
 import { parseIssuePayload } from '../utils/payload';
 import { fileExists } from '../utils/utils';
-
-const ignoredSourceDirectories = new Set([
-    '.git',
-    '.github',
-    'build',
-    'coverage',
-    'dist',
-    'node_modules',
-    'out',
-    'test',
-    'tests',
-]);
-
-const sourceFilePattern = /\.(cjs|cts|js|jsx|mjs|mts|ts|tsx)$/i;
 
 const canonicalRepositoryUrl = (url: string) => {
     return url.trim().replace(/\/+$/, '').replace(/\.git$/i, '');
@@ -99,23 +85,14 @@ const getRegistryPath = async (relativePath: string) => {
 };
 
 // checks if the plugin already exists in the manifest.json
-const existingPluginFor = async (pluginName: string) => {
+const existingPluginFor = async (pluginId: string) => {
     const manifestsPath = await getRegistryPath('manifests.json');
 
     if (!(await fileExists(manifestsPath))) return null;
 
     const manifests = JSON.parse(await readFile(manifestsPath, 'utf8'));
-    const directlyRegisteredPlugin = manifests[pluginName];
 
-    if (directlyRegisteredPlugin) return directlyRegisteredPlugin;
-
-    for (const pluginId in manifests) {
-        const plugin = manifests[pluginId];
-
-        if (plugin.name === pluginName) return plugin;
-    }
-
-    return null;
+    return manifests[pluginId] ?? null;
 };
 
 const closeOwnershipMismatchIssue = async (
@@ -150,31 +127,6 @@ ${rejectMsg}`;
 const isInside = (parent: string, child: string) => {
     const relativePath = relative(parent, child);
     return relativePath === '' || (!relativePath.startsWith('..') && !relativePath.startsWith(sep));
-};
-
-const findSourceFiles = async (root: string) => {
-    const files: string[] = [];
-
-    const visit = async (directory: string) => {
-        const entries = await readdir(directory, { withFileTypes: true });
-        for (const entry of entries) {
-            if (entry.isDirectory()) {
-                if (!ignoredSourceDirectories.has(entry.name)) {
-                    await visit(join(directory, entry.name));
-                }
-
-                continue;
-            }
-
-            if (entry.isFile() && sourceFilePattern.test(entry.name)) {
-                files.push(join(directory, entry.name));
-            }
-        }
-    };
-
-    await visit(root);
-
-    return files;
 };
 
 // Created a comment in the issue body to indicate the scanning workflow has been started 
@@ -255,6 +207,7 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
     };
 };
 
+// Updates the emoji in the comment to show steps current state
 export const updatePhase = async ({ github, context }: GithubApiContext, commentId: string, phase: number) => {
     const comment = await github.rest.issues.getComment({
         owner: context.repo.owner,
@@ -299,15 +252,14 @@ export const validateTargetRepository = async (
 
     const { plugin_name, version, repository_url } = parsePayloadResult.payload;
     const packagePath = resolve(targetRoot, 'package.json');
-    let manifestPath = resolve(targetRoot, 'src', 'manifest.json');
-    if (!(await fileExists(manifestPath))) {
-        manifestPath = resolve(targetRoot, 'manifest.json');
-    }
+    const manifestPath = resolve(targetRoot, 'src', 'manifest.json');
+    let pkg: Record<string, any>;
+    let manifest: Record<string, any>;
 
     if (await fileExists(packagePath)) {
         try {
             const packageContent = await readFile(packagePath, 'utf8');
-            const pkg = JSON.parse(packageContent);
+            pkg = JSON.parse(packageContent);
 
             if (pkg.name !== plugin_name) {
                 return await failWithIssueComment(
@@ -337,7 +289,7 @@ export const validateTargetRepository = async (
     if (await fileExists(manifestPath)) {
         try {
             const manifestContent = await readFile(manifestPath, 'utf8');
-            const manifest = JSON.parse(manifestContent);
+            manifest = JSON.parse(manifestContent);
 
             const manifestError = repositorySubmissionManifestError(manifest);
             if (manifestError) {
@@ -360,7 +312,7 @@ export const validateTargetRepository = async (
 
             const manifestRepo = manifest.repository_url;
             if (manifestRepo) {
-                const rawManifestUrl = typeof manifestRepo === 'string' ? manifestRepo : (manifestRepo.url || '');
+                const rawManifestUrl = manifestRepo;
                 const normalizedManifestUrl = normalizeUrl(rawManifestUrl);
                 const normalizedPayloadUrl = normalizeUrl(repository_url);
 
@@ -395,19 +347,15 @@ export const validateTargetRepository = async (
                             comment_id: parseInt(commentId, 10),
                         });
 
-                        // Parse package.json name again so we can pass it to closeOwnershipMismatchIssue
-                        const pkgContent = await readFile(packagePath, 'utf8');
-                        const pkgName = JSON.parse(pkgContent).name;
-
                         await closeOwnershipMismatchIssue(
                             { github, context, core },
                             parseInt(commentId, 10),
                             comment.data.body,
-                            pkgName,
+                            pkg.name,
                             registeredUrl,
                             repository_url,
                         );
-                        return { source_file_count: 0, handled_failure: true };
+                        return { handled_failure: true };
                     }
 
                     const newVersion = manifest.version || '0.0.0';
@@ -444,7 +392,7 @@ export const validateTargetRepository = async (
                 const metadata = extractReportMetadata(comment.data.body);
                 metadata.isUpdate = isUpdate;
 
-                // Using getPhases(2) since this function runs after Phase 2 (Environment Provisioning)
+                // This function runs after Phase 2
                 const newHeader = statusTemplate(metadata.repoUrl, metadata.commitHash, metadata.runUrl, getPhases(2), metadata.isUpdate);
                 await updateComment(github, context, commentId, newHeader);
 
@@ -462,25 +410,13 @@ export const validateTargetRepository = async (
             { github, context, core },
             commentId,
             'Security Scan Rejected',
-            'Could not find manifest.json in the target repository root or src/ directory.',
+            'Could not find src/manifest.json in the target repository. Submissions must follow the generator-joplin structure (src/manifest.json).',
         );
     }
 
-    const sourceFiles = await findSourceFiles(targetRoot);
-
-    if (sourceFiles.length === 0) {
-        return await failWithIssueComment(
-            { github, context, core },
-            commentId,
-            'Security Scan Rejected',
-            'The target repository does not contain JavaScript or TypeScript source files outside generated/test directories.',
-        );
-    }
-
-    core.setOutput('source_file_count', sourceFiles.length.toString());
     core.setOutput('handled_failure', 'false');
 
-    return { source_file_count: sourceFiles.length };
+    return { handled_failure: false };
 };
 
 export const generateFinalReport = async (

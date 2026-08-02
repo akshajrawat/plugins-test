@@ -2,6 +2,16 @@
 
 This checklist reflects the end-to-end review of `generator-joplin`, the `plugins-test` workflows, and `plugin-repo-cli`. It also incorporates validation performed with the generated plugin in `C:\opensource\test`.
 
+## Maintainer review progress
+
+- [x] Review scan workflow initialization and metadata validation.
+- [x] Review Phase 1: identity and initial validation.
+- [x] Review Phase 2: environment provisioning and target-repository validation.
+- [ ] Review Phase 3: CodeQL database initialization.
+- [ ] Review Phase 4: CodeQL/SAST analysis.
+- [ ] Review Phase 5: final report generation and scan failure handling.
+- [ ] Review the approval-triggered build and publish workflow.
+
 ## Verified in the generated test plugin
 
 - [x] Publish-flow source files match the current generator branch behavior.
@@ -30,8 +40,9 @@ This checklist reflects the end-to-end review of `generator-joplin`, the `plugin
 
 ## 2. Define and enforce the scan scope
 
-- [ ] Review `.github/codeql/codeql-config.yml`, which currently limits analysis to `src`.
-- [ ] If the security promise is to scan the entire codebase, include root scripts, webpack configuration, build helpers, and other executable code.
+- [x] Review `.github/codeql/codeql-config.yml`, which limits analysis to `src`.
+- [x] Confirm that the PoC intentionally scans plugin code under `src/` only.
+- [x] Keep the current PoC scan scope aligned with CodeQL by treating `src/` as the plugin-code scan boundary.
 - [ ] Decide how dependency code and lifecycle/install scripts are handled.
 - [ ] Document any intentionally excluded code or dependencies.
 - [ ] Ensure validation and documentation describe the same scan scope.
@@ -39,7 +50,7 @@ This checklist reflects the end-to-end review of `generator-joplin`, the `plugin
 ## 3. Revalidate versions during final publish
 
 - [ ] Add the "new version must exceed the existing version" check to the trusted `plugin-repo-cli publish-plugin` operation.
-- [ ] Keep the scan-time version check for early reviewer feedback.
+- [x] Keep the scan-time version check for early reviewer feedback.
 - [ ] Test two approved submissions published out of order.
 - [ ] Test attempts to republish the same version.
 - [ ] Test attempts to downgrade an existing plugin.
@@ -62,12 +73,22 @@ This checklist reflects the end-to-end review of `generator-joplin`, the `plugin
 - [x] Validate that the issue-title version matches the manifest version.
 - [x] Use strict runtime validation for every payload field instead of truthiness checks.
 - [x] Validate that the final built artifact version matches the approved issue payload.
-- [ ] Reject unexpected types with a clear issue comment rather than a workflow exception.
+- [x] Reject unexpected types with a clear issue comment rather than a workflow exception.
 - [ ] Replace GitHub client, context, and action-core `any` types where practical.
 - [ ] Add `_approved?: boolean` to the shared `PluginManifest` type if it is a permanent registry field.
 - [ ] Parse `_approved` in `manifestFromObject` if clients or the frontend will consume it.
 - [ ] Define whether `_approved` means human-reviewed, security-reviewed, or safe, and document the semantics.
 - [ ] Remove or use the currently unused `validateRegistryOwnership` helper in `plugins-test`.
+
+## Completed scan-validation cleanup
+
+- [x] Merge metadata validation into `initialize` so the issue payload is parsed once during scan initialization.
+- [x] Preserve distinct parse-failure and title-rejection issue messages after merging initialization.
+- [x] Require submissions to use `src/manifest.json` from the generator-joplin structure.
+- [x] Parse the target repository's `package.json` exactly once and reuse it for ownership rejection.
+- [x] Parse the target repository's `src/manifest.json` exactly once and reuse it for all manifest checks.
+- [x] Remove the unused source-file existence gate.
+- [x] Remove the unused `source_file_count` output and return property while preserving `handled_failure`.
 
 ## 6. Use the official publishing CLI safely
 

@@ -49,7 +49,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Metadata validation and initial check
+      - name: Phase 1 - Metadata validation and initial check
         id: init
         env:
           INITIAL_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
@@ -59,7 +59,7 @@ jobs:
             const scan = require(process.env.SCAN_MANAGER_PATH);
             return await scan.initialize({github, context, core});
 
-      - name: Phase 2 - Environment provisioning
+      - name: Phase 2 - Target Repository Validation
         if: success() && steps.init.outputs.should_proceed == 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
