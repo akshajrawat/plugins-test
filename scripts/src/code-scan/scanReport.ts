@@ -69,13 +69,13 @@ export const statusTemplate = (repoUrl: string, commitHash: string, runUrl: stri
     const targetText = escapeMarkdownText(`${repoUrl}/tree/${commitHash}`);
     const targetUrl = escapeMarkdownUrl(`${repoUrl}/tree/${commitHash}`);
     const workflowRunUrl = escapeMarkdownUrl(runUrl);
-    
+
     let base = `# Security Scan Report\n`;
     if (isUpdate !== undefined) {
         const typeStr = isUpdate ? 'Update' : 'New Plugin';
         base += `**Submission Type:** ${typeStr}\n`;
     }
-    
+
     base += `**Target:** [${targetText}](${targetUrl})\n**Workflow Run:** [View Logs](${workflowRunUrl})`;
 
     if (!phases) return base;
@@ -94,7 +94,7 @@ export const extractReportMetadata = (body: string): ReportMetadata => {
     const repoUrlMatch = body.match(/\*\*Target:\*\* \[([^\]]+)\/(?:commit|tree)\//);
     const commitHashMatch = body.match(/\*\*Target:\*\* \[.*?\/(?:commit|tree)\/([^\]]+)\]/);
     const runUrlMatch = body.match(/\*\*Workflow Run:\*\* \[.*?\]\(([^)]+)\)/);
-    
+
     const typeMatch = body.match(/\*\*Submission Type:\*\* (Update|New Plugin)/);
     let isUpdate: boolean | undefined = undefined;
     if (typeMatch) {
