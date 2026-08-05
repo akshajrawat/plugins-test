@@ -1,20 +1,21 @@
 import { join } from 'path';
 import { readFile } from 'fs/promises';
-import type { GithubContext } from '../types/types';
+import type { GithubApiContext, GithubContext, GithubCoreContext } from '../types/types';
 import type { PublishSummary } from '../types/publishTypes';
 import { runUrlFor, updateComment } from '../utils/github';
 import { normalizeRepositoryUrl } from '../utils/payload';
 import { statusTemplate, failureTemplate } from './publishTemplates';
-import { parsePayloadFromContext, validateRegistryOwnership, parseSummary, commitHashFromPublishCommit, parseBoolean, toPublishPayload } from './validationUtils';
+import { parsePayloadFromContext, parseSummary, commitHashFromPublishCommit, parseBoolean, toPublishPayload } from './validationUtils';
 import { parseIssuePayload } from '../utils/payload';
 import { hasCompletedScanReport } from './scanUtils';
 import { fileExists, readJsonFromFile, writeJsonFile, sha256File, escapeMarkdownUrl, escapeMarkdownText, escapeInlineCode } from '../utils/utils';
 
 export const acknowledgePublishInitialization = async ({ github, context, core }: GithubContext) => {
-    const runUrl = await runUrlFor(context);
+    const runUrl = runUrlFor(context);
     const escapedRunUrl = await escapeMarkdownUrl(runUrl);
     const initialBody = `# Plugin Publish Status\nValidating the approved submission.\n\n**Workflow Run:** [View Logs](${escapedRunUrl})`;
     const initialCommentId = process.env.INITIAL_COMMENT_ID;
+
     const commentId = initialCommentId
         ? initialCommentId
         : (await github.rest.issues.createComment({
@@ -44,7 +45,7 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 
     const payload = await toPublishPayload(validation.payload);
 
-    if (!(await hasCompletedScanReport({ github, context, core }, payload))) {
+    if (!(await hasCompletedScanReport({ github, context }, payload))) {
         const scanError = 'No completed security scan report was found for this exact repository URL and commit hash. Re-run the scan before approving this submission.';
         const template = await failureTemplate('Plugin Publish Rejected', scanError, runUrl);
         await updateComment(github, context, commentId, template);
@@ -78,13 +79,13 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 };
 
 export const updatePublishPhase = async (
-    { github, context, core }: GithubContext,
+    { github, context }: GithubApiContext,
     commentId: string | number,
     phase: number,
     details?: string,
 ) => {
     const payload = await parsePayloadFromContext(context);
-    const runUrl = await runUrlFor(context);
+    const runUrl = runUrlFor(context);
     const body = payload
         ? await statusTemplate(payload, runUrl, phase, details)
         : await failureTemplate('Plugin Publish Status', details ?? 'Publish workflow is running.', runUrl);
@@ -120,7 +121,7 @@ export const markPublishedPluginApproved = async (repoDir: string, artifactManif
 };
 
 export const verifyPublishedRegistry = async (
-    { github, context, core }: GithubContext,
+    { core }: GithubCoreContext,
     repoDir: string,
     artifactManifestFile: string,
     artifactJplFile: string,
@@ -203,7 +204,7 @@ export const verifyPublishedRegistry = async (
 };
 
 export const summarizePublishResult = async (
-    { github, context, core }: GithubContext,
+    { core }: GithubCoreContext,
     repoDir: string,
     manifestFile: string,
     releaseLogPath: string,
@@ -241,7 +242,7 @@ export const summarizePublishResult = async (
 };
 
 export const finishPublish = async (
-    { github, context, core }: GithubContext,
+    { github, context }: GithubApiContext,
     commentId: string | number,
     summaryJson?: string | PublishSummary,
 ) => {
@@ -251,7 +252,7 @@ export const finishPublish = async (
         ? `${summary.pluginId}@${summary.pluginVersion}`
         : payload?.plugin_name ?? 'the plugin';
     const pluginDirectory = summary.pluginDirectory ?? (summary.pluginId ? `plugins/${summary.pluginId}` : 'plugins/');
-    const runUrl = await runUrlFor(context);
+    const runUrl = runUrlFor(context);
 
     const escapedLabel = await escapeMarkdownText(pluginLabel);
     const escapedDir = await escapeInlineCode(pluginDirectory);
@@ -285,11 +286,11 @@ export const finishPublish = async (
 };
 
 export const handleWorkflowFailure = async (
-    { github, context, core }: GithubContext,
+    { github, context }: GithubApiContext,
     commentId: string | number | undefined,
     message = 'The publish workflow encountered an error. Check the workflow logs for details.',
 ) => {
-    const runUrl = await runUrlFor(context);
+    const runUrl = runUrlFor(context);
     const body = await failureTemplate('Plugin Publish Failed', message, runUrl);
 
     if (commentId) {
@@ -312,7 +313,7 @@ export const cliPublishFailureReason = (log: string) => {
 };
 
 export const reportCliPublishFailure = async (
-    githubContext: GithubContext,
+    { github, context, core }: GithubContext,
     commentId: string | number | undefined,
     logPath: string,
 ) => {
@@ -320,8 +321,8 @@ export const reportCliPublishFailure = async (
     const reason = cliPublishFailureReason(log);
     const message = `The plugin was rejected by plugin-repo-cli: ${reason}`;
 
-    await handleWorkflowFailure(githubContext, commentId, message);
-    githubContext.core.setFailed(message);
+    await handleWorkflowFailure({ github, context }, commentId, message);
+    core.setFailed(message);
 
     return { reason };
 };

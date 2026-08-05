@@ -1,6 +1,6 @@
-import type { GithubContext } from '../types/types';
+import type { GithubActionContext, GithubClient, GithubContext } from '../types/types';
 
-export const runUrlFor = (context: any) => {
+export const runUrlFor = (context: GithubActionContext) => {
     const serverUrl = context.serverUrl ?? 'https://github.com';
     return `${serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
 };
@@ -11,7 +11,7 @@ export const commentIdNumber = (commentId: string | number) => {
     return id;
 };
 
-export const updateComment = async (github: any, context: any, commentId: string | number, body: string) => {
+export const updateComment = async (github: GithubClient, context: GithubActionContext, commentId: string | number, body: string) => {
     const id = commentIdNumber(commentId);
     await github.rest.issues.updateComment({
         owner: context.repo.owner,
@@ -21,7 +21,7 @@ export const updateComment = async (github: any, context: any, commentId: string
     });
 };
 
-export const createComment = async (github: any, context: any, body: string) => {
+export const createComment = async (github: GithubClient, context: GithubActionContext, body: string) => {
     return await github.rest.issues.createComment({
         owner: context.repo.owner,
         repo: context.repo.repo,

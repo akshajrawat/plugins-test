@@ -130,7 +130,7 @@ const isInside = (parent: string, child: string) => {
 };
 
 // Created a comment in the issue body to indicate the scanning workflow has been started 
-export const acknowledgeScanInitialization = async ({ github, context }: GithubContext) => {
+export const acknowledgeScanInitialization = async ({ github, context }: GithubApiContext) => {
     const body = `# Security Scan Initializing
 Setting up the scanner and validating the submission payload.`;
     const comment = await github.rest.issues.createComment({
@@ -442,17 +442,4 @@ export const generateFinalReport = async (
     });
 
     await updateComment(github, context, commentId, body);
-};
-
-export const handleWorkflowFailure = async ({ github, context }: GithubApiContext, commentId: string) => {
-    await updateComment(
-        github,
-        context,
-        commentId,
-        `# Security Scan Failed
-
-The workflow encountered a system error before it could complete.
-
-**Workflow Run:** [View Logs](${runUrlFor(context)})`,
-    );
 };

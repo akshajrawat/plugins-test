@@ -7,9 +7,11 @@ export interface GithubApiContext {
     context: GithubActionContext;
 }
 
-export interface GithubContext extends GithubApiContext {
+export interface GithubCoreContext {
     core: GithubActionCore;
 }
+
+export interface GithubContext extends GithubApiContext, GithubCoreContext {}
 
 export interface SubmissionPayload {
     plugin_name: string;

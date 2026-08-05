@@ -2,7 +2,7 @@ name: Plugin Security Scan
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened]
 
 permissions:
   contents: read
@@ -136,6 +136,7 @@ jobs:
             await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 5);
 
       - name: Finalize report
+        id: finalize
         if: always() && steps.init.outputs.should_proceed == 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
         env:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
@@ -153,12 +154,24 @@ jobs:
               process.env.INIT_COMMIT_HASH
             );
 
-      - name: Handle workflow failure
-        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.should_proceed != 'true' && steps.init.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true'
+      - name: Handle unreported workflow failure
+        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true' && steps.finalize.outcome != 'success'
         env:
           ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9
         with:
           script: |
-            const scan = require(process.env.SCAN_MANAGER_PATH);
-            await scan.handleWorkflowFailure({github, context}, process.env.ACK_COMMENT_ID);
+            const body = [
+              "# Security Scan Failed",
+              "",
+              "The workflow encountered a system error before it could complete.",
+              "",
+              `**Workflow Run:** [View Logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`
+            ].join("\n");
+
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: Number.parseInt(process.env.ACK_COMMENT_ID, 10),
+              body
+            });

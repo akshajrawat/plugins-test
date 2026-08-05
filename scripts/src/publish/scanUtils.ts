@@ -1,4 +1,4 @@
-import type { GithubContext } from '../types/types';
+import type { GithubApiContext } from '../types/types';
 import type { PublishPayload } from '../types/publishTypes';
 import { normalizeRepositoryUrl } from '../utils/payload';
 
@@ -22,7 +22,7 @@ export const scanReportMatchesPayload = (body: string, payload: PublishPayload) 
         && scannedCommitHash === payload.commit_hash.toLowerCase();
 };
 
-export const hasCompletedScanReport = async ({ github, context }: GithubContext, payload: PublishPayload) => {
+export const hasCompletedScanReport = async ({ github, context }: GithubApiContext, payload: PublishPayload) => {
     const comments = await github.paginate(github.rest.issues.listComments, {
         owner: context.repo.owner,
         repo: context.repo.repo,
