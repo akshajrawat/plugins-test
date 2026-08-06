@@ -4,11 +4,11 @@ on:
   push:
     paths:
       - '.github/codeql/**'
-      - '!.github/codeql/tests/**'
+      - '.github/workflows/rule-regression-test.yml'
   pull_request:
     paths:
       - '.github/codeql/**'
-      - '!.github/codeql/tests/**'
+      - '.github/workflows/rule-regression-test.yml'
 
 permissions:
   contents: read
@@ -78,7 +78,6 @@ jobs:
       - name: Run CodeQL regression scan
         working-directory: plugins-test/scripts
         env:
-          TARGET_PLUGIN_DIR: ${{ github.workspace }}/target-plugin
           RESULTS_SARIF: ${{ github.workspace }}/codeql-results/javascript.sarif
           PLUGIN_NAME: ${{ matrix.plugin.repo }}
         run: node dist/code-scan/regressionScan.js

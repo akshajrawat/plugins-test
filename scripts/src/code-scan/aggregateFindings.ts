@@ -1,4 +1,4 @@
-import { readFileSync, appendFileSync, readdirSync, statSync } from 'node:fs';
+import { appendFile, readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 export interface Finding {
@@ -8,25 +8,25 @@ export interface Finding {
     line: string;
 }
 
-const appendStepSummary = (content: string, summaryPath = process.env.GITHUB_STEP_SUMMARY): void => {
+const appendStepSummary = async (content: string, summaryPath = process.env.GITHUB_STEP_SUMMARY) => {
     if (!summaryPath) {
         throw new Error('GITHUB_STEP_SUMMARY is not set; cannot write the regression result to the Actions summary.');
     }
-    appendFileSync(summaryPath, `${content.trimEnd()}\n\n`, 'utf8');
+    await appendFile(summaryPath, `${content.trimEnd()}\n\n`, 'utf8');
 };
 
-const main = (): void => {
+const main = async () => {
     try {
         const artifactsDir = process.env.ARTIFACTS_DIR || resolve('findings');
         const allFindings: Finding[] = [];
 
         // Search recursively for findings.json files
-        const findJsonFiles = (dir: string) => {
+        const findJsonFiles = async (dir: string): Promise<string[]> => {
             let files: string[] = [];
-            for (const item of readdirSync(dir)) {
+            for (const item of await readdir(dir)) {
                 const fullPath = join(dir, item);
-                if (statSync(fullPath).isDirectory()) {
-                    files = files.concat(findJsonFiles(fullPath));
+                if ((await stat(fullPath)).isDirectory()) {
+                    files = files.concat(await findJsonFiles(fullPath));
                 } else if (item === 'findings.json') {
                     files.push(fullPath);
                 }
@@ -36,12 +36,12 @@ const main = (): void => {
 
         let jsonFiles: string[] = [];
         try {
-            jsonFiles = findJsonFiles(artifactsDir);
+            jsonFiles = await findJsonFiles(artifactsDir);
         } catch (e) { }
 
         for (const file of jsonFiles) {
             try {
-                const data = JSON.parse(readFileSync(file, 'utf8')) as Finding[];
+                const data = JSON.parse(await readFile(file, 'utf8')) as Finding[];
                 allFindings.push(...data);
             } catch (error) {
                 console.error(`Error parsing ${file}:`, error);
@@ -49,7 +49,7 @@ const main = (): void => {
         }
 
         if (allFindings.length === 0) {
-            appendStepSummary('## CodeQL regression scan passed\n\nNo findings were reported across all tested plugins.');
+            await appendStepSummary('## CodeQL regression scan passed\n\nNo findings were reported across all tested plugins.');
             process.exit(0);
         }
 
@@ -71,7 +71,7 @@ const main = (): void => {
             ...rows,
         ].join('\n');
 
-        appendStepSummary(table);
+        await appendStepSummary(table);
         process.exit(1);
 
     } catch (error) {
@@ -80,4 +80,4 @@ const main = (): void => {
     }
 };
 
-if (require.main === module) main();
+if (require.main === module) void main();
