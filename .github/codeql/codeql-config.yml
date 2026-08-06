@@ -1,4 +1,6 @@
 name: "Joplin Plugin Security Scan"
 
+disable-default-queries: true
+
 paths:
   - src

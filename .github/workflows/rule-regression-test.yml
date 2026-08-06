@@ -103,7 +103,6 @@ jobs:
         with:
           pattern: findings-*
           path: findings
-          merge-multiple: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
