@@ -1,6 +1,7 @@
 import { access, readFile } from 'fs/promises';
 import type {
     FinalReportInput,
+    FinalReportResult,
     GithubActionContext,
     PhaseMap,
     ReportMetadata,
@@ -132,7 +133,24 @@ const toGitHubBlobUrl = (repoUrl: string, commitHash: string, file: string, line
 };
 
 const readSarif = async (sarifPath: string) => {
-    return JSON.parse(await readFile(sarifPath, 'utf8')) as SarifReport;
+    const parsed: unknown = JSON.parse(await readFile(sarifPath, 'utf8'));
+
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as SarifReport).runs)) {
+        throw new Error('The SARIF report does not contain a valid runs array.');
+    }
+
+    const sarif = parsed as SarifReport;
+    if (sarif.runs.length === 0) {
+        throw new Error('The SARIF report does not contain any analysis runs.');
+    }
+
+    for (const run of sarif.runs) {
+        if (!run || typeof run !== 'object' || (run.results !== undefined && !Array.isArray(run.results))) {
+            throw new Error('The SARIF report contains an invalid analysis run.');
+        }
+    }
+
+    return sarif;
 };
 
 // Gives an array of all the results
@@ -205,18 +223,71 @@ const renderSarifFinding = (sarif: SarifReport, result: SarifResult, repoUrl: st
 `;
 };
 
-export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl, isUpdate }: FinalReportInput) => {
+const failedReport = (
+    repoUrl: string,
+    commitHash: string,
+    runUrl: string,
+    reason: string,
+    isUpdate?: boolean,
+): FinalReportResult => {
+    const header = statusTemplate(repoUrl, commitHash, runUrl, null, isUpdate)
+        .replace('# Security Scan Report', '# Security Scan Failed');
+
+    return {
+        ok: false,
+        body: `${header}\n\n---\n\n❌ ${escapeMarkdownText(reason)}\n\nThe issue remains open so the scan can be investigated or retried.\n`,
+        error: reason,
+    };
+};
+
+export const renderFinalReport = async ({
+    sarifPath,
+    repoUrl,
+    commitHash,
+    runUrl,
+    analysisOutcome,
+    isUpdate,
+}: FinalReportInput): Promise<FinalReportResult> => {
+    if (analysisOutcome !== 'success') {
+        return failedReport(
+            repoUrl,
+            commitHash,
+            runUrl,
+            `CodeQL analysis did not complete successfully (outcome: ${analysisOutcome}). Check the workflow logs for details.`,
+            isUpdate,
+        );
+    }
+
     const reportHeader = `${statusTemplate(repoUrl, commitHash, runUrl, null, isUpdate)}\n\n---\n# Findings\n\n`;
 
     if (!(await fileExists(sarifPath))) {
-        return `${reportHeader}❌ Failed to generate a SARIF report, or CodeQL analysis failed before producing results.\n`;
+        return failedReport(
+            repoUrl,
+            commitHash,
+            runUrl,
+            'CodeQL completed without producing the expected SARIF report. Check the workflow logs for details.',
+            isUpdate,
+        );
     }
 
-    const sarif = await readSarif(sarifPath);
+    let sarif: SarifReport;
+    try {
+        sarif = await readSarif(sarifPath);
+    } catch (error) {
+        const details = error instanceof Error ? error.message : String(error);
+        return failedReport(
+            repoUrl,
+            commitHash,
+            runUrl,
+            `The SARIF report is malformed or incomplete: ${details} Check the workflow logs for details.`,
+            isUpdate,
+        );
+    }
+
     const results = sarifResults(sarif);
 
     if (results.length === 0) {
-        return `${reportHeader}✅ No vulnerabilities detected by CodeQL.\n`;
+        return { ok: true, body: `${reportHeader}✅ No vulnerabilities detected by CodeQL.\n` };
     }
 
     // shows error findings above warning findings
@@ -236,5 +307,5 @@ export const renderFinalReport = async ({ sarifPath, repoUrl, commitHash, runUrl
 
     const findings = sortedResults.map(result => renderSarifFinding(sarif, result, repoUrl, commitHash)).join('');
 
-    return `${reportHeader}${findings}`;
+    return { ok: true, body: `${reportHeader}${findings}` };
 };

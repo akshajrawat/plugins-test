@@ -96,10 +96,6 @@
     "repo": "JackGruber/joplin-plugin-tagging"
   },
   {
-    "name": "joplin-plugin-toggle-sidebars",
-    "repo": "laurent22/joplin"
-  },
-  {
     "name": "joplin-rich-markdown",
     "repo": "CalebJohn/joplin-rich-markdown"
   },

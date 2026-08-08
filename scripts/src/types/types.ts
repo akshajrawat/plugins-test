@@ -46,7 +46,14 @@ export interface FinalReportInput {
     repoUrl: string;
     commitHash: string;
     runUrl: string;
+    analysisOutcome: string;
     isUpdate?: boolean;
+}
+
+export interface FinalReportResult {
+    ok: boolean;
+    body: string;
+    error?: string;
 }
 
 export interface SarifMessage {

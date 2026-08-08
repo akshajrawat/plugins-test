@@ -118,6 +118,7 @@ jobs:
             await scan.updatePhase({github, context}, process.env.INIT_COMMENT_ID, 4);
 
       - name: Perform CodeQL analysis
+        id: codeql-analysis
         if: success() && steps.init.outputs.should_proceed == 'true'
         uses: github/codeql-action/analyze@v4
         with:
@@ -142,20 +143,22 @@ jobs:
           INIT_COMMENT_ID: ${{ steps.init.outputs.comment_id }}
           INIT_REPO_URL: ${{ steps.init.outputs.repository_url }}
           INIT_COMMIT_HASH: ${{ steps.init.outputs.commit_hash }}
+          CODEQL_ANALYSIS_OUTCOME: ${{ steps.codeql-analysis.outcome }}
         uses: actions/github-script@v9
         with:
           script: |
             const scan = require(process.env.SCAN_MANAGER_PATH);
             await scan.generateFinalReport(
-              {github, context},
+              {github, context, core},
               process.env.INIT_COMMENT_ID,
               'codeql-results/javascript.sarif',
               process.env.INIT_REPO_URL,
-              process.env.INIT_COMMIT_HASH
+              process.env.INIT_COMMIT_HASH,
+              process.env.CODEQL_ANALYSIS_OUTCOME
             );
 
       - name: Handle unreported workflow failure
-        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true' && steps.finalize.outcome != 'success'
+        if: failure() && steps.ack.outputs.comment_id && steps.init.outputs.handled_failure != 'true' && steps.sourcecheck.outputs.handled_failure != 'true' && steps.finalize.outputs.handled_failure != 'true' && steps.finalize.outcome != 'success'
         env:
           ACK_COMMENT_ID: ${{ steps.ack.outputs.comment_id }}
         uses: actions/github-script@v9

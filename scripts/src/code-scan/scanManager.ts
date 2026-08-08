@@ -420,11 +420,12 @@ export const validateTargetRepository = async (
 };
 
 export const generateFinalReport = async (
-    { github, context }: GithubApiContext,
+    { github, context, core }: GithubContext,
     commentId: string,
     sarifPath: string,
     repoUrl: string,
     commitHash: string,
+    analysisOutcome: string,
 ) => {
     const comment = await github.rest.issues.getComment({
         owner: context.repo.owner,
@@ -433,13 +434,21 @@ export const generateFinalReport = async (
     });
     const metadata = extractReportMetadata(comment.data.body);
 
-    const body = await renderFinalReport({
+    const report = await renderFinalReport({
         sarifPath,
         repoUrl,
         commitHash,
         runUrl: runUrlFor(context),
+        analysisOutcome,
         isUpdate: metadata.isUpdate,
     });
 
-    await updateComment(github, context, commentId, body);
+    await updateComment(github, context, commentId, report.body);
+    core.setOutput('handled_failure', (!report.ok).toString());
+
+    if (!report.ok) {
+        core.setFailed(report.error ?? 'The security scan did not complete successfully.');
+    }
+
+    return { handled_failure: !report.ok };
 };
