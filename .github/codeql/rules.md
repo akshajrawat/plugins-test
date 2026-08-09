@@ -266,13 +266,14 @@ It models abuse of `userDataSet()` and `userDataGet()` as an intra-API smuggling
 ### SEVERITY : ERROR
 
 # Rule 13 : Social Engineering & UI Phishing
-Detects credential-looking Joplin dialogs or panels whose submitted data leaves over the network.
+Detects Joplin dialogs or panels containing credential-entry controls whose submitted data leaves over the network.
 It tracks form or message data from phishing-like UI into network sinks.
 
 ### Flows :
-1. Dialog HTML containing password fields or credential keywords is opened and its result flows into network request data or URLs.
-2. Panel HTML containing password fields or credential keywords is paired with `onMessage()` and submitted data flows into network request data or URLs.
+1. Dialog HTML containing password inputs or credential-labelled form controls is opened and its result flows into network request data or URLs.
+2. Panel HTML containing password inputs or credential-labelled form controls is paired with `onMessage()` and submitted data flows into network request data or URLs.
 3. The rule follows awaited dialog results and `.formData` property reads.
+4. Provider or feature names such as GitHub, Dropbox, OneDrive, WebDAV, or sync do not make ordinary UI credential-looking by themselves.
 
 ### SEVERITY : ERROR
 
@@ -281,9 +282,10 @@ Detects high-volume Joplin data creation or disk writes inside loops.
 It focuses on resource exhaustion through unbounded or repeated work.
 
 ### Flows :
-1. `joplin.data.post()` to `tags`, `notes`, `resources`, or tag-note links appears inside an unbounded loop or background interval.
-2. Filesystem writes appear inside an unbounded loop or background interval.
-3. Large string or `Buffer.alloc()` payloads are written to disk inside any loop.
+1. `joplin.data.post()` to the exact `tags`, `notes`, `resources`, or `folders` collection route, or the exact tag-note link route, appears inside an unbounded loop or recurring timer.
+2. Filesystem write, append, or output-file calls through Node `fs`, promise-based `fs`, `fs-extra`, or `joplin.require('fs-extra')` appear inside an unbounded loop or recurring timer.
+3. String payloads larger than 10,000 characters or buffers larger than 10,000 bytes are written to disk inside any loop.
+4. Operations reached through helpers called by the loop or timer are included; ordinary finite creation loops and cleared intervals are not treated as unbounded flooding.
 
 ### SEVERITY : WARNING
 
@@ -292,41 +294,48 @@ Detects note mutation performed directly inside Joplin workspace event hooks.
 It is a structural rule for silent note changes triggered by user activity.
 
 ### Flows :
-1. `joplin.data.put(["notes", ...])` appears inside note selection, note change, note content change, or alarm trigger callbacks.
-2. `joplin.data.delete(["notes", ...])` appears inside those workspace callbacks.
+1. `joplin.data.put(["notes", noteId])` appears inside note selection, note change, note content change, or alarm trigger callbacks.
+2. `joplin.data.delete(["notes", noteId])` appears inside those workspace callbacks.
 3. `joplin.commands.execute("insertText", ...)` or `replaceSelection` appears inside those workspace callbacks.
+4. Mutations reached through helpers actually called by the workspace callback are included; nested helpers that are declared but never invoked are excluded.
+5. Note sub-routes and mutations outside these workspace callbacks are not reported.
 
 ### SEVERITY : ERROR
 
 # Rule 16 : Electron Main Process Takeover
 Detects direct access to Electron remote APIs.
-It flags imports or member access that can bypass normal plugin isolation.
+It flags imports or member access that can expose privileged main-process capabilities when remote access is available.
 
 ### Flows :
-1. Code imports `@electron/remote`.
+1. Code imports `@electron/remote` or one of its package subpaths, such as `@electron/remote/main` or `@electron/remote/renderer`.
 2. Code accesses `electron.remote`.
+3. ES module imports, CommonJS requires, destructuring, namespace variables, and constant property access are covered by CodeQL's module model.
 
 ### SEVERITY : ERROR
 
 # Rule 16b : Unauthorized Electron API Usage
-Detects direct imports or member access on the native Electron module.
+Detects runtime member access on the native Electron module.
 It flags Electron APIs that bypass the Joplin plugin API surface.
 
 ### Flows :
-1. Code imports the raw `electron` module.
-2. Code accesses `electron.BrowserWindow`, `dialog`, `app`, `clipboard`, `shell`, `ipcRenderer`, `ipcMain`, or `screen`.
+1. Code accesses a runtime member from `electron`, `electron/main`, `electron/renderer`, `electron/common`, or their `node:` variants.
+2. Specifically classified APIs include windows, dialogs, application paths, clipboard, shell, IPC, display, session, networking, protocol, global shortcuts, desktop capture, safe storage, and utility processes.
+3. Other runtime Electron properties receive one generic manual-review finding; the import itself does not produce a duplicate finding.
+4. Type-only imports are excluded, and `electron.remote` is handled exclusively by Rule 16.
 
 ### SEVERITY : WARNING
 
 # Rule 17 : Untrusted Archive Extraction
-Detects remote or message-controlled archive input being extracted to unsafe destinations.
-It excludes flows that pass into an `update(...)` call, which is intended to represent an integrity-check barrier.
+Detects remote or webview-controlled archive input being saved or passed to extraction.
+It focuses on whether the archive source is trusted; Rule 17b exclusively validates the extraction destination.
 
 ### Flows :
 1. Remote request data flows into a file that is later passed to `joplin.fs.archiveExtract()`.
 2. Joplin webview message data flows into a file that is later passed to `joplin.fs.archiveExtract()`.
 3. Remote or message-controlled data flows directly into the archive path argument of `archiveExtract()`.
-4. The destination is considered unsafe when no same-context `joplin.plugins.dataDir()` destination is found.
+4. File writes through Node `fs`, promise-based `fs`, `fs-extra`, or `joplin.require('fs-extra')` are covered, including common stream and pipeline downloads.
+5. Merely passing data into `hash.update()` does not make the archive trusted; authenticity requires comparison with a trusted expected hash or verification of a digital signature.
+6. Trusted local archive paths with no remote or webview-controlled flow are not reported.
 
 ### SEVERITY : WARNING
 
@@ -335,56 +344,52 @@ Detects archive extraction destinations derived from unsafe path sources.
 It exclusively owns archive destination validation for paths outside the plugin data directory.
 
 ### Flows :
-1. `process.env`, `__dirname`, `__filename`, `joplin.plugins.installationDir()`, `process.cwd()`, `os.homedir()`, `os.tmpdir()`, or Electron application paths flow into the destination argument of `joplin.fs.archiveExtract()`.
-2. Hardcoded absolute paths flow into the destination argument of `archiveExtract()`.
-3. Remote or user-controlled input flows into the destination argument of `archiveExtract()`.
+1. `process.env`, `process.argv`, `__dirname`, `__filename`, `joplin.plugins.installationDir()`, `process.cwd()`, `os.homedir()`, `os.tmpdir()`, plugin settings, or Electron application paths flow into the destination argument of `joplin.fs.archiveExtract()`.
+2. Hardcoded absolute paths, working-directory-relative paths, Windows drive or UNC paths, and parent-directory traversal flow into the extraction destination.
+3. Remote or Joplin webview-controlled input flows into the extraction destination.
+4. `joplin.plugins.dataDir()` and paths formed from it using only fixed child segments are accepted.
+5. Applying `path.dirname()` or parent traversal to `dataDir()` is reported because it escapes the plugin's storage boundary.
+6. The query reports one result per unsafe destination rather than one result for every contributing path fragment.
 
 ### SEVERITY : ERROR
-
-# Rule 17c : Archive Entry Traversal
-Detects archive entry names flowing into filesystem or command sinks.
-It models Zip Slip-style use of extracted entry names without sanitization.
-
-### Flows :
-1. The result of `joplin.fs.archiveExtract()` flows through `await`, `then`, array iteration, or array element reads.
-2. Extracted entry `name` or `entryName` properties flow into filesystem path sinks.
-3. Extracted entry `name` or `entryName` properties flow into command execution sinks.
-4. `path.basename()` is treated as a sanitization barrier.
-
-### SEVERITY : WARNING
 
 # Rule 18 : Mass Data Destruction
 Detects destructive Joplin data operations that can wipe or corrupt many records.
 It is a structural rule for folder deletion, repeated deletion, and repeated destructive updates.
 
 ### Flows :
-1. Any `joplin.data.delete(["folders", ...])` call is reported unless a Joplin confirmation dialog is opened in the same function.
-2. Any `joplin.data.delete()` call inside an unbounded loop or background interval is reported.
-3. `joplin.data.put()` inside a loop is reported when the payload sets `deleted_time`, sets `is_conflict`, or replaces `body` with an empty string.
-4. Destructive operations are excluded when the same function also calls `joplin.views.dialogs.open(...)`; the rule does not verify call order or the user's response.
+1. Any exact folder-item deletion through `joplin.data.delete(["folders", folderId])` is reported because deleting a folder cascades to its notes.
+2. Any `joplin.data.delete()` reached directly or through a helper from an unbounded loop, uncleared interval, or recursive timeout is reported.
+3. `joplin.data.put()` reached from a loop, recurring timer, or array iteration callback is reported when the payload sets an active `deleted_time`, sets `is_conflict`, or replaces `body` with an empty string.
+4. Explicit inactive values such as `deleted_time: 0`, `is_conflict: false`, `null`, or `undefined` are excluded.
+5. Merely opening a confirmation dialog does not suppress the finding; the reviewer must verify that the destructive action is correctly guarded by the user's response.
 
 ### SEVERITY : ERROR
 
 # Rule 19 : Keylogging & Silent Surveillance
-Detects event-driven user data capture that is sent over the network.
-It tracks live Joplin hook data and data reads performed inside hook callbacks.
+Detects live keyboard, input, or Joplin activity data that is sent over the network.
+It tracks sensitive event parameters and Joplin data reads performed by event callbacks or invoked helpers.
 
 ### Flows :
-1. Parameters from workspace hooks (`onNoteContentChange`, `onNoteChange`, `onNoteSelectionChange`, `onSyncComplete`, `onResourceChange`, or `onNoteAlarmTrigger`), `settings.onChange`, `filters.on`, or `editors.onUpdate` flow into network request data or URLs.
-2. `selectedNote()` or `selectedNoteIds()` reads inside those hooks, including `onSyncStart`, flow into network request data or URLs.
-3. `joplin.data.get()` or `joplin.data.search()` reads inside those hooks flow into network request data or URLs.
-4. Editor registration callbacks such as `onActivationCheck` and `onSetup` are included.
-5. Generic UI message handlers (`contentScripts.onMessage` or `panels.onMessage`) are excluded from surveillance tracking.
+1. Keyboard and text-input event parameters from `keydown`, `keyup`, `keypress`, `beforeinput`, `input`, or `paste` listeners flow into network request data or URLs.
+2. Sensitive parameters from workspace activity hooks, `settings.onChange`, `filters.on`, `editors.onUpdate`, or editor `onActivationCheck` flow into network request data or URLs.
+3. `selectedNote()`, `selectedNoteIds()`, `selectedFolder()`, or `selectedNoteHash()` reads inside monitored callbacks flow into network request data or URLs.
+4. `joplin.data.get()` or `joplin.data.search()` reads performed directly or through an invoked helper from monitored callbacks flow into network request data or URLs.
+5. Non-sensitive parameters from `onSyncComplete` and editor `onSetup` are excluded, although sensitive Joplin reads performed by those callbacks remain covered.
+6. Generic UI messages and uncalled nested helpers are excluded from surveillance tracking.
 
 ### SEVERITY : ERROR
 
 # Rule 20 : Malicious Import Module
-Detects imported file data flowing from a custom import module into dangerous sinks.
-It tracks data handled during `registerImportModule()` execution.
+Detects imported file paths or contents flowing from a custom import module into dangerous sinks.
+It tracks data originating from the real `sourcePath` provided to `registerImportModule().onExec()`.
 
 ### Flows :
-1. `registerImportModule()` `onExec` context or `sourcePath` flows into file read APIs.
-2. Data read through `readFile`, `readFileSync`, `readJSON`, `readJSONSync`, or `readFileString` flows into dangerous sinks.
-3. Dangerous sinks include network request data or URLs, command execution, filesystem paths, and filesystem write data.
+1. The `onExec` context's `sourcePath` flows directly into network requests, terminal commands, or unsafe filesystem operations.
+2. Imported contents read through supported Node `fs`, promise-based `fs`, `fs-extra`, or `joplin.require('fs-extra')` APIs flow into those sinks.
+3. Synchronous, promise, callback, JSON, and common read-stream forms are covered.
+4. Inline objects, locally defined objects, factory-returned objects, and class instances registered as import modules are covered.
+5. Writing or copying imported data under `joplin.plugins.dataDir()` is allowed; writes outside it and moves or renames of the original import source are reported.
+6. Import options, warnings, unrelated functions named `readFile`, and legitimate creation of Joplin records are not treated as imported file contents.
 
-### SEVERITY : WARNING
+### SEVERITY : ERROR

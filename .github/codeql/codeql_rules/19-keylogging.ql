@@ -1,6 +1,6 @@
 /**
  * @name Keylogging & Silent Surveillance
- * @description Monitoring user notes and exfiltrating data.
+ * @description Monitoring live user activity or Joplin data and exfiltrating it.
  * @kind path-problem
  * @problem.severity error
  * @id joplin/keylogging
@@ -9,34 +9,91 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
-predicate isJoplinHookCallback(DataFlow::FunctionNode callback) {
+predicate isJoplinHookCallback(DataFlow::FunctionNode callback, string hookKind) {
   exists(DataFlow::MethodCallNode hook, string methodName |
     methodName = hook.getMethodName() and
     (
-      (hook.getReceiver().getALocalSource() = Joplin::workspace() and methodName in ["onNoteContentChange", "onNoteChange", "onNoteSelectionChange", "onSyncComplete", "onSyncStart", "onResourceChange", "onNoteAlarmTrigger"] and callback = hook.getArgument(0).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::settings() and methodName = "onChange" and callback = hook.getArgument(0).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::filters() and methodName = "on" and callback = hook.getArgument(1).getAFunctionValue()) or
-      (hook.getReceiver().getALocalSource() = Joplin::editors() and methodName = "onUpdate" and callback = hook.getArgument(1).getAFunctionValue())
+      hook.getReceiver().getALocalSource() = Joplin::workspace() and
+      methodName in [
+        "onNoteContentChange", "onNoteChange", "onNoteSelectionChange", "onSyncComplete",
+        "onSyncStart", "onResourceChange", "onNoteAlarmTrigger"
+      ] and
+      callback = hook.getArgument(0).getAFunctionValue() and
+      hookKind = methodName
+      or
+      hook.getReceiver().getALocalSource() = Joplin::settings() and
+      methodName = "onChange" and
+      callback = hook.getArgument(0).getAFunctionValue() and
+      hookKind = "settings.onChange"
+      or
+      hook.getReceiver().getALocalSource() = Joplin::filters() and
+      methodName = "on" and
+      callback = hook.getArgument(1).getAFunctionValue() and
+      hookKind = "filters.on"
+      or
+      hook.getReceiver().getALocalSource() = Joplin::editors() and
+      methodName = "onUpdate" and
+      callback = hook.getArgument(1).getAFunctionValue() and
+      hookKind = "editors.onUpdate"
     )
-  ) or
-  // Register editors via object literal
-  exists(DataFlow::MethodCallNode hook |
+  )
+  or
+  exists(DataFlow::MethodCallNode hook, string callbackName |
     hook.getMethodName() = "register" and
     hook.getReceiver().getALocalSource() = Joplin::editors() and
-    (
-      callback = hook.getArgument(0).getALocalSource().getAPropertyWrite("onActivationCheck").getRhs().getAFunctionValue() or
-      callback = hook.getArgument(0).getALocalSource().getAPropertyWrite("onSetup").getRhs().getAFunctionValue()
-    )
+    callbackName in ["onActivationCheck", "onSetup"] and
+    callback = hook.getArgument(1).getALocalSource().getAPropertyWrite(callbackName).getRhs().getAFunctionValue() and
+    hookKind = callbackName
   )
 }
 
-predicate isReadInsideHook(DataFlow::Node source) {
+predicate hasSensitiveJoplinHookParameter(DataFlow::FunctionNode callback) {
+  exists(string hookKind |
+    isJoplinHookCallback(callback, hookKind) and
+    not hookKind in ["onSyncStart", "onSyncComplete", "onSetup"]
+  )
+}
+
+predicate isKeyboardOrInputCallback(DataFlow::FunctionNode callback) {
+  exists(DataFlow::MethodCallNode listener, string eventName |
+    listener.getMethodName() in ["addEventListener", "on", "addListener"] and
+    eventName = listener.getArgument(0).getStringValue() and
+    eventName in ["keydown", "keyup", "keypress", "beforeinput", "input", "paste"] and
+    callback = listener.getArgument(1).getAFunctionValue()
+  )
+}
+
+predicate isSurveillanceCallback(DataFlow::FunctionNode callback) {
+  exists(string hookKind | isJoplinHookCallback(callback, hookKind)) or
+  isKeyboardOrInputCallback(callback)
+}
+
+predicate functionDirectlyCalls(DataFlow::FunctionNode caller, DataFlow::FunctionNode callee) {
+  exists(DataFlow::CallNode invocation |
+    invocation.getContainer() = caller.getFunction() and
+    callee = invocation.getCalleeNode().getAFunctionValue()
+  )
+}
+
+predicate callbackExecutesCall(DataFlow::FunctionNode callback, DataFlow::CallNode call) {
+  exists(DataFlow::FunctionNode owner |
+    call.getContainer() = owner.getFunction() and
+    functionDirectlyCalls*(callback, owner)
+  )
+}
+
+predicate isReadInsideSurveillanceCallback(DataFlow::Node source) {
   exists(DataFlow::FunctionNode callback, DataFlow::CallNode call |
-    isJoplinHookCallback(callback) and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction() and
+    isSurveillanceCallback(callback) and
+    callbackExecutesCall(callback, call) and
     (
-      (call.getCalleeName() in ["selectedNote", "selectedNoteIds"] and call.getReceiver().getALocalSource() = Joplin::workspace()) or
-      (call.getCalleeName() in ["get", "search"] and call.getReceiver().getALocalSource() = Joplin::data())
+      call.getCalleeName() in [
+        "selectedNote", "selectedNoteIds", "selectedFolder", "selectedNoteHash"
+      ] and
+      call.getReceiver().getALocalSource() = Joplin::workspace()
+      or
+      call.getCalleeName() in ["get", "search"] and
+      call.getReceiver().getALocalSource() = Joplin::data()
     ) and
     source = call
   )
@@ -44,14 +101,17 @@ predicate isReadInsideHook(DataFlow::Node source) {
 
 module KeyloggingConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    // Exfiltration of the callback parameter itself (excluding onSyncStart which has no parameters)
     exists(DataFlow::FunctionNode callback |
-      isJoplinHookCallback(callback) and
-      not exists(DataFlow::MethodCallNode hook | hook.getMethodName() = "onSyncStart" and callback = hook.getArgument(0).getAFunctionValue()) and
+      hasSensitiveJoplinHookParameter(callback) and
       source = callback.getParameter(0)
-    ) or
-    // Exfiltration of data read inside the callback
-    isReadInsideHook(source)
+    )
+    or
+    exists(DataFlow::FunctionNode callback |
+      isKeyboardOrInputCallback(callback) and
+      source = callback.getParameter(0)
+    )
+    or
+    isReadInsideSurveillanceCallback(source)
   }
 
   predicate isSink(DataFlow::Node sink) {
@@ -64,4 +124,4 @@ import KeyloggingFlow::PathGraph
 
 from KeyloggingFlow::PathNode source, KeyloggingFlow::PathNode sink
 where KeyloggingFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network request. This captures live user activity. Verify the endpoint is secure."
+select sink.getNode(), source, sink, "Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user."

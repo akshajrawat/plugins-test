@@ -1,37 +1,87 @@
 edges
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | provenance |  |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:11:6:14 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:79 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:18:6:64 | await j ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:11:6:14 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:24:6:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:18:6:64 | await j ... note']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:79 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:84 | note.body | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:11:9:16 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:86 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:20:9:70 | await j ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:11:9:16 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:26:9:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:20:9:70 | await j ... lder']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:86 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:92 | folder.title | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:11:12:18 | resource | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:90 | resource | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:22:12:76 | await j ... urce']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:11:12:18 | resource | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:28:12:76 | joplin. ... urce']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:22:12:76 | await j ... urce']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:90 | resource | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:93 | resource.id | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:11:15:19 | masterKey | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:86 | masterKey | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:23:15:74 | await j ... -key']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:11:15:19 | masterKey | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:29:15:74 | joplin. ... -key']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:23:15:74 | await j ... -key']) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:86 | masterKey | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:94 | masterKey.content | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:19:10:19:16 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:20:14:20:20 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:21:18:21:24 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:22:16:22:22 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:23:17:23:23 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:23:24:29 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:21:18:98 | await j ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:21:18:98 | await j ... hadow') | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:23:24:29 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:5:24:30 | childPr ... ayload) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:11:29:14 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:30:74:30:77 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:18:29:57 | await j ... oteId]) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:11:29:14 | note | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:24:29:57 | joplin. ... oteId]) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:18:29:57 | await j ... oteId]) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:30:74:30:77 | note | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:30:74:30:82 | note.body | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:11:33:16 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:34:79:34:84 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:20:33:63 | await j ... derId]) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:11:33:16 | folder | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:26:33:63 | joplin. ... derId]) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:20:33:63 | await j ... derId]) | provenance |  |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:34:79:34:84 | folder | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:34:79:34:90 | folder.title | provenance |  |
 nodes
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:11:5:14 | note | semmle.label | note |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:18:5:64 | await j ... note']) | semmle.label | await j ... note']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | semmle.label | joplin. ... note']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:74 | note | semmle.label | note |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | semmle.label | note.body |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:11:8:16 | folder | semmle.label | folder |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:20:8:70 | await j ... lder']) | semmle.label | await j ... lder']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | semmle.label | joplin. ... lder']) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:81 | folder | semmle.label | folder |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | semmle.label | folder.title |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:11:11:17 | payload | semmle.label | payload |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:21:11:85 | await j ... hadow') | semmle.label | await j ... hadow') |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | semmle.label | joplin. ... hadow') |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | semmle.label | payload |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | semmle.label | childPr ... ayload) |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:23:13:29 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:11:6:14 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:18:6:64 | await j ... note']) | semmle.label | await j ... note']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:24:6:64 | joplin. ... note']) | semmle.label | joplin. ... note']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:79 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:84 | note.body | semmle.label | note.body |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:11:9:16 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:20:9:70 | await j ... lder']) | semmle.label | await j ... lder']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:26:9:70 | joplin. ... lder']) | semmle.label | joplin. ... lder']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:86 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:92 | folder.title | semmle.label | folder.title |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:11:12:18 | resource | semmle.label | resource |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:22:12:76 | await j ... urce']) | semmle.label | await j ... urce']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:28:12:76 | joplin. ... urce']) | semmle.label | joplin. ... urce']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:90 | resource | semmle.label | resource |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:93 | resource.id | semmle.label | resource.id |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:11:15:19 | masterKey | semmle.label | masterKey |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:23:15:74 | await j ... -key']) | semmle.label | await j ... -key']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:29:15:74 | joplin. ... -key']) | semmle.label | joplin. ... -key']) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:86 | masterKey | semmle.label | masterKey |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:94 | masterKey.content | semmle.label | masterKey.content |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:11:18:17 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:21:18:98 | await j ... hadow') | semmle.label | await j ... hadow') |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | semmle.label | joplin. ... hadow') |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:19:10:19:16 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:20:14:20:20 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:21:18:21:24 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:22:16:22:22 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:23:17:23:23 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:5:24:30 | childPr ... ayload) | semmle.label | childPr ... ayload) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:23:24:29 | payload | semmle.label | payload |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:11:29:14 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:18:29:57 | await j ... oteId]) | semmle.label | await j ... oteId]) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:29:24:29:57 | joplin. ... oteId]) | semmle.label | joplin. ... oteId]) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:30:74:30:77 | note | semmle.label | note |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:30:74:30:82 | note.body | semmle.label | note.body |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:11:33:16 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:20:33:63 | await j ... derId]) | semmle.label | await j ... derId]) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:33:26:33:63 | joplin. ... derId]) | semmle.label | joplin. ... derId]) |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:34:79:34:84 | folder | semmle.label | folder |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:34:79:34:90 | folder.title | semmle.label | folder.title |
 subpaths
 #select
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:5:24:5:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:71:6:79 | note.body | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:8:26:8:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:76:9:87 | folder.title | Sync Smuggling Attempt: Sensitive note, folder, or key data is being copied and hidden inside a note's invisible `userDataSet` property. This is a stealth exfiltration technique. Verify why the plugin needs to duplicate sensitive content into hidden metadata fields that the user cannot easily inspect. |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:10:12:16 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
-| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:11:27:11:85 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:5:13:30 | childPr ... ayload) | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution or network sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:84 | note.body | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:6:24:6:64 | joplin. ... note']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:7:76:7:84 | note.body | Cross-item Sync Smuggling Indicator: Sensitive Joplin item data is being copied into another item's synchronized `userDataSet` metadata. Verify that this cross-item hidden storage is intentional and appropriate. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:92 | folder.title | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:9:26:9:70 | joplin. ... lder']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:10:81:10:92 | folder.title | Cross-item Sync Smuggling Indicator: Sensitive Joplin item data is being copied into another item's synchronized `userDataSet` metadata. Verify that this cross-item hidden storage is intentional and appropriate. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:93 | resource.id | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:12:28:12:76 | joplin. ... urce']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:13:83:13:93 | resource.id | Cross-item Sync Smuggling Indicator: Sensitive Joplin item data is being copied into another item's synchronized `userDataSet` metadata. Verify that this cross-item hidden storage is intentional and appropriate. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:94 | masterKey.content | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:15:29:15:74 | joplin. ... -key']) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:16:78:16:94 | masterKey.content | Cross-item Sync Smuggling Indicator: Sensitive Joplin item data is being copied into another item's synchronized `userDataSet` metadata. Verify that this cross-item hidden storage is intentional and appropriate. |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:19:10:19:16 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:19:10:19:16 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:20:14:20:20 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:20:14:20:20 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:21:18:21:24 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:21:18:21:24 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:22:16:22:22 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:22:16:22:22 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:23:17:23:23 | payload | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:23:17:23:23 | payload | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |
+| mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:5:24:30 | childPr ... ayload) | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:18:27:18:98 | joplin. ... hadow') | mock-rule-12-sync-smuggling-intra-api-exfiltration.ts:24:5:24:30 | childPr ... ayload) | Sync Smuggling Execution: Hidden `userDataSet` content is being read out of the database and flowing directly into an execution sink. It indicates the plugin is reading payloads that were smuggled into the sync engine and executing them, serving as a stealthy Remote Code Execution (RCE). |

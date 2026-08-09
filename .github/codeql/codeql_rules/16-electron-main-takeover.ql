@@ -9,6 +9,9 @@ import javascript
 
 from DataFlow::Node remoteAccess
 where
-  remoteAccess = DataFlow::moduleImport("@electron/remote") or
+  exists(string moduleName |
+    remoteAccess = DataFlow::moduleImport(moduleName) and
+    moduleName.regexpMatch("@electron/remote(/.*)?")
+  ) or
   remoteAccess = DataFlow::moduleMember("electron", "remote")
-select remoteAccess, "Critical Violation (Main Process Takeover): The plugin is attempting to import or require `@electron/remote` or `electron.remote`. This completely bypasses the plugin sandbox and grants full control over the Joplin application window and the OS. This must be strictly prohibited and removed before publishing."
+select remoteAccess, "Critical Violation (Electron Remote Access): The plugin imports or accesses `@electron/remote` or `electron.remote`. If remote access is available, it can bypass Joplin's normal plugin API boundary and expose privileged Electron main-process capabilities. This unsupported access must be removed before publishing."

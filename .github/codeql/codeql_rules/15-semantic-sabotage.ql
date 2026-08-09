@@ -20,16 +20,34 @@ predicate isWorkspaceHookCallback(DataFlow::FunctionNode cb) {
   )
 }
 
-predicate callInsideCallback(DataFlow::CallNode call, DataFlow::FunctionNode cb) {
-  call.getContainer().getEnclosingContainer*() = cb.getFunction()
+predicate functionDirectlyCalls(DataFlow::FunctionNode caller, DataFlow::FunctionNode callee) {
+  exists(DataFlow::CallNode invocation |
+    invocation.getContainer() = caller.getFunction() and
+    callee = invocation.getCalleeNode().getAFunctionValue()
+  )
+}
+
+predicate callbackExecutesCall(DataFlow::FunctionNode callback, DataFlow::CallNode call) {
+  exists(DataFlow::FunctionNode owner |
+    call.getContainer() = owner.getFunction() and
+    functionDirectlyCalls*(callback, owner)
+  )
+}
+
+predicate isExactNotePath(DataFlow::Node path) {
+  exists(DataFlow::ArrayCreationNode arr |
+    arr = path.getALocalSource() and
+    arr.getElement(0).getStringValue() = "notes" and
+    exists(arr.getElement(1)) and
+    not exists(arr.getElement(2))
+  )
 }
 
 predicate isNoteMutation(DataFlow::CallNode call) {
-  // joplin.data.put/delete(["notes", ...])
-  exists(DataFlow::ArrayCreationNode arr |
+  // joplin.data.put/delete(["notes", noteId])
+  (
     call = Joplin::data().getAMethodCall(["put", "delete"]) and
-    arr = call.getArgument(0).getALocalSource() and
-    arr.getElement(0).getStringValue() = "notes"
+    isExactNotePath(call.getArgument(0))
   )
   or
   // joplin.commands.execute("insertText", ...) or "replaceSelection"
@@ -44,5 +62,5 @@ from DataFlow::CallNode call, DataFlow::FunctionNode cb
 where
   isWorkspaceHookCallback(cb) and
   isNoteMutation(call) and
-  callInsideCallback(call, cb)
+  callbackExecutesCall(cb, call)
 select call, "The plugin is mutating or deleting notes directly inside a workspace event hook (e.g., `onNoteSelectionChange`). Modifying a note the exact moment a user views or edits it can mimic \"gaslighting\" malware. Ensure these modifications are expected, visible formatting changes, not destructive silent edits."

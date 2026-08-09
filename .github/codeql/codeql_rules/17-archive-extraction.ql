@@ -1,13 +1,123 @@
 /**
  * @name Untrusted Archive Extraction
- * @description Extracting untrusted archives from the network can lead to malicious file overwrites.
+ * @description Extracting an archive obtained from an untrusted source can expose the plugin to malicious archive content.
  * @kind path-problem
  * @problem.severity warning
  * @id joplin/archive-extraction
  */
 import javascript
-import semmle.javascript.security.dataflow.RemoteFlowSources
 import JoplinSources
+import JoplinSinks
+
+predicate isArchiveExtractCall(DataFlow::CallNode extract) {
+  extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract")
+}
+
+predicate isArchiveFileWrite(
+  DataFlow::CallNode write, DataFlow::Node path, DataFlow::Node content
+) {
+  exists(string method |
+    method in ["writeFile", "writeFileSync", "outputFile", "outputFileSync"] and
+    (
+      exists(string moduleName |
+        moduleName in ["fs", "node:fs", "fs/promises", "node:fs/promises", "fs-extra"] and
+        write = DataFlow::moduleMember(moduleName, method).getACall()
+      )
+      or
+      exists(DataFlow::MethodCallNode methodCall |
+        write = methodCall and
+        isJoplinFsExtraCall(methodCall) and
+        methodCall.getMethodName() = method
+      )
+    ) and
+    path = write.getArgument(0) and
+    content = write.getArgument(1)
+  )
+}
+
+predicate isArchiveWriteStream(DataFlow::CallNode stream, DataFlow::Node path) {
+  exists(string moduleName |
+    moduleName in ["fs", "node:fs", "fs-extra"] and
+    stream = DataFlow::moduleMember(moduleName, "createWriteStream").getACall()
+  ) and
+  path = stream.getArgument(0)
+  or
+  exists(DataFlow::MethodCallNode methodCall |
+    stream = methodCall and
+    isJoplinFsExtraCall(methodCall) and
+    methodCall.getMethodName() = "createWriteStream" and
+    path = methodCall.getArgument(0)
+  )
+}
+
+predicate isArchiveStreamWrite(DataFlow::Node content, DataFlow::Node path) {
+  exists(DataFlow::MethodCallNode pipe, DataFlow::CallNode output |
+    pipe.getMethodName() = "pipe" and
+    isArchiveWriteStream(output, path) and
+    pipe.getArgument(0).getALocalSource() = output.getALocalSource() and
+    content = pipe.getReceiver()
+  )
+  or
+  exists(DataFlow::CallNode pipeline, DataFlow::CallNode output, string moduleName |
+    moduleName in ["stream", "node:stream", "stream/promises", "node:stream/promises"] and
+    pipeline = DataFlow::moduleMember(moduleName, "pipeline").getACall() and
+    output.getALocalSource() = pipeline.getArgument(1).getALocalSource() and
+    isArchiveWriteStream(output, path) and
+    content = pipeline.getArgument(0)
+  )
+}
+
+predicate writesArchiveContent(DataFlow::Node content, DataFlow::Node path) {
+  exists(DataFlow::CallNode write | isArchiveFileWrite(write, path, content)) or
+  isArchiveStreamWrite(content, path)
+}
+
+module ArchivePathConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    exists(DataFlow::CallNode write, DataFlow::Node path, DataFlow::Node content |
+      isArchiveFileWrite(write, path, content) and
+      source = path.getALocalSource()
+    )
+    or
+    exists(DataFlow::Node content, DataFlow::Node path |
+      isArchiveStreamWrite(content, path) and
+      source = path.getALocalSource()
+    )
+    or
+    exists(DataFlow::CallNode extract |
+      isArchiveExtractCall(extract) and
+      source = extract.getArgument(0).getALocalSource()
+    )
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    exists(DataFlow::CallNode write, DataFlow::Node content |
+      isArchiveFileWrite(write, sink, content)
+    )
+    or
+    exists(DataFlow::Node content | isArchiveStreamWrite(content, sink))
+    or
+    exists(DataFlow::CallNode extract |
+      isArchiveExtractCall(extract) and
+      sink = extract.getArgument(0)
+    )
+  }
+}
+
+module ArchivePathFlow = DataFlow::Global<ArchivePathConfig>;
+
+predicate sameArchivePath(DataFlow::Node writtenPath, DataFlow::Node extractedPath) {
+  writtenPath = extractedPath or
+  writtenPath.getALocalSource() = extractedPath.getALocalSource() or
+  exists(string pathValue |
+    pathValue = writtenPath.getStringValue() and
+    pathValue = extractedPath.getStringValue()
+  ) or
+  exists(DataFlow::Node origin |
+    ArchivePathFlow::flow(origin, writtenPath) and
+    ArchivePathFlow::flow(origin, extractedPath)
+  )
+}
 
 module UntrustedArchiveConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
@@ -15,53 +125,23 @@ module UntrustedArchiveConfig implements DataFlow::ConfigSig {
     Joplin::isJoplinMessageSource(source)
   }
 
-  predicate isBarrier(DataFlow::Node node) {
-    // Integrity check barrier: data flows into a crypto hash update
-    exists(DataFlow::MethodCallNode update |
-      update.getMethodName() = "update" and
-      node = update.getArgument(0)
-    )
-  }
-
   predicate isSink(DataFlow::Node sink) {
-    exists(DataFlow::CallNode extract, DataFlow::Node destNode |
-      extract = Joplin::joplin().getAPropertyRead("fs").getAMethodCall("archiveExtract") and
-      destNode = extract.getArgument(1) and
-      
-      // Destination is not safely derived in the same context
-      not exists(DataFlow::MethodCallNode dataDir |
-        dataDir = Joplin::joplin().getAPropertyRead("plugins").getAMethodCall("dataDir") and
-        dataDir.getContainer() = destNode.getContainer()
-      ) and
-      
-      (
-        // Flow 1: Remote data written to the file that is extracted
-        exists(DataFlow::CallNode write, DataFlow::Node pathNode |
-          pathNode = extract.getArgument(0).getALocalSource() and
-          (
-            (
-              write.getCalleeName() in ["writeFile", "writeFileSync", "outputFile", "outputFileSync"] and
-              write.getArgument(0).getALocalSource() = pathNode and
-              sink = write.getArgument(1)
-            )
-            or
-            (
-              write = DataFlow::moduleMember("fs", "createWriteStream").getACall() and
-              write.getArgument(0).getALocalSource() = pathNode and
-              sink = write
-            )
-            or
-            (
-              write = DataFlow::moduleMember("fs-extra", "createWriteStream").getACall() and
-              write.getArgument(0).getALocalSource() = pathNode and
-              sink = write
-            )
-          )
-        )
-        or
-        // Flow 2: User input directly controls the archive path
-        sink = extract.getArgument(0)
-      )
+    // Untrusted content is saved to a file that is later extracted.
+    exists(
+      DataFlow::Node writtenPath,
+      DataFlow::Node extractedPath,
+      DataFlow::CallNode extract
+    |
+      writesArchiveContent(sink, writtenPath) and
+      isArchiveExtractCall(extract) and
+      extractedPath = extract.getArgument(0) and
+      sameArchivePath(writtenPath, extractedPath)
+    )
+    or
+    // A webview message or remote value directly controls the archive path.
+    exists(DataFlow::CallNode extract |
+      isArchiveExtractCall(extract) and
+      sink = extract.getArgument(0)
     )
   }
 }
@@ -71,4 +151,4 @@ import UntrustedArchiveFlow::PathGraph
 
 from UntrustedArchiveFlow::PathNode source, UntrustedArchiveFlow::PathNode sink
 where UntrustedArchiveFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Untrusted Archive Extraction: A remote file or user-controlled input is being downloaded and extracted to an unsafe destination. Verify that the archive source is trusted, and that the extraction logic strictly validates the archive contents before unzipping."
+select sink.getNode(), source, sink, "Untrusted Archive Extraction: An archive obtained from a remote or webview-controlled source is being extracted. Confirm its origin and verify it against a trusted expected hash or digital signature before extraction. Destination safety is reviewed separately by the archive-destination rule."

@@ -9,17 +9,27 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
+bindingset[value]
+predicate containsCredentialControl(string value) {
+  value.regexpMatch("(?is).*<input\\b[^>]*\\btype\\s*=\\s*[\"']\\s*password\\s*[\"'][^>]*>.*") or
+  value.regexpMatch("(?is).*<input\\b[^>]*\\btype\\s*=\\s*password(\\s|/?>).*") or
+  value.regexpMatch("(?is).*<(input|textarea)\\b[^>]*\\b(name|id|autocomplete|placeholder)\\s*=\\s*[\"'][^\"']*(password|token|credential|api[ _-]?key|secret)[^\"']*[\"'].*") or
+  value.regexpMatch("(?is).*<(input|textarea)\\b[^>]*\\b(name|id|autocomplete|placeholder)\\s*=\\s*[^\\s>]*(password|token|credential|api[_-]?key|secret)[^\\s>]*(\\s|/?>).*") or
+  value.regexpMatch("(?is).*<label\\b[^>]*>[^<]*(password|token|credential|api[ _-]?key|secret)[^<]*</label>.*")
+}
+
 predicate isPhishingHtml(DataFlow::Node htmlArg) {
-  exists(string s | s = htmlArg.getStringValue() |
-    s.regexpMatch("(?is).*type=[\"']password[\"'].*") or
-    s.regexpMatch("(?is).*(password|token|credential|login|sign in|authenticate|dropbox|github|onedrive|webdav|sync|api key|secret).*")
+  exists(string value |
+    (value = htmlArg.getStringValue() or value = htmlArg.getALocalSource().getStringValue()) and
+    containsCredentialControl(value)
   ) or
   exists(StringLiteral str |
     htmlArg.asExpr().getAChildExpr*() = str and
-    (
-      str.getStringValue().regexpMatch("(?is).*type=[\"']password[\"'].*") or 
-      str.getStringValue().regexpMatch("(?is).*(password|token|credential|login|sign in|authenticate|dropbox|github|onedrive|webdav|sync|api key|secret).*")
-    )
+    containsCredentialControl(str.getStringValue())
+  ) or
+  exists(TemplateElement element |
+    htmlArg.asExpr().getAChildExpr*() = element and
+    containsCredentialControl(element.getValue())
   )
 }
 
@@ -78,4 +88,4 @@ import UiPhishing::PathGraph
 
 from UiPhishing::PathNode source, UiPhishing::PathNode sink
 where UiPhishing::flowPath(source, sink)
-select sink.getNode(), source, sink, "UI Phishing Indicator: Data submitted through a custom Joplin dialog or prompt is being transmitted to an external network. Review the HTML of the dialog. Ensure it is not mimicking an official Joplin authentication screen or asking for external service credentials."
+select sink.getNode(), source, sink, "UI Phishing Indicator: Data submitted through a credential-looking Joplin dialog or panel is being transmitted to an external network. Review the HTML and confirm that the interface and destination are legitimate."

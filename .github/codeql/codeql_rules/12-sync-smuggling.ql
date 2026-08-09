@@ -79,7 +79,7 @@ module IdCorrelation = TaintTracking::Global<IdCorrelationConfig>;
 
 predicate modelTypeMatches(string sourceType, DataFlow::Node targetType) {
   exists(DataFlow::PropRead modelTypeRead |
-    modelTypeRead = targetType.getALocalSource() and
+    (modelTypeRead = targetType or modelTypeRead = targetType.getALocalSource()) and
     (
       sourceType = "notes" and modelTypeRead.getPropertyName() = "Note" or
       sourceType = "folders" and modelTypeRead.getPropertyName() = "Folder" or
@@ -95,7 +95,11 @@ predicate isSameItemCorrelated(DataFlow::CallNode getCall, DataFlow::CallNode us
     sourceType = pathArg.getALocalSource().(DataFlow::ArrayCreationNode).getElement(0).getStringValue() and
     idSource = getCall.getArgument(0).getALocalSource().(DataFlow::ArrayCreationNode).getElement(1) and
     modelTypeMatches(sourceType, userDataSetCall.getArgument(0)) and
-    IdCorrelation::flow(idSource, userDataSetCall.getArgument(1))
+    (
+      idSource = userDataSetCall.getArgument(1) or
+      idSource.getALocalSource() = userDataSetCall.getArgument(1).getALocalSource() or
+      IdCorrelation::flow(idSource, userDataSetCall.getArgument(1))
+    )
   )
 }
 

@@ -24,23 +24,21 @@ predicate isAlwaysTrueCondition(Expr condition) {
   condition.stripParens().(NumberLiteral).getValue() = "1"
 }
 
-predicate isRecursiveSetTimeout(DataFlow::CallNode call) {
-  exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
-    timer = DataFlow::globalVarRef("setTimeout").getACall() and
-    callback = timer.getArgument(0).getAFunctionValue() and
-    (
-      exists(DataFlow::CallNode innerTimer |
-        innerTimer = DataFlow::globalVarRef("setTimeout").getACall() and
-        innerTimer.getContainer().getEnclosingContainer*() = callback.getFunction() and
-        innerTimer.getArgument(0).getAFunctionValue() = callback
-      )
-    ) and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+predicate functionDirectlyCalls(DataFlow::FunctionNode caller, DataFlow::FunctionNode callee) {
+  exists(DataFlow::CallNode invocation |
+    invocation.getContainer() = caller.getFunction() and
+    callee = invocation.getCalleeNode().getAFunctionValue()
   )
 }
 
-predicate inUnboundedLoop(DataFlow::CallNode call) {
-  // Inside a synchronous loop with no normal finite bound.
+predicate callbackExecutesCall(DataFlow::FunctionNode callback, DataFlow::CallNode call) {
+  exists(DataFlow::FunctionNode owner |
+    call.getContainer() = owner.getFunction() and
+    functionDirectlyCalls*(callback, owner)
+  )
+}
+
+predicate directlyInsideUnboundedLoop(DataFlow::CallNode call) {
   exists(LoopStmt loop |
     (
       (loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())) or
@@ -48,37 +46,99 @@ predicate inUnboundedLoop(DataFlow::CallNode call) {
       (loop instanceof ForStmt and not exists(loop.getTest())) or
       (loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest()))
     ) and
-    call.asExpr().getEnclosingStmt().getParentStmt*() = loop
+    call.asExpr().getEnclosingStmt().getParentStmt*() = loop.getBody() and
+    not exists(Function nested |
+      call.asExpr().getParent*() = nested and
+      nested.getParent*() = loop
+    )
+  )
+}
+
+predicate directlyInsideAnyLoop(DataFlow::CallNode call) {
+  exists(LoopStmt loop |
+    call.asExpr().getEnclosingStmt().getParentStmt*() = loop.getBody() and
+    not exists(Function nested |
+      call.asExpr().getParent*() = nested and
+      nested.getParent*() = loop
+    )
+  )
+}
+
+predicate insideRecursiveSetTimeout(DataFlow::CallNode call) {
+  exists(
+    DataFlow::FunctionNode recurringCallback,
+    DataFlow::CallNode timer,
+    DataFlow::FunctionNode scheduledCallback
+  |
+    callbackExecutesCall(recurringCallback, call) and
+    timer = DataFlow::globalVarRef("setTimeout").getACall() and
+    callbackExecutesCall(recurringCallback, timer) and
+    scheduledCallback = timer.getArgument(0).getAFunctionValue() and
+    functionDirectlyCalls*(scheduledCallback, recurringCallback)
+  )
+}
+
+predicate inUnboundedLoop(DataFlow::CallNode call) {
+  directlyInsideUnboundedLoop(call)
+  or
+  exists(DataFlow::CallNode invocation, DataFlow::FunctionNode helper |
+    directlyInsideUnboundedLoop(invocation) and
+    helper = invocation.getCalleeNode().getAFunctionValue() and
+    callbackExecutesCall(helper, call)
   )
   or
-  // Inside an uncleared setInterval loop
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
     isUnboundedInterval(timer) and
     callback = timer.getArgument(0).getAFunctionValue() and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+    callbackExecutesCall(callback, call)
   )
   or
-  // Recursive setTimeout
-  isRecursiveSetTimeout(call)
+  insideRecursiveSetTimeout(call)
 }
 
 predicate inAnyLoop(DataFlow::CallNode call) {
   inUnboundedLoop(call) or
-  exists(LoopStmt loop | call.asExpr().getEnclosingStmt().getParentStmt*() = loop) or
+  directlyInsideAnyLoop(call) or
+  exists(DataFlow::CallNode invocation, DataFlow::FunctionNode helper |
+    directlyInsideAnyLoop(invocation) and
+    helper = invocation.getCalleeNode().getAFunctionValue() and
+    callbackExecutesCall(helper, call)
+  ) or
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
     timer = DataFlow::globalVarRef("setInterval").getACall() and
     callback = timer.getArgument(0).getAFunctionValue() and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+    callbackExecutesCall(callback, call)
   ) or
-  exists(DataFlow::MethodCallNode arrayCall |
-    arrayCall.getMethodName() in ["forEach", "map"] and
-    call.getContainer().getEnclosingContainer*() = arrayCall.getArgument(0).getAFunctionValue().getFunction()
+  exists(DataFlow::MethodCallNode arrayCall, DataFlow::FunctionNode callback |
+    arrayCall.getMethodName() in
+      ["forEach", "map", "flatMap", "filter", "reduce", "reduceRight", "some", "every", "find", "findIndex"] and
+    callback = arrayCall.getArgument(0).getAFunctionValue() and
+    callbackExecutesCall(callback, call)
   )
 }
 
+predicate isExactItemPath(DataFlow::Node path, string collection) {
+  exists(DataFlow::ArrayCreationNode arr |
+    arr = path.getALocalSource() and
+    arr.getElement(0).getStringValue() = collection and
+    exists(arr.getElement(1)) and
+    not exists(arr.getElement(2))
+  )
+}
+
+predicate isExplicitlyInactiveValue(DataFlow::Node val) {
+  val.getIntValue() = 0 or
+  val.getStringValue() in ["0", "false"] or
+  (
+    val.asExpr().stripParens() instanceof BooleanLiteral and
+    val.asExpr().stripParens().(BooleanLiteral).getBoolValue() = false
+  ) or
+  val.asExpr().stripParens() instanceof NullLiteral or
+  val = DataFlow::globalVarRef("undefined")
+}
+
 predicate isDestructiveValue(DataFlow::Node val) {
-  not val.getStringValue() = "0" and
-  not val.getStringValue() = "false"
+  not isExplicitlyInactiveValue(val)
 }
 
 predicate isDestructiveBody(DataFlow::Node val) {
@@ -91,26 +151,12 @@ predicate hasDestructivePayload(DataFlow::SourceNode payload) {
   (exists(DataFlow::Node val | val = payload.getAPropertyWrite("body").getRhs() and isDestructiveBody(val)))
 }
 
-predicate isGuardedByConfirmationDialog(DataFlow::Node node) {
-  exists(DataFlow::MethodCallNode openCall |
-    openCall.getMethodName() = "open" and
-    (
-      openCall.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs") or
-      openCall.getReceiver().getALocalSource() = Joplin::dialogs()
-    ) and
-    openCall.getContainer() = node.getContainer()
-  )
-}
-
 from DataFlow::Node node, string msg
 where
-  not isGuardedByConfirmationDialog(node) and
-  (
     // 1. Any folder delete
-    exists(DataFlow::CallNode del, DataFlow::ArrayCreationNode arr |
+    exists(DataFlow::CallNode del |
       del = Joplin::data().getAMethodCall("delete") and
-      arr = del.getArgument(0).getALocalSource() and
-      arr.getElement(0).getStringValue() = "folders" and
+      isExactItemPath(del.getArgument(0), "folders") and
       node = del and
       msg = "Mass Data Destruction: The plugin is deleting an entire folder (which cascades to all its notes). This can permanently destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user."
     )
@@ -132,5 +178,4 @@ where
       node = put and
       msg = "Mass Data Destruction: The plugin is looping to soft-delete, wipe bodies, or flag conflicts on many items at once. This can effectively destroy the user's database. Verify this is a legitimate bulk-management feature explicitly initiated by the user. If a loop is used, ensure it is bounded by finite, safe limits and not attacker-controlled."
     )
-  )
 select node, msg

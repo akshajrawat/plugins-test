@@ -1,40 +1,46 @@
 edges
-| mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:12:63:12:69 | context | provenance |  |
-| mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:14:46:14:52 | context | provenance |  |
-| mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:22:29:22:35 | context | provenance |  |
-| mock-rule-20-malicious-import-module.ts:12:63:12:69 | context | mock-rule-20-malicious-import-module.ts:12:19:12:82 | 'https: ... olderId | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:19:14:26 | contents | mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:19:14:26 | contents | mock-rule-20-malicious-import-module.ts:20:38:20:45 | contents | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:19:14:26 | contents | mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:30:14:64 | fs.read ... cePath) | mock-rule-20-malicious-import-module.ts:14:19:14:26 | contents | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:46:14:52 | context | mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | provenance |  |
-| mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | mock-rule-20-malicious-import-module.ts:14:30:14:64 | fs.read ... cePath) | provenance | Config |
-| mock-rule-20-malicious-import-module.ts:20:31:20:46 | String(contents) | mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | provenance |  |
-| mock-rule-20-malicious-import-module.ts:20:38:20:45 | contents | mock-rule-20-malicious-import-module.ts:20:31:20:46 | String(contents) | provenance |  |
-| mock-rule-20-malicious-import-module.ts:22:29:22:35 | context | mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | provenance |  |
+| mock-rule-20-malicious-import-module.ts:7:53:7:70 | context.sourcePath | mock-rule-20-malicious-import-module.ts:7:11:7:70 | 'https: ... rcePath | provenance |  |
+| mock-rule-20-malicious-import-module.ts:9:11:9:18 | contents | mock-rule-20-malicious-import-module.ts:12:15:12:22 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:9:11:9:18 | contents | mock-rule-20-malicious-import-module.ts:15:30:15:37 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:9:11:9:18 | contents | mock-rule-20-malicious-import-module.ts:16:45:16:52 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:9:22:9:56 | fs.read ... cePath) | mock-rule-20-malicious-import-module.ts:9:11:9:18 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:9:38:9:55 | context.sourcePath | mock-rule-20-malicious-import-module.ts:9:22:9:56 | fs.read ... cePath) | provenance | Config |
+| mock-rule-20-malicious-import-module.ts:15:23:15:38 | String(contents) | mock-rule-20-malicious-import-module.ts:15:5:15:39 | childPr ... tents)) | provenance |  |
+| mock-rule-20-malicious-import-module.ts:15:30:15:37 | contents | mock-rule-20-malicious-import-module.ts:15:23:15:38 | String(contents) | provenance |  |
+| mock-rule-20-malicious-import-module.ts:19:25:19:42 | context.sourcePath | mock-rule-20-malicious-import-module.ts:19:57:19:61 | chunk | provenance | Config |
+| mock-rule-20-malicious-import-module.ts:19:57:19:61 | chunk | mock-rule-20-malicious-import-module.ts:22:19:22:23 | chunk | provenance |  |
+| mock-rule-20-malicious-import-module.ts:42:15:42:22 | contents | mock-rule-20-malicious-import-module.ts:43:63:43:70 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:42:26:42:71 | await f ... cePath) | mock-rule-20-malicious-import-module.ts:42:15:42:22 | contents | provenance |  |
+| mock-rule-20-malicious-import-module.ts:42:32:42:71 | fs.prom ... cePath) | mock-rule-20-malicious-import-module.ts:42:26:42:71 | await f ... cePath) | provenance |  |
+| mock-rule-20-malicious-import-module.ts:42:53:42:70 | context.sourcePath | mock-rule-20-malicious-import-module.ts:42:32:42:71 | fs.prom ... cePath) | provenance | Config |
+| mock-rule-20-malicious-import-module.ts:43:63:43:70 | contents | mock-rule-20-malicious-import-module.ts:43:56:43:71 | String(contents) | provenance |  |
 nodes
-| mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | semmle.label | context |
-| mock-rule-20-malicious-import-module.ts:12:19:12:82 | 'https: ... olderId | semmle.label | 'https: ... olderId |
-| mock-rule-20-malicious-import-module.ts:12:63:12:69 | context | semmle.label | context |
-| mock-rule-20-malicious-import-module.ts:14:19:14:26 | contents | semmle.label | contents |
-| mock-rule-20-malicious-import-module.ts:14:30:14:64 | fs.read ... cePath) | semmle.label | fs.read ... cePath) |
-| mock-rule-20-malicious-import-module.ts:14:46:14:52 | context | semmle.label | context |
-| mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | semmle.label | context.sourcePath |
-| mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | semmle.label | contents |
-| mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | semmle.label | childPr ... tents)) |
-| mock-rule-20-malicious-import-module.ts:20:31:20:46 | String(contents) | semmle.label | String(contents) |
-| mock-rule-20-malicious-import-module.ts:20:38:20:45 | contents | semmle.label | contents |
-| mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | semmle.label | contents |
-| mock-rule-20-malicious-import-module.ts:22:29:22:35 | context | semmle.label | context |
-| mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:7:11:7:70 | 'https: ... rcePath | semmle.label | 'https: ... rcePath |
+| mock-rule-20-malicious-import-module.ts:7:53:7:70 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:9:11:9:18 | contents | semmle.label | contents |
+| mock-rule-20-malicious-import-module.ts:9:22:9:56 | fs.read ... cePath) | semmle.label | fs.read ... cePath) |
+| mock-rule-20-malicious-import-module.ts:9:38:9:55 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:12:15:12:22 | contents | semmle.label | contents |
+| mock-rule-20-malicious-import-module.ts:15:5:15:39 | childPr ... tents)) | semmle.label | childPr ... tents)) |
+| mock-rule-20-malicious-import-module.ts:15:23:15:38 | String(contents) | semmle.label | String(contents) |
+| mock-rule-20-malicious-import-module.ts:15:30:15:37 | contents | semmle.label | contents |
+| mock-rule-20-malicious-import-module.ts:16:45:16:52 | contents | semmle.label | contents |
+| mock-rule-20-malicious-import-module.ts:17:21:17:38 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:19:25:19:42 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:19:57:19:61 | chunk | semmle.label | chunk |
+| mock-rule-20-malicious-import-module.ts:22:19:22:23 | chunk | semmle.label | chunk |
+| mock-rule-20-malicious-import-module.ts:42:15:42:22 | contents | semmle.label | contents |
+| mock-rule-20-malicious-import-module.ts:42:26:42:71 | await f ... cePath) | semmle.label | await f ... cePath) |
+| mock-rule-20-malicious-import-module.ts:42:32:42:71 | fs.prom ... cePath) | semmle.label | fs.prom ... cePath) |
+| mock-rule-20-malicious-import-module.ts:42:53:42:70 | context.sourcePath | semmle.label | context.sourcePath |
+| mock-rule-20-malicious-import-module.ts:43:56:43:71 | String(contents) | semmle.label | String(contents) |
+| mock-rule-20-malicious-import-module.ts:43:63:43:70 | contents | semmle.label | contents |
 subpaths
 #select
-| mock-rule-20-malicious-import-module.ts:12:19:12:82 | 'https: ... olderId | mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:12:19:12:82 | 'https: ... olderId | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | mock-rule-20-malicious-import-module.ts:17:23:17:30 | contents | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | mock-rule-20-malicious-import-module.ts:20:13:20:47 | childPr ... tents)) | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | mock-rule-20-malicious-import-module.ts:14:46:14:63 | context.sourcePath | mock-rule-20-malicious-import-module.ts:21:53:21:60 | contents | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | mock-rule-20-malicious-import-module.ts:11:22:11:28 | context | mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
-| mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | mock-rule-20-malicious-import-module.ts:22:29:22:46 | context.sourcePath | Malicious Import Processing: Data read during a custom `registerImportModule` execution is flowing into a dangerous sink (network exfiltration, OS command execution, or unauthorized file writes). |
+| mock-rule-20-malicious-import-module.ts:7:11:7:70 | 'https: ... rcePath | mock-rule-20-malicious-import-module.ts:7:53:7:70 | context.sourcePath | mock-rule-20-malicious-import-module.ts:7:11:7:70 | 'https: ... rcePath | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:12:15:12:22 | contents | mock-rule-20-malicious-import-module.ts:9:38:9:55 | context.sourcePath | mock-rule-20-malicious-import-module.ts:12:15:12:22 | contents | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:15:5:15:39 | childPr ... tents)) | mock-rule-20-malicious-import-module.ts:9:38:9:55 | context.sourcePath | mock-rule-20-malicious-import-module.ts:15:5:15:39 | childPr ... tents)) | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:16:45:16:52 | contents | mock-rule-20-malicious-import-module.ts:9:38:9:55 | context.sourcePath | mock-rule-20-malicious-import-module.ts:16:45:16:52 | contents | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:17:21:17:38 | context.sourcePath | mock-rule-20-malicious-import-module.ts:17:21:17:38 | context.sourcePath | mock-rule-20-malicious-import-module.ts:17:21:17:38 | context.sourcePath | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:22:19:22:23 | chunk | mock-rule-20-malicious-import-module.ts:19:25:19:42 | context.sourcePath | mock-rule-20-malicious-import-module.ts:22:19:22:23 | chunk | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |
+| mock-rule-20-malicious-import-module.ts:43:56:43:71 | String(contents) | mock-rule-20-malicious-import-module.ts:42:53:42:70 | context.sourcePath | mock-rule-20-malicious-import-module.ts:43:56:43:71 | String(contents) | Malicious Import Processing: An imported file path or its contents are flowing into a network request, terminal command, source-file mutation, or filesystem destination outside `joplin.plugins.dataDir()`. Verify that the import remains local and only creates expected Joplin data or files inside the plugin data directory. |

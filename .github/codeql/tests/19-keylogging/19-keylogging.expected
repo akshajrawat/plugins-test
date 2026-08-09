@@ -1,32 +1,76 @@
 edges
-| mock-rule-19-keylogging-silent-surveillance.ts:4:43:4:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:5:53:5:57 | event | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:5:53:5:57 | event | mock-rule-19-keylogging-silent-surveillance.ts:5:15:5:64 | 'https: ... .noteId | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:8:31:8:35 | event | mock-rule-19-keylogging-silent-surveillance.ts:9:54:9:58 | event | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:9:54:9:58 | event | mock-rule-19-keylogging-silent-surveillance.ts:9:15:9:63 | 'https: ... nt.keys | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:16:50:16:54 | event | mock-rule-19-keylogging-silent-surveillance.ts:17:52:17:56 | event | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:17:52:17:56 | event | mock-rule-19-keylogging-silent-surveillance.ts:17:15:17:56 | 'https: ... + event | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:15:21:18 | note | mock-rule-19-keylogging-silent-surveillance.ts:22:50:22:53 | note | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:22:21:58 | await j ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:21:15:21:18 | note | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:28:21:58 | joplin. ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:21:22:21:58 | await j ... dNote() | provenance |  |
-| mock-rule-19-keylogging-silent-surveillance.ts:22:50:22:53 | note | mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... note.id | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:11:4:16 | folder | mock-rule-19-keylogging-silent-surveillance.ts:5:48:5:53 | folder | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:20:4:58 | await j ... older() | mock-rule-19-keylogging-silent-surveillance.ts:4:11:4:16 | folder | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:26:4:58 | joplin. ... older() | mock-rule-19-keylogging-silent-surveillance.ts:4:20:4:58 | await j ... older() | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:5:48:5:53 | folder | mock-rule-19-keylogging-silent-surveillance.ts:5:11:5:56 | 'https: ... lder.id | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:9:43:9:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:10:53:10:57 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:10:53:10:57 | event | mock-rule-19-keylogging-silent-surveillance.ts:10:15:10:65 | 'https: ... note.id | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:17:31:17:35 | event | mock-rule-19-keylogging-silent-surveillance.ts:18:54:18:58 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:18:54:18:58 | event | mock-rule-19-keylogging-silent-surveillance.ts:18:15:18:63 | 'https: ... nt.keys | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:21:41:21:45 | event | mock-rule-19-keylogging-silent-surveillance.ts:22:52:22:56 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:22:52:22:56 | event | mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... + event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:25:50:25:54 | event | mock-rule-19-keylogging-silent-surveillance.ts:26:52:26:56 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:26:52:26:56 | event | mock-rule-19-keylogging-silent-surveillance.ts:26:15:26:64 | 'https: ... newBody | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:15:30:18 | note | mock-rule-19-keylogging-silent-surveillance.ts:31:50:31:53 | note | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:22:30:58 | await j ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:30:15:30:18 | note | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:28:30:58 | joplin. ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:30:22:30:58 | await j ... dNote() | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:31:50:31:53 | note | mock-rule-19-keylogging-silent-surveillance.ts:31:15:31:56 | 'https: ... note.id | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:19:36:25 | results | mock-rule-19-keylogging-silent-surveillance.ts:37:56:37:62 | results | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:29:36:84 | await j ... ord' }) | mock-rule-19-keylogging-silent-surveillance.ts:36:19:36:25 | results | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:35:36:84 | joplin. ... ord' }) | mock-rule-19-keylogging-silent-surveillance.ts:36:29:36:84 | await j ... ord' }) | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:37:56:37:62 | results | mock-rule-19-keylogging-silent-surveillance.ts:37:19:37:75 | 'https: ... .length | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:40:35:40:39 | event | mock-rule-19-keylogging-silent-surveillance.ts:41:60:41:64 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:41:60:41:64 | event | mock-rule-19-keylogging-silent-surveillance.ts:41:19:41:71 | 'https: ... .noteId | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:46:43:46:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:47:49:47:53 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:47:49:47:53 | event | mock-rule-19-keylogging-silent-surveillance.ts:47:15:47:57 | 'https: ... ent.key | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:50:41:50:45 | event | mock-rule-19-keylogging-silent-surveillance.ts:51:52:51:56 | event | provenance |  |
+| mock-rule-19-keylogging-silent-surveillance.ts:51:52:51:56 | event | mock-rule-19-keylogging-silent-surveillance.ts:51:15:51:90 | 'https: ... ).value | provenance |  |
 nodes
-| mock-rule-19-keylogging-silent-surveillance.ts:4:43:4:47 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:5:15:5:64 | 'https: ... .noteId | semmle.label | 'https: ... .noteId |
-| mock-rule-19-keylogging-silent-surveillance.ts:5:53:5:57 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:8:31:8:35 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:9:15:9:63 | 'https: ... nt.keys | semmle.label | 'https: ... nt.keys |
-| mock-rule-19-keylogging-silent-surveillance.ts:9:54:9:58 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:16:50:16:54 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:17:15:17:56 | 'https: ... + event | semmle.label | 'https: ... + event |
-| mock-rule-19-keylogging-silent-surveillance.ts:17:52:17:56 | event | semmle.label | event |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:15:21:18 | note | semmle.label | note |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:22:21:58 | await j ... dNote() | semmle.label | await j ... dNote() |
-| mock-rule-19-keylogging-silent-surveillance.ts:21:28:21:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
-| mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... note.id | semmle.label | 'https: ... note.id |
-| mock-rule-19-keylogging-silent-surveillance.ts:22:50:22:53 | note | semmle.label | note |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:11:4:16 | folder | semmle.label | folder |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:20:4:58 | await j ... older() | semmle.label | await j ... older() |
+| mock-rule-19-keylogging-silent-surveillance.ts:4:26:4:58 | joplin. ... older() | semmle.label | joplin. ... older() |
+| mock-rule-19-keylogging-silent-surveillance.ts:5:11:5:56 | 'https: ... lder.id | semmle.label | 'https: ... lder.id |
+| mock-rule-19-keylogging-silent-surveillance.ts:5:48:5:53 | folder | semmle.label | folder |
+| mock-rule-19-keylogging-silent-surveillance.ts:9:43:9:47 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:10:15:10:65 | 'https: ... note.id | semmle.label | 'https: ... note.id |
+| mock-rule-19-keylogging-silent-surveillance.ts:10:53:10:57 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:17:31:17:35 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:18:15:18:63 | 'https: ... nt.keys | semmle.label | 'https: ... nt.keys |
+| mock-rule-19-keylogging-silent-surveillance.ts:18:54:18:58 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:21:41:21:45 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... + event | semmle.label | 'https: ... + event |
+| mock-rule-19-keylogging-silent-surveillance.ts:22:52:22:56 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:25:50:25:54 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:26:15:26:64 | 'https: ... newBody | semmle.label | 'https: ... newBody |
+| mock-rule-19-keylogging-silent-surveillance.ts:26:52:26:56 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:15:30:18 | note | semmle.label | note |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:22:30:58 | await j ... dNote() | semmle.label | await j ... dNote() |
+| mock-rule-19-keylogging-silent-surveillance.ts:30:28:30:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
+| mock-rule-19-keylogging-silent-surveillance.ts:31:15:31:56 | 'https: ... note.id | semmle.label | 'https: ... note.id |
+| mock-rule-19-keylogging-silent-surveillance.ts:31:50:31:53 | note | semmle.label | note |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:19:36:25 | results | semmle.label | results |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:29:36:84 | await j ... ord' }) | semmle.label | await j ... ord' }) |
+| mock-rule-19-keylogging-silent-surveillance.ts:36:35:36:84 | joplin. ... ord' }) | semmle.label | joplin. ... ord' }) |
+| mock-rule-19-keylogging-silent-surveillance.ts:37:19:37:75 | 'https: ... .length | semmle.label | 'https: ... .length |
+| mock-rule-19-keylogging-silent-surveillance.ts:37:56:37:62 | results | semmle.label | results |
+| mock-rule-19-keylogging-silent-surveillance.ts:40:35:40:39 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:41:19:41:71 | 'https: ... .noteId | semmle.label | 'https: ... .noteId |
+| mock-rule-19-keylogging-silent-surveillance.ts:41:60:41:64 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:46:43:46:47 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:47:15:47:57 | 'https: ... ent.key | semmle.label | 'https: ... ent.key |
+| mock-rule-19-keylogging-silent-surveillance.ts:47:49:47:53 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:50:41:50:45 | event | semmle.label | event |
+| mock-rule-19-keylogging-silent-surveillance.ts:51:15:51:90 | 'https: ... ).value | semmle.label | 'https: ... ).value |
+| mock-rule-19-keylogging-silent-surveillance.ts:51:52:51:56 | event | semmle.label | event |
 subpaths
 #select
-| mock-rule-19-keylogging-silent-surveillance.ts:5:15:5:64 | 'https: ... .noteId | mock-rule-19-keylogging-silent-surveillance.ts:4:43:4:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:5:15:5:64 | 'https: ... .noteId | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network request. This captures live user activity. Verify the endpoint is secure. |
-| mock-rule-19-keylogging-silent-surveillance.ts:9:15:9:63 | 'https: ... nt.keys | mock-rule-19-keylogging-silent-surveillance.ts:8:31:8:35 | event | mock-rule-19-keylogging-silent-surveillance.ts:9:15:9:63 | 'https: ... nt.keys | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network request. This captures live user activity. Verify the endpoint is secure. |
-| mock-rule-19-keylogging-silent-surveillance.ts:17:15:17:56 | 'https: ... + event | mock-rule-19-keylogging-silent-surveillance.ts:16:50:16:54 | event | mock-rule-19-keylogging-silent-surveillance.ts:17:15:17:56 | 'https: ... + event | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network request. This captures live user activity. Verify the endpoint is secure. |
-| mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... note.id | mock-rule-19-keylogging-silent-surveillance.ts:21:28:21:58 | joplin. ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... note.id | Silent Surveillance / Hook Exfiltration: Data captured from a workspace, settings, or sync event hook is being funneled directly to a network request. This captures live user activity. Verify the endpoint is secure. |
+| mock-rule-19-keylogging-silent-surveillance.ts:5:11:5:56 | 'https: ... lder.id | mock-rule-19-keylogging-silent-surveillance.ts:4:26:4:58 | joplin. ... older() | mock-rule-19-keylogging-silent-surveillance.ts:5:11:5:56 | 'https: ... lder.id | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:10:15:10:65 | 'https: ... note.id | mock-rule-19-keylogging-silent-surveillance.ts:9:43:9:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:10:15:10:65 | 'https: ... note.id | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:18:15:18:63 | 'https: ... nt.keys | mock-rule-19-keylogging-silent-surveillance.ts:17:31:17:35 | event | mock-rule-19-keylogging-silent-surveillance.ts:18:15:18:63 | 'https: ... nt.keys | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... + event | mock-rule-19-keylogging-silent-surveillance.ts:21:41:21:45 | event | mock-rule-19-keylogging-silent-surveillance.ts:22:15:22:56 | 'https: ... + event | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:26:15:26:64 | 'https: ... newBody | mock-rule-19-keylogging-silent-surveillance.ts:25:50:25:54 | event | mock-rule-19-keylogging-silent-surveillance.ts:26:15:26:64 | 'https: ... newBody | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:31:15:31:56 | 'https: ... note.id | mock-rule-19-keylogging-silent-surveillance.ts:30:28:30:58 | joplin. ... dNote() | mock-rule-19-keylogging-silent-surveillance.ts:31:15:31:56 | 'https: ... note.id | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:37:19:37:75 | 'https: ... .length | mock-rule-19-keylogging-silent-surveillance.ts:36:35:36:84 | joplin. ... ord' }) | mock-rule-19-keylogging-silent-surveillance.ts:37:19:37:75 | 'https: ... .length | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:41:19:41:71 | 'https: ... .noteId | mock-rule-19-keylogging-silent-surveillance.ts:40:35:40:39 | event | mock-rule-19-keylogging-silent-surveillance.ts:41:19:41:71 | 'https: ... .noteId | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:47:15:47:57 | 'https: ... ent.key | mock-rule-19-keylogging-silent-surveillance.ts:46:43:46:47 | event | mock-rule-19-keylogging-silent-surveillance.ts:47:15:47:57 | 'https: ... ent.key | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |
+| mock-rule-19-keylogging-silent-surveillance.ts:51:15:51:90 | 'https: ... ).value | mock-rule-19-keylogging-silent-surveillance.ts:50:41:50:45 | event | mock-rule-19-keylogging-silent-surveillance.ts:51:15:51:90 | 'https: ... ).value | Silent Surveillance / Keylogging: Live keyboard, input, Joplin activity, or data captured during an event is flowing to a network request. Verify that this collection and transmission is explicitly disclosed and authorized by the user. |

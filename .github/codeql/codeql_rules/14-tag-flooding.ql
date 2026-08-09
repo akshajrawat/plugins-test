@@ -7,6 +7,7 @@
  */
 import javascript
 import JoplinSources
+import JoplinSinks
 
 // ==========================================
 // Loop detection
@@ -28,23 +29,21 @@ predicate isAlwaysTrueCondition(Expr condition) {
   condition.stripParens().(NumberLiteral).getValue() = "1"
 }
 
-predicate isRecursiveSetTimeout(DataFlow::CallNode call) {
-  exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
-    timer = DataFlow::globalVarRef("setTimeout").getACall() and
-    callback = timer.getArgument(0).getAFunctionValue() and
-    (
-      exists(DataFlow::CallNode innerTimer |
-        innerTimer = DataFlow::globalVarRef("setTimeout").getACall() and
-        innerTimer.getContainer().getEnclosingContainer*() = callback.getFunction() and
-        innerTimer.getArgument(0).getAFunctionValue() = callback
-      )
-    ) and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+predicate functionDirectlyCalls(DataFlow::FunctionNode caller, DataFlow::FunctionNode callee) {
+  exists(DataFlow::CallNode invocation |
+    invocation.getContainer() = caller.getFunction() and
+    callee = invocation.getCalleeNode().getAFunctionValue()
   )
 }
 
-predicate inUnboundedLoop(DataFlow::CallNode call) {
-  // Inside a synchronous loop with no normal finite bound.
+predicate callbackExecutesCall(DataFlow::FunctionNode callback, DataFlow::CallNode call) {
+  exists(DataFlow::FunctionNode owner |
+    call.getContainer() = owner.getFunction() and
+    functionDirectlyCalls*(callback, owner)
+  )
+}
+
+predicate directlyInsideUnboundedLoop(DataFlow::CallNode call) {
   exists(LoopStmt loop |
     (
       (loop instanceof WhileStmt and isAlwaysTrueCondition(loop.getTest())) or
@@ -52,31 +51,71 @@ predicate inUnboundedLoop(DataFlow::CallNode call) {
       (loop instanceof ForStmt and not exists(loop.getTest())) or
       (loop instanceof ForStmt and isAlwaysTrueCondition(loop.getTest()))
     ) and
-    call.asExpr().getEnclosingStmt().getParentStmt*() = loop
+    call.asExpr().getEnclosingStmt().getParentStmt*() = loop and
+    call.asExpr().getContainer() = loop.getContainer()
+  )
+}
+
+predicate directlyInsideAnyLoop(DataFlow::CallNode call) {
+  exists(LoopStmt loop |
+    call.asExpr().getEnclosingStmt().getParentStmt*() = loop and
+    call.asExpr().getContainer() = loop.getContainer()
+  )
+}
+
+predicate insideRecursiveSetTimeout(DataFlow::CallNode call) {
+  exists(
+    DataFlow::FunctionNode recurringCallback,
+    DataFlow::CallNode timer,
+    DataFlow::FunctionNode scheduledCallback
+  |
+    callbackExecutesCall(recurringCallback, call) and
+    timer = DataFlow::globalVarRef("setTimeout").getACall() and
+    callbackExecutesCall(recurringCallback, timer) and
+    scheduledCallback = timer.getArgument(0).getAFunctionValue() and
+    functionDirectlyCalls*(scheduledCallback, recurringCallback)
+  )
+}
+
+predicate inUnboundedLoop(DataFlow::CallNode call) {
+  // Directly inside an infinite synchronous loop.
+  directlyInsideUnboundedLoop(call)
+  or
+  // Reached through a helper called by an infinite synchronous loop.
+  exists(DataFlow::CallNode invocation, DataFlow::FunctionNode helper |
+    directlyInsideUnboundedLoop(invocation) and
+    helper = invocation.getCalleeNode().getAFunctionValue() and
+    callbackExecutesCall(helper, call)
   )
   or
-  // Inside an uncleared setInterval loop
+  // Directly or indirectly inside an uncleared setInterval callback.
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
     isUnboundedInterval(timer) and
     callback = timer.getArgument(0).getAFunctionValue() and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+    callbackExecutesCall(callback, call)
   )
   or
-  // Recursive setTimeout
-  isRecursiveSetTimeout(call)
+  // Directly or indirectly inside a recursive setTimeout callback.
+  insideRecursiveSetTimeout(call)
 }
 
 predicate inAnyLoop(DataFlow::CallNode call) {
   inUnboundedLoop(call) or
-  exists(LoopStmt loop | call.asExpr().getEnclosingStmt().getParentStmt*() = loop) or
+  directlyInsideAnyLoop(call) or
+  exists(DataFlow::CallNode invocation, DataFlow::FunctionNode helper |
+    directlyInsideAnyLoop(invocation) and
+    helper = invocation.getCalleeNode().getAFunctionValue() and
+    callbackExecutesCall(helper, call)
+  ) or
   exists(DataFlow::CallNode timer, DataFlow::FunctionNode callback |
     timer = DataFlow::globalVarRef("setInterval").getACall() and
     callback = timer.getArgument(0).getAFunctionValue() and
-    call.getContainer().getEnclosingContainer*() = callback.getFunction()
+    callbackExecutesCall(callback, call)
   ) or
-  exists(DataFlow::MethodCallNode arrayCall |
+  exists(DataFlow::MethodCallNode arrayCall, DataFlow::FunctionNode callback |
     arrayCall.getMethodName() in ["forEach", "map"] and
-    call.getContainer().getEnclosingContainer*() = arrayCall.getArgument(0).getAFunctionValue().getFunction()
+    callback = arrayCall.getArgument(0).getAFunctionValue() and
+    callbackExecutesCall(callback, call)
   )
 }
 
@@ -85,37 +124,48 @@ predicate inAnyLoop(DataFlow::CallNode call) {
 // ==========================================
 
 predicate isTargetPath(DataFlow::Node pathArg) {
-  exists(DataFlow::ArrayCreationNode arr, string root | 
+  exists(DataFlow::ArrayCreationNode arr, string root |
     arr = pathArg.getALocalSource() and
     root = arr.getElement(0).getStringValue() and
     (
-      root in ["tags", "notes", "resources"] or
-      // ["tags", id, "notes"]
-      (root = "tags" and arr.getElement(2).getStringValue() = "notes")
+      // Exact collection routes create a tag, note, resource, or folder.
+      (root in ["tags", "notes", "resources", "folders"] and not exists(arr.getElement(1))) or
+      // The exact ["tags", tagId, "notes"] route creates a tag-note link.
+      (
+        root = "tags" and
+        exists(arr.getElement(1)) and
+        arr.getElement(2).getStringValue() = "notes" and
+        not exists(arr.getElement(3))
+      )
     )
   )
 }
 
 predicate isFileWrite(DataFlow::CallNode call) {
-  exists(string meth | meth in ["writeFile", "writeFileSync", "appendFile", "appendFileSync"] |
-    call = DataFlow::moduleMember("fs", meth).getACall() or
-    call = DataFlow::moduleMember("fs-extra", meth).getACall() or
-    // joplin.require('fs-extra')
-    exists(DataFlow::CallNode req |
-      req = Joplin::joplin().getAMethodCall("require") and
-      req.getArgument(0).getStringValue() in ["fs", "fs-extra"] and
-      call = req.getAMethodCall(meth)
+  exists(string meth |
+    meth in ["writeFile", "writeFileSync", "appendFile", "appendFileSync", "outputFile", "outputFileSync"] and
+    (
+      exists(string moduleName |
+        moduleName in ["fs", "node:fs", "fs/promises", "node:fs/promises", "fs-extra"] and
+        call = DataFlow::moduleMember(moduleName, meth).getACall()
+      )
+      or
+      exists(DataFlow::MethodCallNode methodCall |
+        call = methodCall and
+        isJoplinFsExtraCall(methodCall) and
+        methodCall.getMethodName() = meth
+      )
     )
   )
 }
 
 predicate isLargeWritePayload(DataFlow::Node payload) {
-  // Check if string literal is suspiciously large or if Buffer.alloc is used heavily
+  // Check if a string literal is suspiciously large or a large Buffer is allocated.
   payload.getStringValue().length() > 10000 or
   exists(DataFlow::CallNode alloc |
-    alloc = DataFlow::globalVarRef("Buffer").getAMethodCall("alloc") and
+    alloc = DataFlow::globalVarRef("Buffer").getAMethodCall(["alloc", "allocUnsafe"]) and
     alloc.getArgument(0).getIntValue() > 10000 and
-    payload = alloc
+    (payload = alloc or payload.getALocalSource() = alloc)
   )
 }
 
@@ -130,7 +180,7 @@ where
     call = Joplin::data().getAMethodCall("post") and
     isTargetPath(call.getArgument(0)) and
     inUnboundedLoop(call) and
-    msg = "Resource Exhaustion: The plugin is creating tags, notes, or resources from an unbounded or background loop. Ensure loops have finite execution limits."
+    msg = "Resource Exhaustion: The plugin is creating tags, notes, resources, folders, or tag-note links from an unbounded or background loop. Ensure loops have finite execution limits."
   )
   or
   (
@@ -143,7 +193,7 @@ where
   (
     // 3. LARGE file write inside ANY loop
     isFileWrite(call) and
-    isLargeWritePayload(call.getArgument(1).getALocalSource()) and
+    isLargeWritePayload(call.getArgument(1)) and
     inAnyLoop(call) and
     msg = "Disk Quota Exhaustion: The plugin is writing large chunks of data to the filesystem inside a loop. Verify this is intended user-initiated behavior and won't overwhelm local storage."
   )

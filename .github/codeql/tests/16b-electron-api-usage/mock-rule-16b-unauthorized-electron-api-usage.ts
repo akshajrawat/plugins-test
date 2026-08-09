@@ -1,13 +1,25 @@
+import type { Rectangle } from 'electron';
 import {
     BrowserWindow,
     app,
     clipboard,
+    desktopCapturer,
     dialog,
+    globalShortcut,
     ipcMain,
     ipcRenderer,
+    nativeImage,
+    net,
+    protocol,
+    remote,
+    safeStorage,
     screen,
+    session,
     shell,
+    utilityProcess,
+    webContents,
 } from 'electron';
+import { session as mainSession } from 'electron/main';
 
 function triggerRule() {
     new BrowserWindow();
@@ -18,4 +30,32 @@ function triggerRule() {
     ipcRenderer.send('raw-channel');
     ipcMain.on('raw-channel', () => {});
     screen.getPrimaryDisplay();
+    session.defaultSession.clearStorageData();
+    mainSession.defaultSession.clearCache();
+    webContents.getAllWebContents();
+    protocol.registerSchemesAsPrivileged([]);
+    net.request('https://example.com');
+    globalShortcut.register('CommandOrControl+X', () => {});
+    desktopCapturer.getSources({ types: ['screen'] });
+    safeStorage.isEncryptionAvailable();
+    utilityProcess.fork('worker.js');
+    nativeImage.createEmpty();
+
+    const rendererElectron = require('electron/renderer');
+    rendererElectron['ipcRenderer'].send('another-channel');
+
+    window.require('electron').session.defaultSession.clearCache();
+
+    // Rule 16, not Rule 16b, owns this access.
+    remote.getCurrentWindow();
+}
+
+function safeCases(rectangle: Rectangle) {
+    const localElectron = {
+        session: {
+            clear: () => undefined,
+        },
+    };
+    localElectron.session.clear();
+    return rectangle.width;
 }
