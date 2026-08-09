@@ -43,10 +43,45 @@ predicate isExactNotePath(DataFlow::Node path) {
   )
 }
 
-predicate isNoteMutation(DataFlow::CallNode call) {
-  // joplin.data.put/delete(["notes", noteId])
+predicate hasStaticBodyReplacement(DataFlow::CallNode call) {
+  exists(DataFlow::SourceNode payload, DataFlow::Node body, string replacement |
+    payload = call.getArgument(2).getALocalSource() and
+    body = payload.getAPropertyWrite("body").getRhs() and
+    replacement = body.getStringValue()
+  )
+}
+
+predicate isExplicitlyInactiveValue(DataFlow::Node value) {
+  value.getIntValue() = 0 or
+  value.getStringValue() in ["0", "false"] or
   (
-    call = Joplin::data().getAMethodCall(["put", "delete"]) and
+    value.asExpr().stripParens() instanceof BooleanLiteral and
+    value.asExpr().stripParens().(BooleanLiteral).getBoolValue() = false
+  ) or
+  value.asExpr().stripParens() instanceof NullLiteral or
+  value = DataFlow::globalVarRef("undefined")
+}
+
+predicate hasDestructiveMetadata(DataFlow::CallNode call) {
+  exists(DataFlow::SourceNode payload, DataFlow::Node value, string property |
+    payload = call.getArgument(2).getALocalSource() and
+    property in ["deleted_time", "is_conflict"] and
+    value = payload.getAPropertyWrite(property).getRhs() and
+    not isExplicitlyInactiveValue(value)
+  )
+}
+
+predicate isNoteMutation(DataFlow::CallNode call) {
+  // joplin.data.put(["notes", noteId], ..., { body: "static replacement" })
+  (
+    call = Joplin::data().getAMethodCall("put") and
+    isExactNotePath(call.getArgument(0)) and
+    (hasStaticBodyReplacement(call) or hasDestructiveMetadata(call))
+  )
+  or
+  // joplin.data.delete(["notes", noteId])
+  (
+    call = Joplin::data().getAMethodCall("delete") and
     isExactNotePath(call.getArgument(0))
   )
   or

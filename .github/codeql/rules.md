@@ -294,11 +294,12 @@ Detects note mutation performed directly inside Joplin workspace event hooks.
 It is a structural rule for silent note changes triggered by user activity.
 
 ### Flows :
-1. `joplin.data.put(["notes", noteId])` appears inside note selection, note change, note content change, or alarm trigger callbacks.
-2. `joplin.data.delete(["notes", noteId])` appears inside those workspace callbacks.
-3. `joplin.commands.execute("insertText", ...)` or `replaceSelection` appears inside those workspace callbacks.
-4. Mutations reached through helpers actually called by the workspace callback are included; nested helpers that are declared but never invoked are excluded.
-5. Note sub-routes and mutations outside these workspace callbacks are not reported.
+1. `joplin.data.put(["notes", noteId], ..., { body: "static replacement" })` appears inside note selection, note change, note content change, or alarm trigger callbacks.
+2. A note update sets an active `deleted_time` or `is_conflict` value inside those callbacks.
+3. `joplin.data.delete(["notes", noteId])` appears inside those workspace callbacks.
+4. `joplin.commands.execute("insertText", ...)` or `replaceSelection` appears inside those workspace callbacks.
+5. Mutations reached through helpers actually called by the workspace callback are included; nested helpers that are declared but never invoked are excluded.
+6. Computed note bodies, inactive destructive values, note sub-routes, and mutations outside these workspace callbacks are not reported.
 
 ### SEVERITY : ERROR
 

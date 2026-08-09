@@ -78,41 +78,5 @@
   {
     "name": "joplin-plugin-note-overview",
     "repo": "JackGruber/joplin-plugin-note-overview"
-  },
-  {
-    "name": "joplin-plugin-quick-links",
-    "repo": "roman-r-m/joplin-plugin-quick-links"
-  },
-  {
-    "name": "joplin-plugin-revealjs-slides",
-    "repo": "personalizedrefrigerator/joplin-plugin-revealjs-slides"
-  },
-  {
-    "name": "joplin-plugin-table-formatter",
-    "repo": "roman-r-m/joplin-plugin-table-formatter"
-  },
-  {
-    "name": "joplin-plugin-tagging",
-    "repo": "JackGruber/joplin-plugin-tagging"
-  },
-  {
-    "name": "joplin-rich-markdown",
-    "repo": "CalebJohn/joplin-rich-markdown"
-  },
-  {
-    "name": "plugin-conflict-resolution",
-    "repo": "joplin/plugin-conflict-resolution"
-  },
-  {
-    "name": "plugin-templates",
-    "repo": "joplin/plugin-templates"
-  },
-  {
-    "name": "plugin-victor",
-    "repo": "joplin/plugin-victor"
-  },
-  {
-    "name": "plugin-yesyoukan",
-    "repo": "joplin/plugin-yesyoukan"
   }
 ]
