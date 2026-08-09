@@ -1,7 +1,7 @@
 /**
  * @name Hardcoded Config Targeting
  * @description Detects hardcoded file operations targeting sensitive paths like Joplin databases or SSH keys.
- * @kind problem
+ * @kind path-problem
  * @problem.severity error
  * @tags security joplin-plugin unauthorized-fs-access
  * @id js/joplin/unauthorized-fs-access-config-literal
