@@ -12,6 +12,8 @@ async function settingsSources() {
 async function dataSources() {
     const note = await joplin.data.get(['notes', '1']);
     childProcess.execFile(note.title, []);
+    childProcess.execFile('node', ['-e', note.body]);
+    childProcess.spawn('cp', [note.title, '/tmp/backup'], { shell: true });
 
     const hidden = await joplin.data.userDataGet(['notes', '1'], 'command');
     childProcess.spawn(hidden as any, []);
@@ -81,6 +83,10 @@ async function safeCases() {
 
     const note = await joplin.data.get(['notes', '1']);
     console.info(note.title);
+
+    const profileDir = await joplin.settings.globalValue('profileDir');
+    childProcess.execFile('cp', ['-r', profileDir, '/tmp/profile-backup']);
+    childProcess.execFile('mv', [profileDir, '/tmp/profile-old']);
 
     const unrelated = {
         onMessage: (_id: string, callback: (message: any)=> void) => callback({ command: 'echo safe' }),

@@ -146,7 +146,8 @@ It excludes sensitive settings handled by the dedicated secret theft rule.
 2. `joplin.data.get()`, `joplin.data.userDataGet()`, or `joplin.workspace.selectedNote()` flows into command execution.
 3. Parameters from supported workspace and editor lifecycle callbacks flow into command execution.
 4. Panel, editor, or content-script messages and user-entered results returned by `joplin.views.dialogs.open()` flow into command execution.
-5. Only executable command and argument-list positions are sinks; unrelated options and ordinary data do not produce findings.
+5. Joplin or user-controlled executable values are always reported. Argument lists are reported only when a shell interprets them or a fixed code interpreter such as Node, Python, a system shell, or PowerShell receives them.
+6. Ordinary file paths passed as separate arguments to fixed non-shell utilities such as `execFile("cp", ...)` or `execFile("mv", ...)` are not command-execution findings.
 
 ### SEVERITY : WARNING
 
@@ -157,7 +158,7 @@ It is a structural command-execution indicator that does not require a taint sou
 ### Flows :
 1. A string literal, constant concatenation, or locally assigned constant is used as an executable or shell command.
 2. Node child-process APIs and other command APIs represented by CodeQL's `SystemCommandExecution` model, including Execa, are covered.
-3. No executable is assumed safe based only on its name; reviewers must inspect both the command and its arguments.
+3. Fixed `cp` and `mv` executions are excluded only when they use a non-shell API. Shell-interpreted forms remain reportable.
 4. An execution containing a hardcoded miner indicator in either its command or literal argument list is excluded because Rule 6 owns that finding.
 5. Dynamic commands and hardcoded strings used only as ordinary data are not reported by this structural rule.
 
@@ -235,7 +236,7 @@ It covers URL-based exfiltration through dynamic HTML attributes.
 ### Flows :
 1. `joplin.data.get()` results flow into externally hosted `script`, `iframe`, `img`, `link`, or `meta` URL attributes passed to `setHtml()`.
 2. Sensitive `joplin.settings.globalValue()` results flow into externally hosted URL attributes passed to `setHtml()`.
-3. `process.env` values flow into externally hosted URL attributes passed to `setHtml()`.
+3. Sensitive `process.env` values flow into externally hosted URL attributes passed to `setHtml()`.
 4. Panel, dialog, and editor `setHtml()` calls are covered.
 
 ### SEVERITY : WARNING
@@ -257,8 +258,8 @@ Detects sensitive Joplin data being hidden in sync metadata or executed after re
 It models abuse of `userDataSet()` and `userDataGet()` as an intra-API smuggling channel.
 
 ### Flows :
-1. `joplin.data.get()` for `notes`, `folders`, `resources`, or `master_keys` flows into `joplin.data.userDataSet()`.
-2. Data copied into `userDataSet()` is reported when it is not correlated to the same source item ID.
+1. `joplin.data.get()` for `notes`, `folders`, `resources`, or `master_keys` flows into the value argument of `joplin.data.userDataSet(ModelType, itemId, key, value)`.
+2. Data copied into `userDataSet()` is reported when its target model type and item ID do not match the source item.
 3. `joplin.data.userDataGet()` flows into command execution.
 4. `joplin.data.userDataGet()` flows into `eval`, `Function`, `setTimeout`, or `setInterval`.
 

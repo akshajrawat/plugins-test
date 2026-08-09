@@ -1,6 +1,6 @@
 /**
  * @name Remote Webview Scripts (Structural)
- * @description Detects creating a webview or content script with dynamic contents that could load remote scripts.
+ * @description Detects Joplin webview HTML that directly loads external remote resources.
  * @kind problem
  * @problem.severity warning
  * @tags security joplin-plugin remote-webview-structural
@@ -15,7 +15,8 @@ predicate containsExternalWebviewSrc(string value) {
     remoteUrlPattern = "https?://(?!(localhost|0\\.0\\.0\\.0|\\[::1\\]|::1|127\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})([:/?#\\s\"']|$))" |
     value.regexpMatch("(?is).*<(script|iframe)\\b[^>]*\\bsrc\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
     value.regexpMatch("(?is).*<link\\b[^>]*\\bhref\\s*=\\s*[\"']?\\s*" + remoteUrlPattern + ".*") or
-    value.regexpMatch("(?is).*<meta\\b[^>]*\\bhttp-equiv\\s*=\\s*[\"']?refresh[\"']?[^>]*\\bcontent\\s*=\\s*[\"']?[0-9]+;\\s*url\\s*=\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<meta\\b[^>]*\\bhttp-equiv\\s*=\\s*[\"']?refresh[\"']?[^>]*\\bcontent\\s*=\\s*[\"']?\\s*[0-9]+(\\.[0-9]+)?\\s*;\\s*url\\s*=\\s*" + remoteUrlPattern + ".*") or
+    value.regexpMatch("(?is).*<meta\\b[^>]*\\bcontent\\s*=\\s*[\"']?\\s*[0-9]+(\\.[0-9]+)?\\s*;\\s*url\\s*=\\s*" + remoteUrlPattern + "[^>]*\\bhttp-equiv\\s*=\\s*[\"']?refresh[\"']?.*") or
     value.regexpMatch("(?is).*\\burl\\s*\\(\\s*[\"']?\\s*" + remoteUrlPattern + ".*\\).*")
   )
 }
@@ -30,6 +31,11 @@ predicate hasExternalWebviewSrc(DataFlow::Node html) {
     html.asExpr().getAChildExpr*() = str and
     containsExternalWebviewSrc(str.getStringValue())
   )
+  or
+  exists(TemplateElement element |
+    html.asExpr().getAChildExpr*() = element and
+    containsExternalWebviewSrc(element.getValue())
+  )
 }
 
 from DataFlow::CallNode call, DataFlow::Node sink
@@ -42,4 +48,4 @@ where
   ) and
   sink = call.getArgument(1) and
   hasExternalWebviewSrc(sink)
-select call, "Remote Webview Injection: The plugin is dynamically loading an external, remote URL into a Webview (via iframe, script, link, or meta refresh tags). Confirm the URL points to a trusted, known-good domain."
+select call, "Remote Webview Resource: The plugin directly embeds an external URL in a Webview (via iframe, script, link, meta refresh, or CSS). Confirm the URL points to a trusted, known-good domain."

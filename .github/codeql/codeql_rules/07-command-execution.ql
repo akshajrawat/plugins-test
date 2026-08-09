@@ -75,10 +75,41 @@ predicate isDialogResult(DataFlow::Node source) {
   source = Joplin::dialogs().getAMethodCall("open")
 }
 
+predicate executesArgumentListAsShell(SystemCommandExecution execution) {
+  execution.getOptionsArg()
+      .getALocalSource()
+      .getAPropertyWrite("shell")
+      .getRhs()
+      .asExpr()
+      .(BooleanLiteral)
+      .getBoolValue() = true
+  or
+  exists(API::Node options |
+    options.asSink() = execution.getOptionsArg() and
+    options.getMember("shell").asSink().mayHaveBooleanValue(true)
+  )
+}
+
+predicate hardcodedCommandValue(SystemCommandExecution execution, string value) {
+  value = execution.getACommandArgument().getStringValue() or
+  value = execution.getACommandArgument().getALocalSource().getStringValue()
+}
+
+predicate isCodeInterpreter(SystemCommandExecution execution) {
+  exists(string command |
+    hardcodedCommandValue(execution, command) and
+    command.regexpMatch(
+      "(?i)(^|.*[/\\\\])(node(js)?|deno|bun|python([0-9.]*)?|perl|ruby|php|sh|bash|zsh|cmd(\\.exe)?|powershell(\\.exe)?|pwsh(\\.exe)?|osascript)$"
+    )
+  )
+}
+
 predicate isCommandInput(DataFlow::Node sink) {
   exists(SystemCommandExecution execution |
-    sink = execution.getACommandArgument() or
-    sink = execution.getArgumentList()
+    sink = execution.getACommandArgument()
+    or
+    sink = execution.getArgumentList() and
+    (executesArgumentListAsShell(execution) or isCodeInterpreter(execution))
   )
 }
 
