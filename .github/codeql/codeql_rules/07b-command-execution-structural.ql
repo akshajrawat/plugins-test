@@ -1,19 +1,31 @@
 /**
  * @name Command Execution (Structural)
- * @description Detects execution of terminal commands using hardcoded string literals.
+ * @description Detects operating-system command execution using hardcoded command strings.
  * @kind problem
  * @problem.severity warning
  * @tags security joplin-plugin command-execution
  * @id js/joplin/command-execution-structural
  */
 import javascript
-import JoplinSinks
 
-from DataFlow::Node cmdSink, string cmdString
+predicate hasCryptominingIndicator(SystemCommandExecution execution) {
+  exists(string value |
+    (
+      value = execution.getACommandArgument().getALocalSource().getStringValue() or
+      value = execution.getArgumentList().getALocalSource().asExpr().(ArrayExpr).getAnElement().getStringValue()
+    ) and
+    value.regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp|nicehash).*")
+  )
+}
+
+predicate hardcodedCommandValue(DataFlow::Node command, string value) {
+  value = command.getStringValue() or
+  value = command.getALocalSource().getStringValue()
+}
+
+from SystemCommandExecution execution, DataFlow::Node command, string commandValue
 where
-  isCommandExecutionArgumentSink(cmdSink) and
-  cmdString = cmdSink.getStringValue() and
-  not cmdString.regexpMatch("(?i)^-{1,2}[a-zA-Z0-9_-]+$") and
-  not cmdString.regexpMatch("(?i)^(cp|mv|copy|move|mkdir|rmdir|tar|zip|7z|7za|git|diff|rsync|chmod|chown|pandoc|ffmpeg)$") and
-  not cmdString.regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp|nicehash).*")
-select cmdSink, "Terminal Command Execution (Hardcoded): A hardcoded string command is passed to a child process. Review the executed command to ensure it does not execute unauthorized native logic or binaries."
+  command = execution.getACommandArgument() and
+  hardcodedCommandValue(command, commandValue) and
+  not hasCryptominingIndicator(execution)
+select command, "Terminal Command Execution (Hardcoded): A hardcoded operating-system command is executed. Review the command and its arguments to confirm that invoking native processes is required and safe."

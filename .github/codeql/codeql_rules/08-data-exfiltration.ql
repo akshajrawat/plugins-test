@@ -10,15 +10,31 @@ import javascript
 import JoplinSources
 import JoplinSinks
 
+predicate isSensitiveDataPath(DataFlow::ArrayCreationNode path) {
+  path.getElement(0).mayHaveStringValue(["notes", "folders", "resources", "search"])
+  or
+  path.getElement(0).mayHaveStringValue("tags") and
+  path.getElement(2).mayHaveStringValue("notes")
+}
+
+predicate isLoopbackRequest(ClientRequest request) {
+  exists(string host |
+    request.getHost().mayHaveStringValue(host) and
+    host.regexpMatch("(?i)^(localhost|127\\.0\\.0\\.1|::1|\\[::1\\])$")
+  )
+  or
+  exists(string url |
+    request.getUrl().mayHaveStringValue(url) and
+    url.regexpMatch("(?i)^https?://(localhost|127\\.0\\.0\\.1|\\[::1\\])(:[0-9]+)?([/?#].*)?$")
+  )
+}
+
 module DataExfilConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::CallNode getCall, string typeVal |
+    exists(DataFlow::CallNode getCall, DataFlow::ArrayCreationNode path |
       getCall = Joplin::data().getAMethodCall("get") and
-      exists(DataFlow::ArrayCreationNode arr |
-        arr = getCall.getArgument(0).getALocalSource() and
-        typeVal = arr.getElement(0).getStringValue()
-      ) and
-      (typeVal = "notes" or typeVal = "folders" or typeVal = "resources") and
+      path = getCall.getArgument(0).getALocalSource() and
+      isSensitiveDataPath(path) and
       source = getCall
     )
     or
@@ -33,7 +49,7 @@ module DataExfilConfig implements DataFlow::ConfigSig {
     isNetworkExfiltrationSink(sink) and
     not exists(ClientRequest cr |
       (sink = cr.getADataNode() or sink = cr.getUrl()) and
-      cr.getUrl().getStringValue().regexpMatch("(?i).*(localhost|127\\.0\\.0\\.1).*")
+      isLoopbackRequest(cr)
     )
   }
 }

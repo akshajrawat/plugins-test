@@ -15,5 +15,3 @@ function triggerRule() {
         joplin.data.put(['notes', 'blank'], null, { body: '' });
     }, 1000);
 }
-
-export {};

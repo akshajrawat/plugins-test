@@ -1,6 +1,6 @@
 /**
  * @name Command Execution
- * @description Detects execution of terminal commands via child_process.
+ * @description Detects Joplin or user-controlled data reaching operating-system command execution.
  * @kind path-problem
  * @problem.severity warning
  * @tags security joplin-plugin command-execution
@@ -8,42 +8,98 @@
  */
 import javascript
 import JoplinSources
-import JoplinSinks
 
-predicate isJoplinEventCallbackParameter(DataFlow::Node source) {
-  exists(DataFlow::MethodCallNode onCall, DataFlow::FunctionNode callback |
-    onCall.getMethodName().regexpMatch("(?i)^on.*") and
+predicate isKnownNonSensitiveSettingKey(Expr key) {
+  exists(string settingName |
+    settingName = key.getStringValue() and
+    not Joplin::isSensitiveSetting(settingName)
+  )
+}
+
+predicate isNonSensitiveSettingRead(DataFlow::CallNode call) {
+  call = Joplin::settingsGlobalValue() and
+  (
+    call.getCalleeName() = "globalValue" and
+    isKnownNonSensitiveSettingKey(call.getArgument(0).asExpr())
+    or
+    call.getCalleeName() = "globalValues" and
+    exists(ArrayExpr keys |
+      keys = call.getArgument(0).asExpr() and
+      not exists(Expr key |
+        key = keys.getAnElement() and
+        not isKnownNonSensitiveSettingKey(key)
+      )
+    )
+  )
+}
+
+predicate isWorkspaceEventParameter(DataFlow::Node source) {
+  exists(DataFlow::MethodCallNode hook, DataFlow::FunctionNode callback |
+    hook.getReceiver().getALocalSource() = Joplin::workspace() and
+    hook.getMethodName() in [
+      "onNoteSelectionChange", "onNoteContentChange", "onNoteChange", "onResourceChange",
+      "onNoteAlarmTrigger", "onSyncComplete"
+    ] and
+    callback = hook.getArgument(0).getAFunctionValue() and
+    source = callback.getParameter(0)
+  )
+}
+
+predicate isEditorEventParameter(DataFlow::Node source) {
+  exists(DataFlow::MethodCallNode hook, DataFlow::FunctionNode callback |
+    hook.getReceiver().getALocalSource() = Joplin::editors() and
+    hook.getMethodName() in ["onUpdate", "onActivationCheck"] and
+    callback = hook.getArgument(1).getAFunctionValue() and
+    source = callback.getParameter(0)
+  )
+}
+
+predicate isRegisteredEditorEventParameter(DataFlow::Node source) {
+  exists(
+    DataFlow::MethodCallNode registration,
+    DataFlow::ObjectLiteralNode callbacks,
+    DataFlow::FunctionNode callback
+  |
+    registration.getReceiver().getALocalSource() = Joplin::editors() and
+    registration.getMethodName() = "register" and
+    callbacks = registration.getArgument(1).getALocalSource() and
     (
-      onCall.getReceiver().getALocalSource() = Joplin::workspace() or
-      onCall.getReceiver().getALocalSource() = Joplin::panels() or
-      onCall.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("dialogs") or
-      onCall.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("views").getAPropertyRead("editors")
+      callback = callbacks.getAPropertyWrite("onActivationCheck").getRhs().getAFunctionValue() or
+      callback = callbacks.getAPropertyWrite("onSetup").getRhs().getAFunctionValue()
     ) and
-    callback = onCall.getArgument(0).getALocalSource() and
-    source = callback.getParameter(_)
-  ) or
-  Joplin::isJoplinMessageSource(source)
+    source = callback.getParameter(0)
+  )
+}
+
+predicate isDialogResult(DataFlow::Node source) {
+  source = Joplin::dialogs().getAMethodCall("open")
+}
+
+predicate isCommandInput(DataFlow::Node sink) {
+  exists(SystemCommandExecution execution |
+    sink = execution.getACommandArgument() or
+    sink = execution.getArgumentList()
+  )
 }
 
 module CommandExecutionConfig implements DataFlow::ConfigSig {
-
   predicate isSource(DataFlow::Node source) {
-    exists(DataFlow::CallNode call, Expr argExpr, string settingName |
-      call = Joplin::settingsGlobalValue() and
-      argExpr = call.getArgument(0).asExpr() and
-      (settingName = argExpr.getStringValue() or settingName = argExpr.(ArrayExpr).getAnElement().getStringValue()) and
-      not Joplin::isSensitiveSetting(settingName)
-    | source = call
+    exists(DataFlow::CallNode call |
+      isNonSensitiveSettingRead(call) and
+      source = call
     ) or
     source = Joplin::data().getAMethodCall("get") or
     source = Joplin::data().getAMethodCall("userDataGet") or
     source = Joplin::workspace().getAMethodCall("selectedNote") or
-    isJoplinEventCallbackParameter(source)
+    isWorkspaceEventParameter(source) or
+    isEditorEventParameter(source) or
+    isRegisteredEditorEventParameter(source) or
+    isDialogResult(source) or
+    Joplin::isJoplinMessageSource(source)
   }
 
   predicate isSink(DataFlow::Node sink) {
-    isCommandExecutionSink(sink) or
-    isCommandExecutionArgumentSink(sink)
+    isCommandInput(sink)
   }
 }
 
@@ -52,4 +108,4 @@ import CommandExecFlow::PathGraph
 
 from CommandExecFlow::PathNode source, CommandExecFlow::PathNode sink
 where CommandExecFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Terminal Command Execution: This code executes an external terminal command."
+select sink.getNode(), source, sink, "Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options."

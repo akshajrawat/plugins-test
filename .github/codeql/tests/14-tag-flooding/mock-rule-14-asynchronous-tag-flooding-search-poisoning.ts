@@ -26,5 +26,3 @@ function triggerRule() {
         joplin.data.post(['resources'], null, { id: resourceId });
     });
 }
-
-export {};

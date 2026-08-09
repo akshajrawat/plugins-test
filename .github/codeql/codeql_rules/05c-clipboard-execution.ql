@@ -12,18 +12,35 @@ import JoplinSinks
 
 predicate isCodeExecutionSink(DataFlow::Node sink) {
   isCommandExecutionSink(sink) or
-  exists(DataFlow::CallNode call | 
-    call.getCalleeName() = "eval" or
-    call.getCalleeName() = "setTimeout" or
-    call.getCalleeName() = "setInterval" or
-    call = DataFlow::globalVarRef("Function").getAnInstantiation()
-    | sink = call.getArgument(0)
+  sink = DataFlow::globalVarRef("eval").getAnInvocation().getArgument(0) or
+  sink = DataFlow::globalVarRef("setTimeout").getAnInvocation().getArgument(0) or
+  sink = DataFlow::globalVarRef("setInterval").getAnInvocation().getArgument(0) or
+  exists(DataFlow::InvokeNode functionCall |
+    functionCall = DataFlow::globalVarRef("Function").getAnInstantiation() or
+    functionCall = DataFlow::globalVarRef("Function").getACall()
+  |
+    sink = functionCall.getLastArgument()
+  ) or
+  exists(DataFlow::InvokeNode vmCall, string moduleName |
+    moduleName in ["vm", "node:vm"] and
+    (
+      vmCall.getCalleeNode().getALocalSource() = DataFlow::moduleMember(moduleName, "runInThisContext") or
+      vmCall.getCalleeNode().getALocalSource() = DataFlow::moduleMember(moduleName, "runInNewContext") or
+      vmCall.getCalleeNode().getALocalSource() = DataFlow::moduleMember(moduleName, "runInContext") or
+      vmCall.getCalleeNode().getALocalSource() = DataFlow::moduleMember(moduleName, "compileFunction") or
+      vmCall.getCalleeNode().getALocalSource() = DataFlow::moduleMember(moduleName, "Script")
+    ) and
+    sink = vmCall.getArgument(0)
   )
 }
 
 module ClipboardExecutionConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    source = Joplin::clipboard().getAMethodCall("readText")
+    exists(DataFlow::MethodCallNode call |
+      call.getReceiver().getALocalSource() = Joplin::clipboard() and
+      call.getMethodName() in ["readText", "readHtml"] and
+      source = call
+    )
   }
   predicate isSink(DataFlow::Node sink) {
     isCodeExecutionSink(sink)
@@ -35,4 +52,4 @@ import ClipboardExecutionFlow::PathGraph
 
 from ClipboardExecutionFlow::PathNode source, ClipboardExecutionFlow::PathNode sink
 where ClipboardExecutionFlow::flowPath(source, sink)
-select sink.getNode(), source, sink, "Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink."
+select sink.getNode(), source, sink, "Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink."

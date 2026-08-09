@@ -13,5 +13,3 @@ async function triggerRule() {
 
     fs.writeFileSync(path.basename(entries[1].name), 'safe');
 }
-
-export {};

@@ -4,6 +4,11 @@
 import javascript
 import JoplinSources
 
+/** Holds if `call` invokes the officially exposed `joplin.require('fs-extra')` module. */
+predicate isJoplinFsExtraCall(DataFlow::MethodCallNode call) {
+  call.getReceiver().getALocalSource() = Joplin::require("fs-extra")
+}
+
 /**
  * Identifies sinks related to operating system command execution or child processes.
  */
@@ -17,6 +22,15 @@ predicate isCommandExecutionSink(DataFlow::Node sink) {
 predicate isCommandExecutionArgumentSink(DataFlow::Node sink) {
   exists(SystemCommandExecution exec |
     sink = exec.getACommandArgument()
+  )
+}
+
+/** Identifies the destination argument of Joplin archive extraction. */
+predicate isArchiveExtractionDestinationSink(DataFlow::Node sink) {
+  exists(DataFlow::MethodCallNode call |
+    call.getMethodName() = "archiveExtract" and
+    call.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("fs") and
+    sink = call.getArgument(1)
   )
 }
 
@@ -34,11 +48,7 @@ predicate isFileSystemPathSink(DataFlow::Node sink) {
     ] and
     sink = call.getArgument(0)
   ) or
-  exists(DataFlow::MethodCallNode mc |
-    mc.getMethodName() = "archiveExtract" and
-    mc.getReceiver().getALocalSource() = Joplin::joplin().getAPropertyRead("fs") and
-    sink = mc.getArgument(1)
-  ) or
+  isArchiveExtractionDestinationSink(sink) or
   exists(DataFlow::CallNode call |
     call.getCalleeName() in [
       "outputFile", "outputFileSync",
@@ -56,6 +66,24 @@ predicate isFileSystemPathSink(DataFlow::Node sink) {
       "chmod", "chmodSync"
     ] and
     (sink = call.getArgument(0) or sink = call.getArgument(1)) // move/copy take 2 path arguments usually
+  ) or
+  exists(DataFlow::MethodCallNode call |
+    isJoplinFsExtraCall(call) and
+    (
+      call.getMethodName() in [
+        "writeFile", "writeFileSync", "appendFile", "appendFileSync",
+        "outputFile", "outputFileSync", "remove", "removeSync",
+        "emptyDir", "emptyDirSync", "ensureFile", "ensureFileSync",
+        "ensureDir", "ensureDirSync", "unlink", "unlinkSync",
+        "rm", "rmSync", "rmdir", "rmdirSync", "chmod", "chmodSync"
+      ] and
+      sink = call.getArgument(0)
+      or
+      call.getMethodName() in [
+        "move", "moveSync", "copyFile", "copyFileSync", "copy", "copySync", "rename", "renameSync"
+      ] and
+      (sink = call.getArgument(0) or sink = call.getArgument(1))
+    )
   )
 }
 
@@ -71,6 +99,13 @@ predicate isFileSystemDataSink(DataFlow::Node sink) {
       "writeFile", "writeFileSync",
       "appendFile", "appendFileSync",
       "outputFile", "outputFileSync"
+    ] and
+    sink = call.getArgument(1)
+  ) or
+  exists(DataFlow::MethodCallNode call |
+    isJoplinFsExtraCall(call) and
+    call.getMethodName() in [
+      "writeFile", "writeFileSync", "appendFile", "appendFileSync", "outputFile", "outputFileSync"
     ] and
     sink = call.getArgument(1)
   )

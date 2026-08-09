@@ -12,7 +12,11 @@ import JoplinSinks
 
 module ClipboardExfiltrationConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    source = Joplin::clipboard().getAMethodCall("readText")
+    exists(DataFlow::MethodCallNode call |
+      call.getReceiver().getALocalSource() = Joplin::clipboard() and
+      call.getMethodName() in ["readText", "readHtml", "readImage"] and
+      source = call
+    )
   }
   predicate isSink(DataFlow::Node sink) {
     isNetworkExfiltrationSink(sink)

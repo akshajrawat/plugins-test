@@ -9,17 +9,30 @@
 import javascript
 import JoplinSources
 
-// Helper function to check if a specific API call requests a specific setting string
-bindingset[targetSetting]
-predicate isSettingAccess(DataFlow::CallNode call, string targetSetting) {
+predicate settingNameForCall(DataFlow::CallNode call, string settingName) {
   call = Joplin::settingsGlobalValue() and
-  exists(Expr argExpr, string settingName |
+  exists(Expr argExpr |
     argExpr = call.getArgument(0).asExpr() and
     (
       settingName = argExpr.getStringValue() or
       settingName = argExpr.(ArrayExpr).getAnElement().getStringValue()
-    ) and
-    (settingName = targetSetting or settingName.regexpMatch(targetSetting))
+    )
+  )
+}
+
+bindingset[targetSetting]
+predicate isSettingAccess(DataFlow::CallNode call, string targetSetting) {
+  exists(string settingName |
+    settingNameForCall(call, settingName) and
+    settingName = targetSetting
+  )
+}
+
+bindingset[targetPattern]
+predicate isSettingAccessMatching(DataFlow::CallNode call, string targetPattern) {
+  exists(string settingName |
+    settingNameForCall(call, settingName) and
+    settingName.regexpMatch(targetPattern)
   )
 }
 
@@ -27,7 +40,7 @@ from DataFlow::CallNode call, string reason
 where
   // CONDITION 1: Standalone access to sync passwords, tokens, or caches
   (
-    isSettingAccess(call, "sync\\..*\\.password") or
+    isSettingAccessMatching(call, "sync\\..*\\.password") or
     isSettingAccess(call, "api.token") or
     isSettingAccess(call, "encryption.cachedPpk") or
     isSettingAccess(call, "encryption.passwordCache")
@@ -47,4 +60,4 @@ where
   ) and
   reason = "Combined access of BOTH masterPassword and syncInfoCache detected in this codebase."
 
-select call, "MANUAL REVIEW REQUIRED: " + reason 
+select call, "MANUAL REVIEW REQUIRED: " + reason

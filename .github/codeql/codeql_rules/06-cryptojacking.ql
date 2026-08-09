@@ -1,70 +1,43 @@
 /**
  * @name Native Binary Dropping & Cryptojacking
- * @description Detects dynamic execution of native binaries or cryptominers.
+ * @description Detects remote payloads or cryptocurrency-mining indicators reaching operating-system command execution.
  * @kind path-problem
  * @problem.severity error
  * @tags security joplin-plugin cryptojacking
  * @id js/joplin/cryptojacking
  */
 import javascript
-import JoplinSinks
+import JoplinSources
 
-predicate isRemoteDataSource(DataFlow::Node source) {
-  exists(DataFlow::CallNode call | 
-    call = DataFlow::globalVarRef("fetch").getACall() or
-    call = DataFlow::moduleMember("axios", "get").getACall() or
-    call = DataFlow::moduleMember("axios", "post").getACall() or
-    call = DataFlow::globalVarRef("axios").getACall() or
-    call = DataFlow::moduleMember("http", "get").getACall() or
-    call = DataFlow::moduleMember("http", "request").getACall() or
-    call = DataFlow::moduleMember("https", "get").getACall() or
-    call = DataFlow::moduleMember("https", "request").getACall() or
-    call = DataFlow::globalVarRef("got").getACall() or
-    call = DataFlow::moduleImport("got").getACall()
-    | source = call
+predicate isCryptominingIndicator(DataFlow::Node source) {
+  exists(string value |
+    value = source.getStringValue() and
+    value.regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp|nicehash).*")
   )
 }
 
-class CommandExecutionTaintStep extends TaintTracking::SharedTaintStep {
-  override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
-    exists(DataFlow::CallNode call |
-      call instanceof SystemCommandExecution and
-      pred = call.getAnArgument() and
-      succ = call
-    )
-  }
+predicate isCommandInput(DataFlow::Node sink) {
+  exists(SystemCommandExecution execution |
+    sink = execution.getACommandArgument() or
+    sink = execution.getArgumentList()
+  )
 }
 
-predicate isElevatedSpawn(DataFlow::Node sink) {
-  exists(DataFlow::CallNode call |
-    sink = call and
-    (
-      call.getCalleeName() in ["exec", "execSync"]
-      or
-      (
-        call.getCalleeName() in ["spawn", "spawnSync", "execFile", "execFileSync"] and
-        exists(DataFlow::Node options, Property prop |
-          options = call.getArgument(2) and
-          prop = options.getALocalSource().asExpr().(ObjectExpr).getAProperty() and
-          prop.getName() = "shell" and
-          prop.getInit().toString() = "true"
-        )
-      )
-    )
+predicate isShellInterpretedCommandInput(DataFlow::Node sink) {
+  exists(SystemCommandExecution execution |
+    (sink = execution.getACommandArgument() or sink = execution.getArgumentList()) and
+    execution.isShellInterpreted(sink)
   )
 }
 
 module CryptojackingConfig implements DataFlow::ConfigSig {
   predicate isSource(DataFlow::Node source) {
-    isRemoteDataSource(source) or
-    exists(string s |
-      s = source.getStringValue() and
-      s.regexpMatch("(?i).*(xmrig|minerd|ethminer|cgminer|t-rex|nsfminer|pool\\.|stratum\\+tcp|nicehash).*")
-    )
+    Joplin::isRemoteDataSource(source) or
+    isCryptominingIndicator(source)
   }
 
   predicate isSink(DataFlow::Node sink) {
-    isCommandExecutionSink(sink)
+    isCommandInput(sink)
   }
 }
 
@@ -74,8 +47,8 @@ import CryptojackFlow::PathGraph
 from CryptojackFlow::PathNode source, CryptojackFlow::PathNode sink, string msg
 where CryptojackFlow::flowPath(source, sink) and
   (
-    if isElevatedSpawn(sink.getNode())
-    then msg = "The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately verify the command payload for malware or resource hijacking."
-    else msg = "The plugin is downloading external payloads or contains hardcoded keywords associated with cryptominers, and passing them directly to a system terminal command. Immediately check the command payload to ensure it is not silently installing malware or hijacking resources."
+    if isShellInterpretedCommandInput(sink.getNode())
+    then msg = "The plugin is passing remote data or a cryptocurrency-mining indicator to a shell-interpreted command. Shell interpretation can treat metacharacters as additional commands. Verify the command input for malware or resource hijacking."
+    else msg = "The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources."
   )
 select sink.getNode(), source, sink, msg

@@ -1,17 +1,57 @@
 edges
-| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | provenance |  |
-| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | provenance |  |
-| mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | provenance |  |
-| mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | provenance |  |
-| mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:7:10:7:19 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:8:14:8:23 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:9:18:9:27 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:10:27:10:36 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:11:16:11:25 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | mock-rule-05c-clipboard-execution.ts:12:17:12:26 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:24:6:56 | await j ... dText() | mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:6:24:6:56 | await j ... dText() | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | mock-rule-05c-clipboard-execution.ts:15:25:15:34 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | mock-rule-05c-clipboard-execution.ts:16:24:16:33 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | mock-rule-05c-clipboard-execution.ts:17:21:17:30 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | mock-rule-05c-clipboard-execution.ts:18:24:18:33 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | mock-rule-05c-clipboard-execution.ts:19:19:19:28 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:24:14:56 | await j ... dHtml() | mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:14:24:14:56 | await j ... dHtml() | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:23:11:23:20 | copiedText | mock-rule-05c-clipboard-execution.ts:24:23:24:32 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:23:24:23:56 | await j ... dText() | mock-rule-05c-clipboard-execution.ts:23:11:23:20 | copiedText | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:23:30:23:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:23:24:23:56 | await j ... dText() | provenance |  |
+| mock-rule-05c-clipboard-execution.ts:24:23:24:32 | copiedText | mock-rule-05c-clipboard-execution.ts:24:5:24:33 | childPr ... edText) | provenance |  |
 nodes
-| mock-rule-05c-clipboard-execution.ts:5:11:5:16 | copied | semmle.label | copied |
-| mock-rule-05c-clipboard-execution.ts:5:20:5:52 | await j ... dText() | semmle.label | await j ... dText() |
-| mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | semmle.label | joplin. ... dText() |
-| mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | semmle.label | copied |
-| mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | semmle.label | childPr ... copied) |
-| mock-rule-05c-clipboard-execution.ts:7:23:7:28 | copied | semmle.label | copied |
+| mock-rule-05c-clipboard-execution.ts:6:11:6:20 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:6:24:6:56 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05c-clipboard-execution.ts:7:10:7:19 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:8:14:8:23 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:9:18:9:27 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:10:27:10:36 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:11:16:11:25 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:12:17:12:26 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:14:11:14:20 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:14:24:14:56 | await j ... dHtml() | semmle.label | await j ... dHtml() |
+| mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | semmle.label | joplin. ... dHtml() |
+| mock-rule-05c-clipboard-execution.ts:15:25:15:34 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:16:24:16:33 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:17:21:17:30 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:18:24:18:33 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:19:19:19:28 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05c-clipboard-execution.ts:23:11:23:20 | copiedText | semmle.label | copiedText |
+| mock-rule-05c-clipboard-execution.ts:23:24:23:56 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05c-clipboard-execution.ts:23:30:23:56 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05c-clipboard-execution.ts:24:5:24:33 | childPr ... edText) | semmle.label | childPr ... edText) |
+| mock-rule-05c-clipboard-execution.ts:24:23:24:32 | copiedText | semmle.label | copiedText |
 subpaths
 #select
-| mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:6:10:6:15 | copied | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink. |
-| mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | mock-rule-05c-clipboard-execution.ts:5:26:5:52 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:7:5:7:29 | childPr ... copied) | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing it directly into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:7:10:7:19 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:7:10:7:19 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:8:14:8:23 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:8:14:8:23 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:9:18:9:27 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:9:18:9:27 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:10:27:10:36 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:10:27:10:36 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:11:16:11:25 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:11:16:11:25 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:12:17:12:26 | copiedText | mock-rule-05c-clipboard-execution.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:12:17:12:26 | copiedText | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:15:25:15:34 | copiedHtml | mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:15:25:15:34 | copiedHtml | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:16:24:16:33 | copiedHtml | mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:16:24:16:33 | copiedHtml | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:17:21:17:30 | copiedHtml | mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:17:21:17:30 | copiedHtml | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:18:24:18:33 | copiedHtml | mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:18:24:18:33 | copiedHtml | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:19:19:19:28 | copiedHtml | mock-rule-05c-clipboard-execution.ts:14:30:14:56 | joplin. ... dHtml() | mock-rule-05c-clipboard-execution.ts:19:19:19:28 | copiedHtml | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |
+| mock-rule-05c-clipboard-execution.ts:24:5:24:33 | childPr ... edText) | mock-rule-05c-clipboard-execution.ts:23:30:23:56 | joplin. ... dText() | mock-rule-05c-clipboard-execution.ts:24:5:24:33 | childPr ... edText) | Clipboard Execution Risk: The plugin is reading the user's clipboard and passing its contents into a code evaluation or terminal command sink. |

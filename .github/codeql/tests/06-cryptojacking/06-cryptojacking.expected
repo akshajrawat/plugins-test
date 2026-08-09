@@ -1,26 +1,58 @@
 edges
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:11:4:17 | payload | mock-rule-06-native-binary-dropping-cryptojacking.ts:5:23:5:29 | payload | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:21:4:51 | await ( ... .text() | mock-rule-06-native-binary-dropping-cryptojacking.ts:4:11:4:17 | payload | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:27:4:51 | (await  ... .text() | mock-rule-06-native-binary-dropping-cryptojacking.ts:4:21:4:51 | await ( ... .text() | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:28:4:43 | await fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:4:27:4:51 | (await  ... .text() | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:34:4:43 | fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:4:28:4:43 | await fetch(url) | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:5:23:5:29 | payload | mock-rule-06-native-binary-dropping-cryptojacking.ts:5:5:5:30 | childPr ... ayload) | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:23:7:67 | 'xmrig  ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:5:7:68 | childPr ... :3333') | provenance |  |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:24:8:30 | 'xmrig' | mock-rule-06-native-binary-dropping-cryptojacking.ts:8:5:8:75 | childPr ... true }) | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:11:7:17 | payload | mock-rule-06-native-binary-dropping-cryptojacking.ts:8:23:8:29 | payload | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:21:7:51 | await ( ... .text() | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:11:7:17 | payload | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:27:7:51 | (await  ... .text() | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:21:7:51 | await ( ... .text() | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:28:7:43 | await fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:27:7:51 | (await  ... .text() | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:34:7:43 | fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:28:7:43 | await fetch(url) | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:11:11:18 | response | mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:46 | response | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:22:11:42 | await c ... et(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:11:11:11:18 | response | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:28:11:42 | client.get(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:11:22:11:42 | await c ... et(url) | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:46 | response | mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:51 | response.data | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:51 | response.data | mock-rule-06-native-binary-dropping-cryptojacking.ts:12:32:12:52 | ['-e',  ... e.data] | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:22:29:22:33 | chunk | mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:51 | chunk | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:51 | chunk | mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:62 | chunk.toString() | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:62 | chunk.toString() | mock-rule-06-native-binary-dropping-cryptojacking.ts:23:40:23:63 | ['-e',  ... ring()] | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:48:30:61 | 'pool.example' | mock-rule-06-native-binary-dropping-cryptojacking.ts:30:38:30:62 | ['--url ... ample'] | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:31:63:31:95 | 'stratu ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:31:32:31:96 | ['miner ... :3333'] | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:11:35:18 | response | mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:31 | response | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:22:35:41 | await axios.get(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:35:11:35:18 | response | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:28:35:41 | axios.get(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:35:22:35:41 | await axios.get(url) | provenance |  |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:31 | response | mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:36 | response.data | provenance |  |
 nodes
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:11:4:17 | payload | semmle.label | payload |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:21:4:51 | await ( ... .text() | semmle.label | await ( ... .text() |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:27:4:51 | (await  ... .text() | semmle.label | (await  ... .text() |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:28:4:43 | await fetch(url) | semmle.label | await fetch(url) |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:4:34:4:43 | fetch(url) | semmle.label | fetch(url) |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:5:5:5:30 | childPr ... ayload) | semmle.label | childPr ... ayload) |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:5:23:5:29 | payload | semmle.label | payload |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:5:7:68 | childPr ... :3333') | semmle.label | childPr ... :3333') |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:23:7:67 | 'xmrig  ... e:3333' | semmle.label | 'xmrig  ... e:3333' |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:5:8:75 | childPr ... true }) | semmle.label | childPr ... true }) |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:24:8:30 | 'xmrig' | semmle.label | 'xmrig' |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:11:7:17 | payload | semmle.label | payload |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:21:7:51 | await ( ... .text() | semmle.label | await ( ... .text() |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:27:7:51 | (await  ... .text() | semmle.label | (await  ... .text() |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:28:7:43 | await fetch(url) | semmle.label | await fetch(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:34:7:43 | fetch(url) | semmle.label | fetch(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:23:8:29 | payload | semmle.label | payload |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:11:11:18 | response | semmle.label | response |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:22:11:42 | await c ... et(url) | semmle.label | await c ... et(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:11:28:11:42 | client.get(url) | semmle.label | client.get(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:32:12:52 | ['-e',  ... e.data] | semmle.label | ['-e',  ... e.data] |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:46 | response | semmle.label | response |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:39:12:51 | response.data | semmle.label | response.data |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:22:29:22:33 | chunk | semmle.label | chunk |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:40:23:63 | ['-e',  ... ring()] | semmle.label | ['-e',  ... ring()] |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:51 | chunk | semmle.label | chunk |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:47:23:62 | chunk.toString() | semmle.label | chunk.toString() |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:29:23:29:67 | 'xmrig  ... e:3333' | semmle.label | 'xmrig  ... e:3333' |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:27:30:35 | 'cgminer' | semmle.label | 'cgminer' |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:38:30:62 | ['--url ... ample'] | semmle.label | ['--url ... ample'] |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:48:30:61 | 'pool.example' | semmle.label | 'pool.example' |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:31:32:31:96 | ['miner ... :3333'] | semmle.label | ['miner ... :3333'] |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:31:63:31:95 | 'stratu ... e:3333' | semmle.label | 'stratu ... e:3333' |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:11:35:18 | response | semmle.label | response |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:22:35:41 | await axios.get(url) | semmle.label | await axios.get(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:35:28:35:41 | axios.get(url) | semmle.label | axios.get(url) |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:31 | response | semmle.label | response |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:36 | response.data | semmle.label | response.data |
 subpaths
 #select
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:5:5:5:30 | childPr ... ayload) | mock-rule-06-native-binary-dropping-cryptojacking.ts:4:34:4:43 | fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:5:5:5:30 | childPr ... ayload) | The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately verify the command payload for malware or resource hijacking. |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:7:5:7:68 | childPr ... :3333') | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:23:7:67 | 'xmrig  ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:5:7:68 | childPr ... :3333') | The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately verify the command payload for malware or resource hijacking. |
-| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:5:8:75 | childPr ... true }) | mock-rule-06-native-binary-dropping-cryptojacking.ts:8:24:8:30 | 'xmrig' | mock-rule-06-native-binary-dropping-cryptojacking.ts:8:5:8:75 | childPr ... true }) | The plugin is passing external payloads or cryptominer keywords to a system terminal command with `shell: true`. The use of `shell: true` means this input is interpreted by a shell environment and is significantly easier to weaponize. Immediately verify the command payload for malware or resource hijacking. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:8:23:8:29 | payload | mock-rule-06-native-binary-dropping-cryptojacking.ts:7:34:7:43 | fetch(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:8:23:8:29 | payload | The plugin is passing remote data or a cryptocurrency-mining indicator to a shell-interpreted command. Shell interpretation can treat metacharacters as additional commands. Verify the command input for malware or resource hijacking. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:12:32:12:52 | ['-e',  ... e.data] | mock-rule-06-native-binary-dropping-cryptojacking.ts:11:28:11:42 | client.get(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:12:32:12:52 | ['-e',  ... e.data] | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:23:40:23:63 | ['-e',  ... ring()] | mock-rule-06-native-binary-dropping-cryptojacking.ts:22:29:22:33 | chunk | mock-rule-06-native-binary-dropping-cryptojacking.ts:23:40:23:63 | ['-e',  ... ring()] | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:29:23:29:67 | 'xmrig  ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:29:23:29:67 | 'xmrig  ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:29:23:29:67 | 'xmrig  ... e:3333' | The plugin is passing remote data or a cryptocurrency-mining indicator to a shell-interpreted command. Shell interpretation can treat metacharacters as additional commands. Verify the command input for malware or resource hijacking. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:27:30:35 | 'cgminer' | mock-rule-06-native-binary-dropping-cryptojacking.ts:30:27:30:35 | 'cgminer' | mock-rule-06-native-binary-dropping-cryptojacking.ts:30:27:30:35 | 'cgminer' | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:30:38:30:62 | ['--url ... ample'] | mock-rule-06-native-binary-dropping-cryptojacking.ts:30:48:30:61 | 'pool.example' | mock-rule-06-native-binary-dropping-cryptojacking.ts:30:38:30:62 | ['--url ... ample'] | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:31:32:31:96 | ['miner ... :3333'] | mock-rule-06-native-binary-dropping-cryptojacking.ts:31:63:31:95 | 'stratu ... e:3333' | mock-rule-06-native-binary-dropping-cryptojacking.ts:31:32:31:96 | ['miner ... :3333'] | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |
+| mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:36 | response.data | mock-rule-06-native-binary-dropping-cryptojacking.ts:35:28:35:41 | axios.get(url) | mock-rule-06-native-binary-dropping-cryptojacking.ts:36:24:36:36 | response.data | The plugin is passing remote data or a cryptocurrency-mining indicator to an operating-system command or its argument list. Verify that it is not executing a downloaded payload or hijacking system resources. |

@@ -12,5 +12,3 @@ async function triggerRule() {
     eval(payload);
     childProcess.exec(payload);
 }
-
-export {};

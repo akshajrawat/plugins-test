@@ -1,22 +1,20 @@
 edges
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:30 | __dirname | mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:44 | __dirna ... dex.js' | provenance |  |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | provenance |  |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:11:8:20 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:31 | installDir | provenance |  |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:24:8:61 | await j ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:11:8:20 | installDir | provenance |  |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:30:8:61 | joplin. ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:24:8:61 | await j ... onDir() | provenance |  |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:31 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:49 | install ... e.json' | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:11:9:20 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:32:10:41 | installDir | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:11:9:20 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:11:32:11:41 | installDir | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:24:9:61 | await j ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:11:9:20 | installDir | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:30:9:61 | joplin. ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:24:9:61 | await j ... onDir() | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:32:10:41 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:22:10:58 | path.jo ... .json') | provenance |  |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:11:32:11:41 | installDir | mock-rule-03b-unauthorized-fs-access-self-modification.ts:11:22:11:56 | path.jo ... .json') | provenance |  |
 nodes
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:30 | __dirname | semmle.label | __dirname |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:44 | __dirna ... dex.js' | semmle.label | __dirna ... dex.js' |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | semmle.label | __filename |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | semmle.label | __filen ... t.json' |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:11:8:20 | installDir | semmle.label | installDir |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:24:8:61 | await j ... onDir() | semmle.label | await j ... onDir() |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:30:8:61 | joplin. ... onDir() | semmle.label | joplin. ... onDir() |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:31 | installDir | semmle.label | installDir |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:49 | install ... e.json' | semmle.label | install ... e.json' |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:7:22:7:31 | __filename | semmle.label | __filename |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:11:9:20 | installDir | semmle.label | installDir |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:24:9:61 | await j ... onDir() | semmle.label | await j ... onDir() |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:30:9:61 | joplin. ... onDir() | semmle.label | joplin. ... onDir() |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:22:10:58 | path.jo ... .json') | semmle.label | path.jo ... .json') |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:32:10:41 | installDir | semmle.label | installDir |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:11:22:11:56 | path.jo ... .json') | semmle.label | path.jo ... .json') |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:11:32:11:41 | installDir | semmle.label | installDir |
 subpaths
 #select
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:44 | __dirna ... dex.js' | mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:30 | __dirname | mock-rule-03b-unauthorized-fs-access-self-modification.ts:5:22:5:44 | __dirna ... dex.js' | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files. |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:28 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:6:19:6:47 | __filen ... t.json' | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files. |
-| mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:49 | install ... e.json' | mock-rule-03b-unauthorized-fs-access-self-modification.ts:8:30:8:61 | joplin. ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:22:9:49 | install ... e.json' | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files. |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:7:22:7:31 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:7:22:7:31 | __filename | mock-rule-03b-unauthorized-fs-access-self-modification.ts:7:22:7:31 | __filename | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files. |
+| mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:22:10:58 | path.jo ... .json') | mock-rule-03b-unauthorized-fs-access-self-modification.ts:9:30:9:61 | joplin. ... onDir() | mock-rule-03b-unauthorized-fs-access-self-modification.ts:10:22:10:58 | path.jo ... .json') | Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files. |

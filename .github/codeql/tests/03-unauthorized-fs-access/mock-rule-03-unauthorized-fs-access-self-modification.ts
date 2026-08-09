@@ -13,6 +13,10 @@ async function triggerRule() {
 
     const dataDir = await joplin.plugins.dataDir();
     fs.writeFileSync(path.join(dataDir, 'state.json'), '{}');
-}
 
-export {};
+    fs.rmSync(path.join(os.homedir(), 'plugin-cache'), { recursive: true, force: true });
+    fs.writeFileSync(path.resolve(dataDir, process.cwd(), 'mixed.txt'), 'mixed-path');
+    fs.writeFileSync(path.join(dataDir, '..', 'outside.txt'), 'escaped-data-dir');
+
+    await joplin.fs.archiveExtract('plugin.zip', process.cwd());
+}

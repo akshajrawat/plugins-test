@@ -30,5 +30,3 @@ function triggerRule(panel: string, editor: string) {
         onActivationCheck: async () => { return true; },
     });
 }
-
-export {};

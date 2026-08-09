@@ -13,5 +13,3 @@ function triggerRule() {
         await joplin.commands.execute('replaceSelection', 'updated');
     });
 }
-
-export {};

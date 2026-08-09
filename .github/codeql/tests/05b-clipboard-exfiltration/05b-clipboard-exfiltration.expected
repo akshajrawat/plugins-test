@@ -1,14 +1,40 @@
 edges
-| mock-rule-05b-clipboard-exfiltration.ts:4:11:4:16 | copied | mock-rule-05b-clipboard-exfiltration.ts:5:51:5:56 | copied | provenance |  |
-| mock-rule-05b-clipboard-exfiltration.ts:4:20:4:52 | await j ... dText() | mock-rule-05b-clipboard-exfiltration.ts:4:11:4:16 | copied | provenance |  |
-| mock-rule-05b-clipboard-exfiltration.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:4:20:4:52 | await j ... dText() | provenance |  |
-| mock-rule-05b-clipboard-exfiltration.ts:5:51:5:56 | copied | mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:6:11:6:20 | copiedText | mock-rule-05b-clipboard-exfiltration.ts:7:60:7:69 | copiedText | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:6:24:6:56 | await j ... dText() | mock-rule-05b-clipboard-exfiltration.ts:6:11:6:20 | copiedText | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:6:24:6:56 | await j ... dText() | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:7:60:7:69 | copiedText | mock-rule-05b-clipboard-exfiltration.ts:7:17:7:71 | `https: ... dText}` | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:11:11:11:20 | copiedHtml | mock-rule-05b-clipboard-exfiltration.ts:14:15:14:24 | copiedHtml | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:11:24:11:56 | await j ... dHtml() | mock-rule-05b-clipboard-exfiltration.ts:11:11:11:20 | copiedHtml | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:11:30:11:56 | joplin. ... dHtml() | mock-rule-05b-clipboard-exfiltration.ts:11:24:11:56 | await j ... dHtml() | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:17:11:17:21 | copiedImage | mock-rule-05b-clipboard-exfiltration.ts:19:16:19:26 | copiedImage | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:17:25:17:58 | await j ... Image() | mock-rule-05b-clipboard-exfiltration.ts:17:11:17:21 | copiedImage | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:17:31:17:58 | joplin. ... Image() | mock-rule-05b-clipboard-exfiltration.ts:17:25:17:58 | await j ... Image() | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:19:16:19:26 | copiedImage | mock-rule-05b-clipboard-exfiltration.ts:18:66:20:5 | {\\n      ... ,\\n    } | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:24:11:24:20 | copiedText | mock-rule-05b-clipboard-exfiltration.ts:26:19:26:28 | copiedText | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:24:24:24:56 | await j ... dText() | mock-rule-05b-clipboard-exfiltration.ts:24:11:24:20 | copiedText | provenance |  |
+| mock-rule-05b-clipboard-exfiltration.ts:24:30:24:56 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:24:24:24:56 | await j ... dText() | provenance |  |
 nodes
-| mock-rule-05b-clipboard-exfiltration.ts:4:11:4:16 | copied | semmle.label | copied |
-| mock-rule-05b-clipboard-exfiltration.ts:4:20:4:52 | await j ... dText() | semmle.label | await j ... dText() |
-| mock-rule-05b-clipboard-exfiltration.ts:4:26:4:52 | joplin. ... dText() | semmle.label | joplin. ... dText() |
-| mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | semmle.label | 'https: ...  copied |
-| mock-rule-05b-clipboard-exfiltration.ts:5:51:5:56 | copied | semmle.label | copied |
+| mock-rule-05b-clipboard-exfiltration.ts:6:11:6:20 | copiedText | semmle.label | copiedText |
+| mock-rule-05b-clipboard-exfiltration.ts:6:24:6:56 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05b-clipboard-exfiltration.ts:6:30:6:56 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05b-clipboard-exfiltration.ts:7:17:7:71 | `https: ... dText}` | semmle.label | `https: ... dText}` |
+| mock-rule-05b-clipboard-exfiltration.ts:7:60:7:69 | copiedText | semmle.label | copiedText |
+| mock-rule-05b-clipboard-exfiltration.ts:11:11:11:20 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05b-clipboard-exfiltration.ts:11:24:11:56 | await j ... dHtml() | semmle.label | await j ... dHtml() |
+| mock-rule-05b-clipboard-exfiltration.ts:11:30:11:56 | joplin. ... dHtml() | semmle.label | joplin. ... dHtml() |
+| mock-rule-05b-clipboard-exfiltration.ts:14:15:14:24 | copiedHtml | semmle.label | copiedHtml |
+| mock-rule-05b-clipboard-exfiltration.ts:17:11:17:21 | copiedImage | semmle.label | copiedImage |
+| mock-rule-05b-clipboard-exfiltration.ts:17:25:17:58 | await j ... Image() | semmle.label | await j ... Image() |
+| mock-rule-05b-clipboard-exfiltration.ts:17:31:17:58 | joplin. ... Image() | semmle.label | joplin. ... Image() |
+| mock-rule-05b-clipboard-exfiltration.ts:18:66:20:5 | {\\n      ... ,\\n    } | semmle.label | {\\n      ... ,\\n    } |
+| mock-rule-05b-clipboard-exfiltration.ts:19:16:19:26 | copiedImage | semmle.label | copiedImage |
+| mock-rule-05b-clipboard-exfiltration.ts:24:11:24:20 | copiedText | semmle.label | copiedText |
+| mock-rule-05b-clipboard-exfiltration.ts:24:24:24:56 | await j ... dText() | semmle.label | await j ... dText() |
+| mock-rule-05b-clipboard-exfiltration.ts:24:30:24:56 | joplin. ... dText() | semmle.label | joplin. ... dText() |
+| mock-rule-05b-clipboard-exfiltration.ts:26:19:26:28 | copiedText | semmle.label | copiedText |
 subpaths
 #select
-| mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | mock-rule-05b-clipboard-exfiltration.ts:4:26:4:52 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:5:11:5:56 | 'https: ...  copied | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |
+| mock-rule-05b-clipboard-exfiltration.ts:7:17:7:71 | `https: ... dText}` | mock-rule-05b-clipboard-exfiltration.ts:6:30:6:56 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:7:17:7:71 | `https: ... dText}` | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |
+| mock-rule-05b-clipboard-exfiltration.ts:14:15:14:24 | copiedHtml | mock-rule-05b-clipboard-exfiltration.ts:11:30:11:56 | joplin. ... dHtml() | mock-rule-05b-clipboard-exfiltration.ts:14:15:14:24 | copiedHtml | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |
+| mock-rule-05b-clipboard-exfiltration.ts:18:66:20:5 | {\\n      ... ,\\n    } | mock-rule-05b-clipboard-exfiltration.ts:17:31:17:58 | joplin. ... Image() | mock-rule-05b-clipboard-exfiltration.ts:18:66:20:5 | {\\n      ... ,\\n    } | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |
+| mock-rule-05b-clipboard-exfiltration.ts:26:19:26:28 | copiedText | mock-rule-05b-clipboard-exfiltration.ts:24:30:24:56 | joplin. ... dText() | mock-rule-05b-clipboard-exfiltration.ts:26:19:26:28 | copiedText | Clipboard Exfiltration Risk: The plugin is reading the user's clipboard and sending the contents over the network. |

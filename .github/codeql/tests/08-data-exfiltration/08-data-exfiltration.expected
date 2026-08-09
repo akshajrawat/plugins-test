@@ -1,5 +1,7 @@
 edges
 | mock-rule-08-data-exfiltration.ts:4:11:4:15 | notes | mock-rule-08-data-exfiltration.ts:7:30:7:34 | notes | provenance |  |
+| mock-rule-08-data-exfiltration.ts:4:11:4:15 | notes | mock-rule-08-data-exfiltration.ts:43:30:43:34 | notes | provenance |  |
+| mock-rule-08-data-exfiltration.ts:4:11:4:15 | notes | mock-rule-08-data-exfiltration.ts:48:30:48:34 | notes | provenance |  |
 | mock-rule-08-data-exfiltration.ts:4:19:4:50 | await j ... otes']) | mock-rule-08-data-exfiltration.ts:4:11:4:15 | notes | provenance |  |
 | mock-rule-08-data-exfiltration.ts:4:25:4:50 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:4:19:4:50 | await j ... otes']) | provenance |  |
 | mock-rule-08-data-exfiltration.ts:7:30:7:34 | notes | mock-rule-08-data-exfiltration.ts:7:15:7:35 | JSON.st ... (notes) | provenance |  |
@@ -15,6 +17,20 @@ edges
 | mock-rule-08-data-exfiltration.ts:19:22:19:58 | await j ... dNote() | mock-rule-08-data-exfiltration.ts:19:11:19:18 | selected | provenance |  |
 | mock-rule-08-data-exfiltration.ts:19:28:19:58 | joplin. ... dNote() | mock-rule-08-data-exfiltration.ts:19:22:19:58 | await j ... dNote() | provenance |  |
 | mock-rule-08-data-exfiltration.ts:20:50:20:57 | selected | mock-rule-08-data-exfiltration.ts:20:11:20:60 | 'https: ... cted.id | provenance |  |
+| mock-rule-08-data-exfiltration.ts:22:11:22:23 | searchResults | mock-rule-08-data-exfiltration.ts:25:30:25:42 | searchResults | provenance |  |
+| mock-rule-08-data-exfiltration.ts:22:27:22:82 | await j ... ord' }) | mock-rule-08-data-exfiltration.ts:22:11:22:23 | searchResults | provenance |  |
+| mock-rule-08-data-exfiltration.ts:22:33:22:82 | joplin. ... ord' }) | mock-rule-08-data-exfiltration.ts:22:27:22:82 | await j ... ord' }) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:25:30:25:42 | searchResults | mock-rule-08-data-exfiltration.ts:25:15:25:43 | JSON.st ... esults) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:28:11:28:21 | taggedNotes | mock-rule-08-data-exfiltration.ts:31:30:31:40 | taggedNotes | provenance |  |
+| mock-rule-08-data-exfiltration.ts:28:25:28:69 | await j ... otes']) | mock-rule-08-data-exfiltration.ts:28:11:28:21 | taggedNotes | provenance |  |
+| mock-rule-08-data-exfiltration.ts:28:31:28:69 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:28:25:28:69 | await j ... otes']) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:31:30:31:40 | taggedNotes | mock-rule-08-data-exfiltration.ts:31:15:31:41 | JSON.st ... dNotes) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:35:11:35:31 | notesFromVariablePath | mock-rule-08-data-exfiltration.ts:38:30:38:50 | notesFr ... blePath | provenance |  |
+| mock-rule-08-data-exfiltration.ts:35:35:35:67 | await j ... mType]) | mock-rule-08-data-exfiltration.ts:35:11:35:31 | notesFromVariablePath | provenance |  |
+| mock-rule-08-data-exfiltration.ts:35:41:35:67 | joplin. ... mType]) | mock-rule-08-data-exfiltration.ts:35:35:35:67 | await j ... mType]) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:38:30:38:50 | notesFr ... blePath | mock-rule-08-data-exfiltration.ts:38:15:38:51 | JSON.st ... lePath) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:43:30:43:34 | notes | mock-rule-08-data-exfiltration.ts:43:15:43:35 | JSON.st ... (notes) | provenance |  |
+| mock-rule-08-data-exfiltration.ts:48:30:48:34 | notes | mock-rule-08-data-exfiltration.ts:48:15:48:35 | JSON.st ... (notes) | provenance |  |
 nodes
 | mock-rule-08-data-exfiltration.ts:4:11:4:15 | notes | semmle.label | notes |
 | mock-rule-08-data-exfiltration.ts:4:19:4:50 | await j ... otes']) | semmle.label | await j ... otes']) |
@@ -36,9 +52,33 @@ nodes
 | mock-rule-08-data-exfiltration.ts:19:28:19:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
 | mock-rule-08-data-exfiltration.ts:20:11:20:60 | 'https: ... cted.id | semmle.label | 'https: ... cted.id |
 | mock-rule-08-data-exfiltration.ts:20:50:20:57 | selected | semmle.label | selected |
+| mock-rule-08-data-exfiltration.ts:22:11:22:23 | searchResults | semmle.label | searchResults |
+| mock-rule-08-data-exfiltration.ts:22:27:22:82 | await j ... ord' }) | semmle.label | await j ... ord' }) |
+| mock-rule-08-data-exfiltration.ts:22:33:22:82 | joplin. ... ord' }) | semmle.label | joplin. ... ord' }) |
+| mock-rule-08-data-exfiltration.ts:25:15:25:43 | JSON.st ... esults) | semmle.label | JSON.st ... esults) |
+| mock-rule-08-data-exfiltration.ts:25:30:25:42 | searchResults | semmle.label | searchResults |
+| mock-rule-08-data-exfiltration.ts:28:11:28:21 | taggedNotes | semmle.label | taggedNotes |
+| mock-rule-08-data-exfiltration.ts:28:25:28:69 | await j ... otes']) | semmle.label | await j ... otes']) |
+| mock-rule-08-data-exfiltration.ts:28:31:28:69 | joplin. ... otes']) | semmle.label | joplin. ... otes']) |
+| mock-rule-08-data-exfiltration.ts:31:15:31:41 | JSON.st ... dNotes) | semmle.label | JSON.st ... dNotes) |
+| mock-rule-08-data-exfiltration.ts:31:30:31:40 | taggedNotes | semmle.label | taggedNotes |
+| mock-rule-08-data-exfiltration.ts:35:11:35:31 | notesFromVariablePath | semmle.label | notesFromVariablePath |
+| mock-rule-08-data-exfiltration.ts:35:35:35:67 | await j ... mType]) | semmle.label | await j ... mType]) |
+| mock-rule-08-data-exfiltration.ts:35:41:35:67 | joplin. ... mType]) | semmle.label | joplin. ... mType]) |
+| mock-rule-08-data-exfiltration.ts:38:15:38:51 | JSON.st ... lePath) | semmle.label | JSON.st ... lePath) |
+| mock-rule-08-data-exfiltration.ts:38:30:38:50 | notesFr ... blePath | semmle.label | notesFr ... blePath |
+| mock-rule-08-data-exfiltration.ts:43:15:43:35 | JSON.st ... (notes) | semmle.label | JSON.st ... (notes) |
+| mock-rule-08-data-exfiltration.ts:43:30:43:34 | notes | semmle.label | notes |
+| mock-rule-08-data-exfiltration.ts:48:15:48:35 | JSON.st ... (notes) | semmle.label | JSON.st ... (notes) |
+| mock-rule-08-data-exfiltration.ts:48:30:48:34 | notes | semmle.label | notes |
 subpaths
 #select
 | mock-rule-08-data-exfiltration.ts:7:15:7:35 | JSON.st ... (notes) | mock-rule-08-data-exfiltration.ts:4:25:4:50 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:7:15:7:35 | JSON.st ... (notes) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
 | mock-rule-08-data-exfiltration.ts:11:11:11:68 | 'https: ... .length | mock-rule-08-data-exfiltration.ts:10:27:10:54 | joplin. ... ders']) | mock-rule-08-data-exfiltration.ts:11:11:11:68 | 'https: ... .length | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
 | mock-rule-08-data-exfiltration.ts:16:15:16:38 | JSON.st ... source) | mock-rule-08-data-exfiltration.ts:13:28:13:62 | joplin. ... , '1']) | mock-rule-08-data-exfiltration.ts:16:15:16:38 | JSON.st ... source) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
 | mock-rule-08-data-exfiltration.ts:20:11:20:60 | 'https: ... cted.id | mock-rule-08-data-exfiltration.ts:19:28:19:58 | joplin. ... dNote() | mock-rule-08-data-exfiltration.ts:20:11:20:60 | 'https: ... cted.id | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
+| mock-rule-08-data-exfiltration.ts:25:15:25:43 | JSON.st ... esults) | mock-rule-08-data-exfiltration.ts:22:33:22:82 | joplin. ... ord' }) | mock-rule-08-data-exfiltration.ts:25:15:25:43 | JSON.st ... esults) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
+| mock-rule-08-data-exfiltration.ts:31:15:31:41 | JSON.st ... dNotes) | mock-rule-08-data-exfiltration.ts:28:31:28:69 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:31:15:31:41 | JSON.st ... dNotes) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
+| mock-rule-08-data-exfiltration.ts:38:15:38:51 | JSON.st ... lePath) | mock-rule-08-data-exfiltration.ts:35:41:35:67 | joplin. ... mType]) | mock-rule-08-data-exfiltration.ts:38:15:38:51 | JSON.st ... lePath) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
+| mock-rule-08-data-exfiltration.ts:43:15:43:35 | JSON.st ... (notes) | mock-rule-08-data-exfiltration.ts:4:25:4:50 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:43:15:43:35 | JSON.st ... (notes) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |
+| mock-rule-08-data-exfiltration.ts:48:15:48:35 | JSON.st ... (notes) | mock-rule-08-data-exfiltration.ts:4:25:4:50 | joplin. ... otes']) | mock-rule-08-data-exfiltration.ts:48:15:48:35 | JSON.st ... (notes) | Data Exfiltration Warning: The plugin is reading notes, folders, or resources and sending that data to an external network endpoint. Check if the plugin is a legitimate sync/export tool. If not, this is a massive privacy breach. Verify exactly what data is being sent in the payload. |

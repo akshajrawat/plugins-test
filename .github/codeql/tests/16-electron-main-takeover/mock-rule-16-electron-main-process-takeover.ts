@@ -6,5 +6,3 @@ function triggerRule() {
     electronRemote.app.quit();
     require('electron').remote.getCurrentWindow().close();
 }
-
-export {};

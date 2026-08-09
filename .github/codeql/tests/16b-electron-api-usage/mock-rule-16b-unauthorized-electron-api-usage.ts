@@ -19,5 +19,3 @@ function triggerRule() {
     ipcMain.on('raw-channel', () => {});
     screen.getPrimaryDisplay();
 }
-
-export {};
