@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      plugin_count: ${{ steps.set-matrix.outputs.plugin_count }}
     steps:
       - name: Checkout plugins-test registry
         uses: actions/checkout@v7
@@ -28,6 +29,7 @@ jobs:
         shell: bash
         run: |
           echo "matrix=$(jq -c '{plugin: .}' .github/codeql/target-plugins.json)" >> "$GITHUB_OUTPUT"
+          echo "plugin_count=$(jq 'length' .github/codeql/target-plugins.json)" >> "$GITHUB_OUTPUT"
 
   scan:
     needs: setup
@@ -87,9 +89,12 @@ jobs:
         with:
           name: findings-${{ strategy.job-index }}
           path: plugins-test/scripts/findings.json
+          if-no-files-found: error
 
   aggregate:
-    needs: scan
+    needs:
+      - setup
+      - scan
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -99,6 +104,8 @@ jobs:
           path: plugins-test
 
       - name: Download findings
+        id: download
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           pattern: findings-*
@@ -121,4 +128,7 @@ jobs:
         working-directory: plugins-test/scripts
         env:
           ARTIFACTS_DIR: ${{ github.workspace }}/findings
+          EXPECTED_PLUGIN_COUNT: ${{ needs.setup.outputs.plugin_count }}
+          SCAN_RESULT: ${{ needs.scan.result }}
+          DOWNLOAD_OUTCOME: ${{ steps.download.outcome }}
         run: node dist/code-scan/aggregateFindings.js
