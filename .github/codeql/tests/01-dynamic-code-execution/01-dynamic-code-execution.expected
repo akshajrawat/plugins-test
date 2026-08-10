@@ -34,6 +34,9 @@ edges
 | mock-rule-01-dynamic-code-execution.ts:59:26:59:75 | joplin. ... yload') | mock-rule-01-dynamic-code-execution.ts:59:20:59:75 | await j ... yload') | provenance |  |
 | mock-rule-01-dynamic-code-execution.ts:64:40:64:44 | event | mock-rule-01-dynamic-code-execution.ts:65:14:65:18 | event | provenance |  |
 | mock-rule-01-dynamic-code-execution.ts:65:14:65:18 | event | mock-rule-01-dynamic-code-execution.ts:65:14:65:23 | event.data | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:68:38:68:44 | message | mock-rule-01-dynamic-code-execution.ts:69:18:69:24 | message | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:72:45:72:51 | message | mock-rule-01-dynamic-code-execution.ts:73:20:73:26 | message | provenance |  |
+| mock-rule-01-dynamic-code-execution.ts:76:37:76:43 | message | mock-rule-01-dynamic-code-execution.ts:77:21:77:27 | message | provenance |  |
 | mock-rule-01-dynamic-code-execution.ts:80:43:80:49 | message | mock-rule-01-dynamic-code-execution.ts:81:28:81:34 | message | provenance |  |
 | mock-rule-01-dynamic-code-execution.ts:84:55:84:61 | message | mock-rule-01-dynamic-code-execution.ts:85:23:85:29 | message | provenance |  |
 nodes
@@ -84,6 +87,12 @@ nodes
 | mock-rule-01-dynamic-code-execution.ts:64:40:64:44 | event | semmle.label | event |
 | mock-rule-01-dynamic-code-execution.ts:65:14:65:18 | event | semmle.label | event |
 | mock-rule-01-dynamic-code-execution.ts:65:14:65:23 | event.data | semmle.label | event.data |
+| mock-rule-01-dynamic-code-execution.ts:68:38:68:44 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:69:18:69:24 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:72:45:72:51 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:73:20:73:26 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:76:37:76:43 | message | semmle.label | message |
+| mock-rule-01-dynamic-code-execution.ts:77:21:77:27 | message | semmle.label | message |
 | mock-rule-01-dynamic-code-execution.ts:80:43:80:49 | message | semmle.label | message |
 | mock-rule-01-dynamic-code-execution.ts:81:28:81:34 | message | semmle.label | message |
 | mock-rule-01-dynamic-code-execution.ts:84:55:84:61 | message | semmle.label | message |
@@ -102,5 +111,8 @@ subpaths
 | mock-rule-01-dynamic-code-execution.ts:54:20:54:24 | chunk | mock-rule-01-dynamic-code-execution.ts:53:35:53:39 | chunk | mock-rule-01-dynamic-code-execution.ts:54:20:54:24 | chunk | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
 | mock-rule-01-dynamic-code-execution.ts:60:17:60:22 | stored | mock-rule-01-dynamic-code-execution.ts:59:26:59:75 | joplin. ... yload') | mock-rule-01-dynamic-code-execution.ts:60:17:60:22 | stored | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
 | mock-rule-01-dynamic-code-execution.ts:65:14:65:23 | event.data | mock-rule-01-dynamic-code-execution.ts:64:40:64:44 | event | mock-rule-01-dynamic-code-execution.ts:65:14:65:23 | event.data | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
+| mock-rule-01-dynamic-code-execution.ts:69:18:69:24 | message | mock-rule-01-dynamic-code-execution.ts:68:38:68:44 | message | mock-rule-01-dynamic-code-execution.ts:69:18:69:24 | message | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
+| mock-rule-01-dynamic-code-execution.ts:73:20:73:26 | message | mock-rule-01-dynamic-code-execution.ts:72:45:72:51 | message | mock-rule-01-dynamic-code-execution.ts:73:20:73:26 | message | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
+| mock-rule-01-dynamic-code-execution.ts:77:21:77:27 | message | mock-rule-01-dynamic-code-execution.ts:76:37:76:43 | message | mock-rule-01-dynamic-code-execution.ts:77:21:77:27 | message | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
 | mock-rule-01-dynamic-code-execution.ts:81:28:81:34 | message | mock-rule-01-dynamic-code-execution.ts:80:43:80:49 | message | mock-rule-01-dynamic-code-execution.ts:81:28:81:34 | message | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |
 | mock-rule-01-dynamic-code-execution.ts:85:23:85:29 | message | mock-rule-01-dynamic-code-execution.ts:84:55:84:61 | message | mock-rule-01-dynamic-code-execution.ts:85:23:85:29 | message | Remote data flows to dynamic code execution. Verify if the endpoint is a trusted Joplin service or a remote server. |

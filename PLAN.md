@@ -9,7 +9,7 @@ To minimize risk, this will be delivered as a fully functional Proof of Concept 
 
 1. **Zero False-Positive on top 20 official plugins:** The pipeline must scan the Top 20 most popular plugins without generating false-positive.
 2. **Threat Detection Verification:** The pipeline should successfully analyze 5-10 purpose-built malicious plugins.
-3. User should be able to run `npm run publish` to open an issue on the joplin test plugin repository for the scan.
+3. User should be able to run `npm run submit` to open an issue on the joplin test plugin repository for the scan.
 4. The scan on issue submission should work and generate a report in the issue comment for the reviewer to review.
 5. When reviewer confirms the plugin is safe he should be able to start the second workflow by labeling the issue. This workflow will upsert the plugin data in the test registry and the github releases.
 
@@ -48,7 +48,7 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
   - Implement GitHub Device Flow in `generator-joplin` for developer authentication.
   - Generate GitHub Issues for new plugin submissions with a structured json.
 
-- **Deliverable:** Developers can run `npm run publish` to authenticate and securely open a submission issue on the test repository.
+- **Deliverable:** Developers can run `npm run submit` to authenticate and securely open a submission issue on the test repository.
 
 ### Milestone 2: SAST Scanning using CodeQl and Repository update (UPDATE WORKFLOW LEFT)
 
@@ -80,13 +80,13 @@ CodeQl has been choosen as the Tool we will be using for our scanning pipeline r
   - Deploy 5-10 test malicious plugins covering the Phase 1 & Phase 2 Threat Model to verify 100% catch rate.
 
 - **Deliverable:** Documented proof of scanner accuracy and a video showing the complete workflow
-    - A developer runs npm run publish on a fresh plugin
-    - The issue is created on the repository
-    - The workflows run and check the plugin
-    - A report is generated for reviewers
-    - The reviewer approve the plugin with a "status: approved" label (for example)
-    - The .jpl artifact appears on the test registry's "plugins" folder
-    - The manifests.json file is updated with the new plugin entry
+  - A developer runs npm run publish on a fresh plugin
+  - The issue is created on the repository
+  - The workflows run and check the plugin
+  - A report is generated for reviewers
+  - The reviewer approve the plugin with a "status: approved" label (for example)
+  - The .jpl artifact appears on the test registry's "plugins" folder
+  - The manifests.json file is updated with the new plugin entry
 
 ---
 
@@ -120,24 +120,30 @@ In parallel, from here on we can focus on getting the last pr for `generator-jop
 
 ## 4. DELIVERABLE DATE :
 
-### 24 july : 
+### 24 july :
+
 - Finalize the code for plugin-repo-cli.
 - Get the plugin-repo-cli code merged.
 - Test the scan on the rest of the **Recommended** Plugins
 
-### 2 August : 
+### 2 August :
+
 - Get the top 20 plugins test workflow running (Which will run whenever there is change in codeql rules and it should find no findings)
 - Get the update repository manifest, README, github release and plugins folder update workflow done.
 
-### 10 August : 
+### 10 August :
+
 - Get the 2nd half of the `generator-joplin` code merged
 
-### 14 August : 
-- Do the final set of testings and record a video with the whole workflow  
+### 14 August :
+
+- Do the final set of testings and record a video with the whole workflow
 - Merge all the local code to the official plugins-test repository.
-- Open issues on the official repository with test-plugins to test the final workflow 
+- Open issues on the official repository with test-plugins to test the final workflow
 - Deliver the video showing the whole workflow working correctly
-### 
+
+###
+
 ---
 
 ## 5. Threat Model and Rules Summary

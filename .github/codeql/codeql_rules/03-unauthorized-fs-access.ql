@@ -28,13 +28,27 @@ predicate hasParentDirectorySegment(DataFlow::CallNode call) {
   )
 }
 
+module DataDirTraversalConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
+    source = Joplin::joplin().getAPropertyRead("plugins").getAMethodCall("dataDir")
+  }
+
+  predicate isSink(DataFlow::Node sink) {
+    exists(DataFlow::CallNode pathCall |
+      isPathCompositionCall(pathCall) and
+      hasParentDirectorySegment(pathCall) and
+      sink = pathCall
+    )
+  }
+}
+
+module DataDirTraversalFlow = TaintTracking::Global<DataDirTraversalConfig>;
+
 predicate isDataDirTraversal(DataFlow::Node source) {
-  exists(DataFlow::CallNode pathCall, DataFlow::MethodCallNode dataDir, DataFlow::Node dataDirArgument |
+  exists(DataFlow::CallNode pathCall, DataFlow::Node dataDir |
     isPathCompositionCall(pathCall) and
     hasParentDirectorySegment(pathCall) and
-    dataDir = Joplin::joplin().getAPropertyRead("plugins").getAMethodCall("dataDir") and
-    dataDirArgument = pathCall.getAnArgument() and
-    dataDir.flowsTo(dataDirArgument) and
+    DataDirTraversalFlow::flow(dataDir, pathCall) and
     source = pathCall
   )
 }

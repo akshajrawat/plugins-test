@@ -8,10 +8,16 @@
  */
 import javascript
 import JoplinSources
-import JoplinSinks
+
+predicate isSystemCommandInput(DataFlow::Node sink) {
+  exists(SystemCommandExecution execution |
+    sink = execution.getACommandArgument() or
+    sink = execution.getArgumentList()
+  )
+}
 
 predicate isCodeExecutionSink(DataFlow::Node sink) {
-  isCommandExecutionSink(sink) or
+  isSystemCommandInput(sink) or
   sink = DataFlow::globalVarRef("eval").getAnInvocation().getArgument(0) or
   sink = DataFlow::globalVarRef("setTimeout").getAnInvocation().getArgument(0) or
   sink = DataFlow::globalVarRef("setInterval").getAnInvocation().getArgument(0) or

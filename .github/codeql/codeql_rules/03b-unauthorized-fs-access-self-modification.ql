@@ -53,9 +53,13 @@ predicate isFileMutationTarget(DataFlow::Node path) {
   )
 }
 
-predicate isPluginPackageFileName(DataFlow::Node source) {
-  exists(string value |
-    value = source.getStringValue() and
+predicate destinationTargetsPluginPackageFile(DataFlow::Node destination) {
+  exists(Expr part, string value |
+    (
+      part = destination.asExpr().getAChildExpr*() or
+      part = destination.getALocalSource().asExpr().getAChildExpr*()
+    ) and
+    part.mayHaveStringValue(value) and
     value.regexpMatch("(?i)(.*[/\\\\])?(index\\.js|main\\.js|plugin\\.js|manifest\\.json|package\\.json)$")
   )
 }
@@ -74,36 +78,11 @@ module SelfModConfig implements DataFlow::ConfigSig {
 module SelfModFlow = TaintTracking::Global<SelfModConfig>;
 import SelfModFlow::PathGraph
 
-module PluginPackageFileConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
-    isPluginPackageFileName(source)
-  }
-
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    exists(DataFlow::CallNode call |
-      (
-        call = DataFlow::moduleMember("path", "join").getACall() or
-        call = DataFlow::moduleMember("path", "resolve").getACall() or
-        call = DataFlow::moduleMember("node:path", "join").getACall() or
-        call = DataFlow::moduleMember("node:path", "resolve").getACall()
-      ) and
-      node1 = call.getAnArgument() and
-      node2 = call
-    )
-  }
-
-  predicate isSink(DataFlow::Node sink) {
-    isFileMutationTarget(sink)
-  }
-}
-
-module PluginPackageFileFlow = TaintTracking::Global<PluginPackageFileConfig>;
-
 from SelfModFlow::PathNode source, SelfModFlow::PathNode sink
 where 
   SelfModFlow::flowPath(source, sink) and
   (
     source.getNode() = DataFlow::globalVarRef("__filename") or
-    PluginPackageFileFlow::flow(_, sink.getNode())
+    destinationTargetsPluginPackageFile(sink.getNode())
   )
 select sink.getNode(), source, sink, "Plugin Self-Modification: The plugin is attempting to overwrite or delete its own installation files. A plugin should never modify its own packaged files."

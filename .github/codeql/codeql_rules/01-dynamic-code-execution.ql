@@ -59,17 +59,17 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
       receiver = onCall.getReceiver().getALocalSource() and
       (
         receiver = DataFlow::globalVarRef("window") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "request") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "request") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "get") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "get") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("ws", "WebSocket") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "Worker") or
-        receiver.(DataFlow::CallNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "MessagePort")
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "request") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "request") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("http", "get") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("https", "get") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "request") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "request") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:http", "get") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "get") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("ws", "WebSocket") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "Worker") or
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "MessagePort")
       ) and
       cb = onCall.getArgument(1).getAFunctionValue() and
       source = cb.getParameter(0)
