@@ -1,12 +1,6 @@
 import { appendFile, readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-
-export interface Finding {
-    plugin: string;
-    ruleId: string;
-    file: string;
-    line: string;
-}
+import type { Finding } from '../types/regressionTypes';
 
 const requiredEnvironmentValue = (name: string) => {
     const value = process.env[name];

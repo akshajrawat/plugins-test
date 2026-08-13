@@ -302,7 +302,7 @@ It covers URL-based exfiltration through dynamic HTML attributes.
 4. Panel, dialog, and editor `setHtml()` calls are covered.
 
 ### Messages :
-1. URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://...">`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch.
+1. URL Smuggling: Sensitive Joplin data is being dynamically injected into an external URL attribute (like `<img src="https://..."`) in a Webview. This can be used to silently exfiltrate sensitive data such as user notes or tokens to an attacker's server without requiring a direct network fetch.
 
 ### SEVERITY : WARNING
 

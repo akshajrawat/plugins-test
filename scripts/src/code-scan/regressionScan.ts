@@ -1,30 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename } from 'node:path';
-
-export interface SarifLocation {
-    physicalLocation?: {
-        artifactLocation?: {
-            uri?: string;
-        };
-        region?: {
-            startLine?: number;
-        };
-    };
-}
-
-export interface SarifResult {
-    ruleId?: string;
-    rule?: {
-        id?: string;
-    };
-    locations?: SarifLocation[];
-}
-
-export interface SarifReport {
-    runs?: Array<{
-        results?: SarifResult[];
-    }>;
-}
+import type {
+    Finding,
+    RegressionSarifReport,
+    RegressionSarifResult,
+} from '../types/regressionTypes';
 
 const requiredEnvironmentValue = (name: string) => {
     const value = process.env[name];
@@ -39,18 +19,18 @@ const requiredEnvironmentValue = (name: string) => {
 export const parseSarif = async (resultsSarif: string) => {
     const parsed: unknown = JSON.parse(await readFile(resultsSarif, 'utf8'));
 
-    if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as SarifReport).runs)) {
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as RegressionSarifReport).runs)) {
         throw new Error(`Invalid SARIF report: ${resultsSarif}`);
     }
 
-    return parsed as SarifReport;
+    return parsed as RegressionSarifReport;
 };
 
-export const findingsFrom = (report: SarifReport) => {
+export const findingsFrom = (report: RegressionSarifReport) => {
     return (report.runs ?? []).flatMap(run => run.results ?? []);
 };
 
-const ruleIdFor = (finding: SarifResult) => {
+const ruleIdFor = (finding: RegressionSarifResult) => {
     return finding.ruleId ?? finding.rule?.id ?? 'unknown-rule';
 };
 
@@ -83,7 +63,7 @@ export const main = async () => {
         const report = await parseSarif(resultsSarif);
         const findings = findingsFrom(report);
 
-        const extractedFindings = findings.flatMap(finding => {
+        const extractedFindings: Finding[] = findings.flatMap(finding => {
             const locations = finding.locations ?? [];
             const ruleId = ruleIdFor(finding);
 
