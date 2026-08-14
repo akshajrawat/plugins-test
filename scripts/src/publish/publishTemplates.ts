@@ -38,11 +38,9 @@ export const statusTemplate = async (
     const escapedDetails = details ? await escapeMarkdownText(details) : '';
     const detailBlock = details ? `\n\n${escapedDetails}` : '';
     const pluginNameText = await escapeMarkdownText(payload.plugin_name);
-
-    return `# Plugin Publish Status
-**Plugin:** ${pluginNameText}
-**Target:** [${targetText}](${targetUrl})
-**Workflow Run:** [View Logs](${workflowRunUrl})${detailBlock}
+    const pipelineBlock = currentPhase > phaseCount
+        ? ''
+        : `
 
 # Pipeline Status
 * ${phases[1]} **Phase 1: Validate approved submission**
@@ -51,6 +49,11 @@ export const statusTemplate = async (
 * ${phases[4]} **Phase 4: Publish registry files**
 * ${phases[5]} **Phase 5: Update GitHub release and stats**
 * ${phases[6]} **Phase 6: Commit registry update**`;
+
+    return `# Plugin Publish Status
+**Plugin:** ${pluginNameText}
+**Target:** [${targetText}](${targetUrl})
+**Workflow Run:** [View Logs](${workflowRunUrl})${detailBlock}${pipelineBlock}`;
 };
 
 export const failureTemplate = async (heading: string, message: string, runUrl: string) => {
