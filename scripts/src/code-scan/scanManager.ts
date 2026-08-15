@@ -98,7 +98,6 @@ const existingPluginFor = async (pluginId: string) => {
 const closeOwnershipMismatchIssue = async (
     { github, context, core }: GithubContext,
     commentId: number,
-    commentBody: string,
     pluginName: string,
     registeredUrl: string,
     repositoryUrl: string,
@@ -107,11 +106,12 @@ const closeOwnershipMismatchIssue = async (
 Expected: ${registeredUrl}
 Provided: ${repositoryUrl}`;
 
-    const body = `${commentBody}
-
-${rejectMsg}`;
-
-    await updateComment(github, context, commentId, body);
+    await failWithIssueComment(
+        { github, context, core },
+        commentId,
+        'Security Scan Rejected',
+        rejectMsg,
+    );
 
     await github.rest.issues.update({
         owner: context.repo.owner,
@@ -120,8 +120,6 @@ ${rejectMsg}`;
         state: 'closed',
     });
 
-    core.setOutput('handled_failure', 'true');
-    core.setFailed('Ownership mismatch. Issue closed.');
 };
 
 const isInside = (parent: string, child: string) => {
@@ -341,16 +339,9 @@ export const validateTargetRepository = async (
                     }
 
                     if (registeredUrl && normalizeUrl(registeredUrl) !== normalizeUrl(repository_url)) {
-                        const comment = await github.rest.issues.getComment({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            comment_id: parseInt(commentId, 10),
-                        });
-
                         await closeOwnershipMismatchIssue(
                             { github, context, core },
                             parseInt(commentId, 10),
-                            comment.data.body,
                             pkg.name,
                             registeredUrl,
                             repository_url,
