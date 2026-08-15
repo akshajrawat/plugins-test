@@ -1,1 +1,20 @@
-{}
+{
+	"com.example.test": {
+		"1.0.0": {
+			"downloadCount": 0,
+			"createdAt": "2026-07-30T10:20:19Z"
+		}
+	},
+	"com.example.testttt": {
+		"1.0.0": {
+			"downloadCount": 0,
+			"createdAt": "2026-08-05T04:23:53Z"
+		}
+	},
+	"com.test1.normal-plugin-flow": {
+		"1.0.0": {
+			"downloadCount": 0,
+			"createdAt": "2026-08-15T20:41:59Z"
+		}
+	}
+}
