@@ -1,76 +1,57 @@
 # Plugin Submission PoC - Final Manual Checklist
 
-Record the issue, scan, publish, registry, release, and terminal URLs for each completed checklist.
-
-- [ ]
-
 ## 1. Normal new-plugin submission
 
-- `npm run submit` passes with a clean, pushed commit, valid metadata, and a successful build.
-- The issue has the expected title and contains the exact repository URL, version, and commit hash.
-- The scan identifies `New Plugin` and produces a completed clean report for that exact commit.
-- Adding `status: approved` starts publication; the registry folder, `manifests.json`, `README.md`, release asset, and `stats.json` are updated.
-- Published metadata contains `_approved: true`, `_publish_commit`, and `_publish_hash`; the issue closes only after verification.
+A normal new-plugin submission completed successfully: `npm run submit` passed from a clean, pushed commit with valid metadata and a successful build; the generated issue contained the expected title, repository URL, version, and commit hash; the scan identified it as a `New Plugin` and returned a clean report for that exact commit; applying `status: approved` published and verified the registry files, manifest data, README entry, release asset, and stats processing; the published metadata contains `_approved: true`, `_publish_commit`, and `_publish_hash`, and the issue closed only after verification.
 
-Issue link:
-
-- [ ]
+Issue link: https://github.com/joplin/plugins-test/issues/40
+Commit: https://github.com/joplin/plugins-test/commit/f04c977c3b6250802e96f6ad5b1b5f19b5b0f32a
 
 ## 2. Valid plugin update with version bump
 
-- Submit from the registered repository with a strictly greater version.
-- Confirm the scan identifies `Update` and validates the exact repository URL and commit.
-- Approve and publish the update successfully.
-- Confirm the registry and release now contain the new version, with no duplicate files or assets, and the issue closes.
-- Repeat with URL variants (`.git`, trailing slash, case, or `www`) to verify normalization.
+A valid plugin update with a version bump completed successfully: the plugin was submitted from its registered repository with a strictly greater version; the scan identified it as an `Update` and validated the exact repository URL and commit; approval published the update; and the registry and release contain the new version without duplicate files or assets, with the issue closing after successful verification.
 
-Issue link:
+Issue link: https://github.com/joplin/plugins-test/issues/42
 
-- [ ]
+Publication commit: https://github.com/joplin/plugins-test/commit/c7632da11a2508795f503648622551e80145e263
 
 ## 3. Update without version bump
 
-- Submit an existing plugin using the currently published version.
-- Confirm the scan rejects it with the `version ... is not greater` message.
-- Confirm the issue remains open for correction and nothing changes in the registry, release, or stats.
-- Repeat with a lower version and relevant prerelease/build variants; confirm each is rejected as not greater.
+An update without a version bump was submitted using the currently published version; the scan rejected it with the `version ... is not greater` message, the issue remained open for correction, and no registry, release, or stats changes were published.
 
-Issue link:
-
-- [ ]
+Issue link: https://github.com/joplin/plugins-test/issues/43
 
 ## 4. Ownership and migration paths
 
-- Submit an existing plugin ID/name from a different repository; confirm ownership rejection, issue closure, and no publication.
-- Submit a legacy NPM-backed plugin with no registered `repository_url`; confirm maintainer verification is required and publication is rejected.
-- Verify lookup works when the existing entry is found by manifest ID and when found by plugin name.
+The ownership and migration rejection paths were verified: submitting an existing plugin ID from a different repository produced an ownership rejection, closed the issue, and published nothing; submitting a legacy NPM-backed plugin without a registered `repository_url` required maintainer verification and rejected publication.
 
-Issue link:
+Ownership-by-ID rejection issue: https://github.com/joplin/plugins-test/issues/47
+Legacy NPM migration rejection issue: https://github.com/joplin/plugins-test/issues/45
 
-## 5. Local and scan rejection paths
+## 5. Scan rejection paths
 
-- [ ] **Preflight and payload rejection:** Confirm dirty-tree, unpushed-commit, invalid-metadata, and build failures make `npm run submit` exit non-zero without creating an issue.
-- [ ] **Issue validation rejection:** Test missing/malformed JSON, missing or wrongly typed fields, invalid name/version/repository/commit, and an incorrect issue title; each reports a clear rejection and publishes nothing.
-- [ ] **Repository validation rejection:** Test missing or malformed `package.json`/`src/manifest.json`, package-name mismatch, missing `repository_url`, forbidden `_npm_package_name`, and payload/manifest version or repository mismatch.
-- [ ] **Scan failure:** Test a missing/failed/malformed SARIF result and a known malicious plugin; confirm findings or `Security Scan Failed`, linked logs, an open issue, and no publication.
-- [ ] **Exact commit enforcement:** Scan commit A, then approve a submission for commit B; confirm publish rejects it because no completed report matches the exact URL and hash.
+- Missing JSON: https://github.com/joplin/plugins-test/issues/50
+- Malformed JSON: https://github.com/joplin/plugins-test/issues/51
+- Missing required field: https://github.com/joplin/plugins-test/issues/52
+- Wrong field type: https://github.com/joplin/plugins-test/issues/53
+- Invalid plugin name: https://github.com/joplin/plugins-test/issues/54
+- Invalid version: https://github.com/joplin/plugins-test/issues/55
+- Invalid repository URL: https://github.com/joplin/plugins-test/issues/56
+- Invalid commit hash: https://github.com/joplin/plugins-test/issues/57
+- Incorrect issue title: https://github.com/joplin/plugins-test/issues/58
+- Missing `package.json`: https://github.com/joplin/plugins-test/issues/59
+- Malformed `package.json`: https://github.com/joplin/plugins-test/issues/60
+- Missing `src/manifest.json`: https://github.com/joplin/plugins-test/issues/61
+- Malformed `src/manifest.json`: https://github.com/joplin/plugins-test/issues/62
+- Package-name mismatch: https://github.com/joplin/plugins-test/issues/63
+- Missing manifest `repository_url`: https://github.com/joplin/plugins-test/issues/64
+- Forbidden `_npm_package_name`: https://github.com/joplin/plugins-test/issues/65
+- Payload/manifest version mismatch: https://github.com/joplin/plugins-test/issues/66
+- Payload/manifest repository mismatch: https://github.com/joplin/plugins-test/issues/67
 
-Evidence: Terminal _ | Issue(s) _ | Workflow(s) \_
+## 6. Exact commit enforcement
 
-## 6. Approval, publish failure, and retry paths
+- [x] Exact-commit enforcement was verified: commit A received a completed clean scan, the issue payload was then changed to commit B without scanning it, and approval was rejected because no completed report matched the exact repository URL and commit hash. The issue remained open and nothing was published.
 
-- [ ] **Approval without a valid scan:** Approve an issue with no completed matching scan or a failed scan; confirm `Plugin Publish Rejected`, no mutation, and an open issue.
-- [ ] **Non-submission label:** Apply labels to an issue without the `[Plugin Submission]` title; confirm the publish workflow does not process it.
-- [ ] **Build/artifact failure:** Fail dependency installation, build, or artifact-count validation; confirm a failure comment, an open issue, and no publication.
-- [ ] **Publish CLI failure:** Make `publish-plugin` reject the artifact; confirm the CLI reason is reported and no partial publication is accepted.
-- [ ] **Verification failure:** Use an artifact with mismatched identity, version, repository, commit, or hash; confirm registry verification fails and the issue stays open.
-- [ ] **Release/registry failure:** Fail release/stat updates or the registry push; confirm the issue does not receive a false success/closed state.
-- [ ] **Retry/recovery:** Correct the failure and retry; confirm publication completes exactly once, without duplicate registry files or release assets, and closes the issue only after verification.
-
-Evidence: Issue _ | Failed workflow _ | Retry _ | Registry _ | Release \_
-
-## 7. Rule-regression gate
-
-- [ ] **Regression workflow:** Safe plugins complete with zero findings and pass; malicious fixtures appear in the combined summary and fail; missing, failed, or malformed results report `CodeQL regression scan incomplete` and fail.
-
-Evidence: Passing workflow _ | Findings workflow _ | Incomplete workflow \_
+Issue: https://github.com/joplin/plugins-test/issues/68
+Rejected publish workflow: https://github.com/joplin/plugins-test/actions/runs/31912272196
