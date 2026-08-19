@@ -1,15 +1,15 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as electron from 'electron';
-import * as joplin from 'api';
+import { app } from '@electron/remote';
+import joplin from 'api';
 
 async function triggerRule() {
-    fs.writeFileSync(__dirname, 'plugin-path');
-    fs.writeFileSync(process.cwd(), 'cwd-path');
-    fs.writeFileSync(os.homedir(), 'home-path');
-    fs.writeFileSync(os.tmpdir(), 'tmp-path');
-    fs.writeFileSync(electron.app.getPath('userData'), 'electron-path');
+    fs.writeFileSync(path.join(__dirname, 'plugin-path.txt'), 'plugin-path');
+    fs.writeFileSync(path.join(process.cwd(), 'cwd-path.txt'), 'cwd-path');
+    fs.writeFileSync(path.join(os.homedir(), 'home-path.txt'), 'home-path');
+    fs.writeFileSync(path.join(os.tmpdir(), 'tmp-path.txt'), 'tmp-path');
+    fs.writeFileSync(path.join(app.getPath('userData'), 'electron-path.txt'), 'electron-path');
 
     const dataDir = await joplin.plugins.dataDir();
     fs.writeFileSync(path.join(dataDir, 'state.json'), '{}');

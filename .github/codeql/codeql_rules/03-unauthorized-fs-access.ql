@@ -17,6 +17,7 @@ predicate isPathCompositionCall(DataFlow::CallNode call) {
   call = DataFlow::moduleMember("node:path", "resolve").getACall()
 }
 
+// checks if funtion call are passed hardcoded traversal segments such as ".."
 predicate hasParentDirectorySegment(DataFlow::CallNode call) {
   exists(string value |
     value = call.getAnArgument().getStringValue() and
@@ -59,6 +60,7 @@ module FsAccessConfig implements DataFlow::ConfigSig {
     source = DataFlow::globalVarRef("process").getAMethodCall("cwd") or
     source = DataFlow::globalVarRef("app").getAMethodCall("getPath") or
     source = DataFlow::moduleMember("electron", "app").getAMethodCall("getPath") or
+    source = DataFlow::moduleMember("@electron/remote", "app").getAMethodCall("getPath") or
     source = DataFlow::moduleMember("os", "homedir").getACall() or
     source = DataFlow::moduleMember("node:os", "homedir").getACall() or
     source = DataFlow::moduleMember("os", "tmpdir").getACall() or
