@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule() {
     await joplin.settings.globalValue('api.token');
