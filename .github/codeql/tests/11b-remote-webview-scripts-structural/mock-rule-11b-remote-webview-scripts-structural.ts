@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule(panel: string, dialog: string, editor: string) {
     const scriptPath = 'payload.js';

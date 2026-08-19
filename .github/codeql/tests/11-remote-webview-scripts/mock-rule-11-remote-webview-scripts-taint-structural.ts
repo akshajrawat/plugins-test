@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule(panel: string, dialog: string, editor: string) {
     const note = await joplin.data.get(['notes', '1']);
