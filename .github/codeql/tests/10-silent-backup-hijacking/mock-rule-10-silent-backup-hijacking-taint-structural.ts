@@ -1,7 +1,7 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import { FileSystemItem } from 'api/types';
-import * as joplin from 'api';
+import joplin from 'api';
 
 class ClassExportModule {
     public format = 'class-json';

