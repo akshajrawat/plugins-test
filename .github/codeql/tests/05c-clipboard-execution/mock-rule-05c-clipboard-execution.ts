@@ -1,5 +1,5 @@
 import * as childProcess from 'child_process';
-import * as joplin from 'api';
+import joplin from 'api';
 import * as vm from 'node:vm';
 
 async function javascriptExecution() {
