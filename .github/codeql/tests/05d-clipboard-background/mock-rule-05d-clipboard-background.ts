@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 function intervalAccess() {
     setInterval(() => {
