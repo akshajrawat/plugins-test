@@ -53,6 +53,7 @@ predicate isFileMutationTarget(DataFlow::Node path) {
   )
 }
 
+// triggers if the destination path is plugins own source code
 predicate destinationTargetsPluginPackageFile(DataFlow::Node destination) {
   exists(Expr part, string value |
     (

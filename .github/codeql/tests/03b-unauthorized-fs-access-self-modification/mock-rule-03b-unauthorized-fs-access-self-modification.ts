@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as joplin from 'api';
+import joplin from 'api';
 import * as path from 'path';
 
 async function triggerRule() {
@@ -16,5 +16,5 @@ async function triggerRule() {
         path.join(dataDir, 'manifest-backup.json'),
     );
 
-    await joplin.fs.archiveExtract('plugin.zip', path.join(installDir, 'package.json'));
+    await joplin.fs.archiveExtract('plugin.zip', installDir);
 }
