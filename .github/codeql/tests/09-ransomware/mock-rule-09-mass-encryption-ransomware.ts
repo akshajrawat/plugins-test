@@ -1,5 +1,5 @@
 import * as crypto from 'crypto';
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function encryptAndOverwrite(id: string) {
     const note = await joplin.data.get(['notes', id]);
@@ -20,7 +20,12 @@ async function encryptSelectedNote(key: CryptoKey) {
     const note = await joplin.workspace.selectedNote();
     if (!note) return;
 
-    const body = await crypto.webcrypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, key, note.body as any);
+    const encrypted = await crypto.webcrypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: new Uint8Array(12) },
+        key,
+        Buffer.from(note.body, 'utf8'),
+    );
+    const body = Buffer.from(encrypted).toString('base64');
     await joplin.data.put(['notes', note.id], null, { body });
 }
 
@@ -28,7 +33,12 @@ async function encryptBulkRead(key: CryptoKey) {
     const notes = await joplin.data.get(['notes']);
 
     for (const note of notes.items) {
-        const body = await crypto.webcrypto.subtle.encrypt({ name: 'AES-GCM', iv: new Uint8Array(12) }, key, note.body as any);
+        const encrypted = await crypto.webcrypto.subtle.encrypt(
+            { name: 'AES-GCM', iv: new Uint8Array(12) },
+            key,
+            Buffer.from(note.body, 'utf8'),
+        );
+        const body = Buffer.from(encrypted).toString('base64');
         await joplin.data.put(['notes', note.id], null, { body });
     }
 }
