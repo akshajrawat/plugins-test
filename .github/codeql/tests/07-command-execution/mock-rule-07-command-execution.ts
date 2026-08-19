@@ -1,5 +1,6 @@
 import * as childProcess from 'child_process';
-import * as joplin from 'api';
+import joplin from 'api';
+import { ModelType } from 'api/types';
 
 async function settingsSources() {
     const theme = await joplin.settings.globalValue('theme');
@@ -15,16 +16,16 @@ async function dataSources() {
     childProcess.execFile('node', ['-e', note.body]);
     childProcess.spawn('cp', [note.title, '/tmp/backup'], { shell: true });
 
-    const hidden = await joplin.data.userDataGet(['notes', '1'], 'command');
-    childProcess.spawn(hidden as any, []);
+    const hidden = await joplin.data.userDataGet<string>(ModelType.Note, '1', 'command');
+    childProcess.spawn(hidden, []);
 
     const selected = await joplin.workspace.selectedNote();
-    childProcess.execSync(selected.title);
+    if (selected) childProcess.execSync(selected.title);
 }
 
 function workspaceSource() {
-    joplin.workspace.onNoteChange((event: any) => {
-        childProcess.execFile('note-changed', [event.itemId]);
+    joplin.workspace.onNoteChange(event => {
+        childProcess.execFile('note-changed', [event.id]);
     });
 }
 

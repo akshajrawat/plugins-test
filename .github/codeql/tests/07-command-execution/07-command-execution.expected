@@ -1,82 +1,80 @@
 edges
-| mock-rule-07-command-execution.ts:5:11:5:15 | theme | mock-rule-07-command-execution.ts:6:40:6:44 | theme | provenance |  |
-| mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | mock-rule-07-command-execution.ts:5:11:5:15 | theme | provenance |  |
-| mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | provenance |  |
-| mock-rule-07-command-execution.ts:6:40:6:44 | theme | mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | provenance |  |
-| mock-rule-07-command-execution.ts:13:11:13:14 | note | mock-rule-07-command-execution.ts:14:27:14:30 | note | provenance |  |
-| mock-rule-07-command-execution.ts:13:11:13:14 | note | mock-rule-07-command-execution.ts:15:42:15:45 | note | provenance |  |
-| mock-rule-07-command-execution.ts:13:11:13:14 | note | mock-rule-07-command-execution.ts:16:31:16:34 | note | provenance |  |
-| mock-rule-07-command-execution.ts:13:18:13:54 | await j ... , '1']) | mock-rule-07-command-execution.ts:13:11:13:14 | note | provenance |  |
-| mock-rule-07-command-execution.ts:13:24:13:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:13:18:13:54 | await j ... , '1']) | provenance |  |
-| mock-rule-07-command-execution.ts:14:27:14:30 | note | mock-rule-07-command-execution.ts:14:27:14:36 | note.title | provenance |  |
-| mock-rule-07-command-execution.ts:15:42:15:45 | note | mock-rule-07-command-execution.ts:15:42:15:50 | note.body | provenance |  |
-| mock-rule-07-command-execution.ts:15:42:15:50 | note.body | mock-rule-07-command-execution.ts:15:35:15:51 | ['-e', note.body] | provenance |  |
-| mock-rule-07-command-execution.ts:16:31:16:34 | note | mock-rule-07-command-execution.ts:16:31:16:40 | note.title | provenance |  |
-| mock-rule-07-command-execution.ts:16:31:16:40 | note.title | mock-rule-07-command-execution.ts:16:30:16:56 | [note.t ... ackup'] | provenance |  |
-| mock-rule-07-command-execution.ts:18:11:18:16 | hidden | mock-rule-07-command-execution.ts:19:24:19:29 | hidden | provenance |  |
-| mock-rule-07-command-execution.ts:18:20:18:75 | await j ... mmand') | mock-rule-07-command-execution.ts:18:11:18:16 | hidden | provenance |  |
-| mock-rule-07-command-execution.ts:18:26:18:75 | joplin. ... mmand') | mock-rule-07-command-execution.ts:18:20:18:75 | await j ... mmand') | provenance |  |
-| mock-rule-07-command-execution.ts:19:24:19:29 | hidden | mock-rule-07-command-execution.ts:19:24:19:36 | hidden as any | provenance |  |
-| mock-rule-07-command-execution.ts:21:11:21:18 | selected | mock-rule-07-command-execution.ts:22:27:22:34 | selected | provenance |  |
-| mock-rule-07-command-execution.ts:21:22:21:58 | await j ... dNote() | mock-rule-07-command-execution.ts:21:11:21:18 | selected | provenance |  |
-| mock-rule-07-command-execution.ts:21:28:21:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:21:22:21:58 | await j ... dNote() | provenance |  |
-| mock-rule-07-command-execution.ts:22:27:22:34 | selected | mock-rule-07-command-execution.ts:22:27:22:40 | selected.title | provenance |  |
-| mock-rule-07-command-execution.ts:32:43:32:49 | message | mock-rule-07-command-execution.ts:33:32:33:38 | message | provenance |  |
-| mock-rule-07-command-execution.ts:33:32:33:38 | message | mock-rule-07-command-execution.ts:33:32:33:46 | message.command | provenance |  |
-| mock-rule-07-command-execution.ts:40:55:40:61 | message | mock-rule-07-command-execution.ts:41:27:41:33 | message | provenance |  |
-| mock-rule-07-command-execution.ts:41:27:41:33 | message | mock-rule-07-command-execution.ts:41:27:41:41 | message.command | provenance |  |
-| mock-rule-07-command-execution.ts:67:11:67:16 | result | mock-rule-07-command-execution.ts:68:21:68:26 | result | provenance |  |
-| mock-rule-07-command-execution.ts:67:20:67:58 | await j ... dialog) | mock-rule-07-command-execution.ts:67:11:67:16 | result | provenance |  |
-| mock-rule-07-command-execution.ts:67:26:67:58 | joplin. ... dialog) | mock-rule-07-command-execution.ts:67:20:67:58 | await j ... dialog) | provenance |  |
-| mock-rule-07-command-execution.ts:68:11:68:17 | command | mock-rule-07-command-execution.ts:69:56:69:62 | command | provenance |  |
-| mock-rule-07-command-execution.ts:68:21:68:26 | result | mock-rule-07-command-execution.ts:68:11:68:17 | command | provenance |  |
+| mock-rule-07-command-execution.ts:6:11:6:15 | theme | mock-rule-07-command-execution.ts:7:40:7:44 | theme | provenance |  |
+| mock-rule-07-command-execution.ts:6:19:6:60 | await j ... theme') | mock-rule-07-command-execution.ts:6:11:6:15 | theme | provenance |  |
+| mock-rule-07-command-execution.ts:6:25:6:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:6:19:6:60 | await j ... theme') | provenance |  |
+| mock-rule-07-command-execution.ts:7:40:7:44 | theme | mock-rule-07-command-execution.ts:7:23:7:44 | 'apply- ... + theme | provenance |  |
+| mock-rule-07-command-execution.ts:14:11:14:14 | note | mock-rule-07-command-execution.ts:15:27:15:30 | note | provenance |  |
+| mock-rule-07-command-execution.ts:14:11:14:14 | note | mock-rule-07-command-execution.ts:16:42:16:45 | note | provenance |  |
+| mock-rule-07-command-execution.ts:14:11:14:14 | note | mock-rule-07-command-execution.ts:17:31:17:34 | note | provenance |  |
+| mock-rule-07-command-execution.ts:14:18:14:54 | await j ... , '1']) | mock-rule-07-command-execution.ts:14:11:14:14 | note | provenance |  |
+| mock-rule-07-command-execution.ts:14:24:14:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:14:18:14:54 | await j ... , '1']) | provenance |  |
+| mock-rule-07-command-execution.ts:15:27:15:30 | note | mock-rule-07-command-execution.ts:15:27:15:36 | note.title | provenance |  |
+| mock-rule-07-command-execution.ts:16:42:16:45 | note | mock-rule-07-command-execution.ts:16:42:16:50 | note.body | provenance |  |
+| mock-rule-07-command-execution.ts:16:42:16:50 | note.body | mock-rule-07-command-execution.ts:16:35:16:51 | ['-e', note.body] | provenance |  |
+| mock-rule-07-command-execution.ts:17:31:17:34 | note | mock-rule-07-command-execution.ts:17:31:17:40 | note.title | provenance |  |
+| mock-rule-07-command-execution.ts:17:31:17:40 | note.title | mock-rule-07-command-execution.ts:17:30:17:56 | [note.t ... ackup'] | provenance |  |
+| mock-rule-07-command-execution.ts:19:11:19:16 | hidden | mock-rule-07-command-execution.ts:20:24:20:29 | hidden | provenance |  |
+| mock-rule-07-command-execution.ts:19:20:19:88 | await j ... mmand') | mock-rule-07-command-execution.ts:19:11:19:16 | hidden | provenance |  |
+| mock-rule-07-command-execution.ts:19:26:19:88 | joplin. ... mmand') | mock-rule-07-command-execution.ts:19:20:19:88 | await j ... mmand') | provenance |  |
+| mock-rule-07-command-execution.ts:22:11:22:18 | selected | mock-rule-07-command-execution.ts:23:41:23:48 | selected | provenance |  |
+| mock-rule-07-command-execution.ts:22:22:22:58 | await j ... dNote() | mock-rule-07-command-execution.ts:22:11:22:18 | selected | provenance |  |
+| mock-rule-07-command-execution.ts:22:28:22:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:22:22:22:58 | await j ... dNote() | provenance |  |
+| mock-rule-07-command-execution.ts:23:41:23:48 | selected | mock-rule-07-command-execution.ts:23:41:23:54 | selected.title | provenance |  |
+| mock-rule-07-command-execution.ts:33:43:33:49 | message | mock-rule-07-command-execution.ts:34:32:34:38 | message | provenance |  |
+| mock-rule-07-command-execution.ts:34:32:34:38 | message | mock-rule-07-command-execution.ts:34:32:34:46 | message.command | provenance |  |
+| mock-rule-07-command-execution.ts:41:55:41:61 | message | mock-rule-07-command-execution.ts:42:27:42:33 | message | provenance |  |
+| mock-rule-07-command-execution.ts:42:27:42:33 | message | mock-rule-07-command-execution.ts:42:27:42:41 | message.command | provenance |  |
+| mock-rule-07-command-execution.ts:68:11:68:16 | result | mock-rule-07-command-execution.ts:69:21:69:26 | result | provenance |  |
+| mock-rule-07-command-execution.ts:68:20:68:58 | await j ... dialog) | mock-rule-07-command-execution.ts:68:11:68:16 | result | provenance |  |
+| mock-rule-07-command-execution.ts:68:26:68:58 | joplin. ... dialog) | mock-rule-07-command-execution.ts:68:20:68:58 | await j ... dialog) | provenance |  |
+| mock-rule-07-command-execution.ts:69:11:69:17 | command | mock-rule-07-command-execution.ts:70:56:70:62 | command | provenance |  |
+| mock-rule-07-command-execution.ts:69:21:69:26 | result | mock-rule-07-command-execution.ts:69:11:69:17 | command | provenance |  |
 nodes
-| mock-rule-07-command-execution.ts:5:11:5:15 | theme | semmle.label | theme |
-| mock-rule-07-command-execution.ts:5:19:5:60 | await j ... theme') | semmle.label | await j ... theme') |
-| mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | semmle.label | joplin. ... theme') |
-| mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | semmle.label | 'apply- ... + theme |
-| mock-rule-07-command-execution.ts:6:40:6:44 | theme | semmle.label | theme |
-| mock-rule-07-command-execution.ts:13:11:13:14 | note | semmle.label | note |
-| mock-rule-07-command-execution.ts:13:18:13:54 | await j ... , '1']) | semmle.label | await j ... , '1']) |
-| mock-rule-07-command-execution.ts:13:24:13:54 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
-| mock-rule-07-command-execution.ts:14:27:14:30 | note | semmle.label | note |
-| mock-rule-07-command-execution.ts:14:27:14:36 | note.title | semmle.label | note.title |
-| mock-rule-07-command-execution.ts:15:35:15:51 | ['-e', note.body] | semmle.label | ['-e', note.body] |
-| mock-rule-07-command-execution.ts:15:42:15:45 | note | semmle.label | note |
-| mock-rule-07-command-execution.ts:15:42:15:50 | note.body | semmle.label | note.body |
-| mock-rule-07-command-execution.ts:16:30:16:56 | [note.t ... ackup'] | semmle.label | [note.t ... ackup'] |
-| mock-rule-07-command-execution.ts:16:31:16:34 | note | semmle.label | note |
-| mock-rule-07-command-execution.ts:16:31:16:40 | note.title | semmle.label | note.title |
-| mock-rule-07-command-execution.ts:18:11:18:16 | hidden | semmle.label | hidden |
-| mock-rule-07-command-execution.ts:18:20:18:75 | await j ... mmand') | semmle.label | await j ... mmand') |
-| mock-rule-07-command-execution.ts:18:26:18:75 | joplin. ... mmand') | semmle.label | joplin. ... mmand') |
-| mock-rule-07-command-execution.ts:19:24:19:29 | hidden | semmle.label | hidden |
-| mock-rule-07-command-execution.ts:19:24:19:36 | hidden as any | semmle.label | hidden as any |
-| mock-rule-07-command-execution.ts:21:11:21:18 | selected | semmle.label | selected |
-| mock-rule-07-command-execution.ts:21:22:21:58 | await j ... dNote() | semmle.label | await j ... dNote() |
-| mock-rule-07-command-execution.ts:21:28:21:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
-| mock-rule-07-command-execution.ts:22:27:22:34 | selected | semmle.label | selected |
-| mock-rule-07-command-execution.ts:22:27:22:40 | selected.title | semmle.label | selected.title |
-| mock-rule-07-command-execution.ts:32:43:32:49 | message | semmle.label | message |
-| mock-rule-07-command-execution.ts:33:32:33:38 | message | semmle.label | message |
-| mock-rule-07-command-execution.ts:33:32:33:46 | message.command | semmle.label | message.command |
-| mock-rule-07-command-execution.ts:40:55:40:61 | message | semmle.label | message |
-| mock-rule-07-command-execution.ts:41:27:41:33 | message | semmle.label | message |
-| mock-rule-07-command-execution.ts:41:27:41:41 | message.command | semmle.label | message.command |
-| mock-rule-07-command-execution.ts:67:11:67:16 | result | semmle.label | result |
-| mock-rule-07-command-execution.ts:67:20:67:58 | await j ... dialog) | semmle.label | await j ... dialog) |
-| mock-rule-07-command-execution.ts:67:26:67:58 | joplin. ... dialog) | semmle.label | joplin. ... dialog) |
-| mock-rule-07-command-execution.ts:68:11:68:17 | command | semmle.label | command |
-| mock-rule-07-command-execution.ts:68:21:68:26 | result | semmle.label | result |
-| mock-rule-07-command-execution.ts:69:56:69:62 | command | semmle.label | command |
+| mock-rule-07-command-execution.ts:6:11:6:15 | theme | semmle.label | theme |
+| mock-rule-07-command-execution.ts:6:19:6:60 | await j ... theme') | semmle.label | await j ... theme') |
+| mock-rule-07-command-execution.ts:6:25:6:60 | joplin. ... theme') | semmle.label | joplin. ... theme') |
+| mock-rule-07-command-execution.ts:7:23:7:44 | 'apply- ... + theme | semmle.label | 'apply- ... + theme |
+| mock-rule-07-command-execution.ts:7:40:7:44 | theme | semmle.label | theme |
+| mock-rule-07-command-execution.ts:14:11:14:14 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:14:18:14:54 | await j ... , '1']) | semmle.label | await j ... , '1']) |
+| mock-rule-07-command-execution.ts:14:24:14:54 | joplin. ... , '1']) | semmle.label | joplin. ... , '1']) |
+| mock-rule-07-command-execution.ts:15:27:15:30 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:15:27:15:36 | note.title | semmle.label | note.title |
+| mock-rule-07-command-execution.ts:16:35:16:51 | ['-e', note.body] | semmle.label | ['-e', note.body] |
+| mock-rule-07-command-execution.ts:16:42:16:45 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:16:42:16:50 | note.body | semmle.label | note.body |
+| mock-rule-07-command-execution.ts:17:30:17:56 | [note.t ... ackup'] | semmle.label | [note.t ... ackup'] |
+| mock-rule-07-command-execution.ts:17:31:17:34 | note | semmle.label | note |
+| mock-rule-07-command-execution.ts:17:31:17:40 | note.title | semmle.label | note.title |
+| mock-rule-07-command-execution.ts:19:11:19:16 | hidden | semmle.label | hidden |
+| mock-rule-07-command-execution.ts:19:20:19:88 | await j ... mmand') | semmle.label | await j ... mmand') |
+| mock-rule-07-command-execution.ts:19:26:19:88 | joplin. ... mmand') | semmle.label | joplin. ... mmand') |
+| mock-rule-07-command-execution.ts:20:24:20:29 | hidden | semmle.label | hidden |
+| mock-rule-07-command-execution.ts:22:11:22:18 | selected | semmle.label | selected |
+| mock-rule-07-command-execution.ts:22:22:22:58 | await j ... dNote() | semmle.label | await j ... dNote() |
+| mock-rule-07-command-execution.ts:22:28:22:58 | joplin. ... dNote() | semmle.label | joplin. ... dNote() |
+| mock-rule-07-command-execution.ts:23:41:23:48 | selected | semmle.label | selected |
+| mock-rule-07-command-execution.ts:23:41:23:54 | selected.title | semmle.label | selected.title |
+| mock-rule-07-command-execution.ts:33:43:33:49 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:34:32:34:38 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:34:32:34:46 | message.command | semmle.label | message.command |
+| mock-rule-07-command-execution.ts:41:55:41:61 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:42:27:42:33 | message | semmle.label | message |
+| mock-rule-07-command-execution.ts:42:27:42:41 | message.command | semmle.label | message.command |
+| mock-rule-07-command-execution.ts:68:11:68:16 | result | semmle.label | result |
+| mock-rule-07-command-execution.ts:68:20:68:58 | await j ... dialog) | semmle.label | await j ... dialog) |
+| mock-rule-07-command-execution.ts:68:26:68:58 | joplin. ... dialog) | semmle.label | joplin. ... dialog) |
+| mock-rule-07-command-execution.ts:69:11:69:17 | command | semmle.label | command |
+| mock-rule-07-command-execution.ts:69:21:69:26 | result | semmle.label | result |
+| mock-rule-07-command-execution.ts:70:56:70:62 | command | semmle.label | command |
 subpaths
 #select
-| mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | mock-rule-07-command-execution.ts:5:25:5:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:6:23:6:44 | 'apply- ... + theme | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:14:27:14:36 | note.title | mock-rule-07-command-execution.ts:13:24:13:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:14:27:14:36 | note.title | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:15:35:15:51 | ['-e', note.body] | mock-rule-07-command-execution.ts:13:24:13:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:15:35:15:51 | ['-e', note.body] | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:16:30:16:56 | [note.t ... ackup'] | mock-rule-07-command-execution.ts:13:24:13:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:16:30:16:56 | [note.t ... ackup'] | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:19:24:19:36 | hidden as any | mock-rule-07-command-execution.ts:18:26:18:75 | joplin. ... mmand') | mock-rule-07-command-execution.ts:19:24:19:36 | hidden as any | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:22:27:22:40 | selected.title | mock-rule-07-command-execution.ts:21:28:21:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:22:27:22:40 | selected.title | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:33:32:33:46 | message.command | mock-rule-07-command-execution.ts:32:43:32:49 | message | mock-rule-07-command-execution.ts:33:32:33:46 | message.command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:41:27:41:41 | message.command | mock-rule-07-command-execution.ts:40:55:40:61 | message | mock-rule-07-command-execution.ts:41:27:41:41 | message.command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
-| mock-rule-07-command-execution.ts:69:56:69:62 | command | mock-rule-07-command-execution.ts:67:26:67:58 | joplin. ... dialog) | mock-rule-07-command-execution.ts:69:56:69:62 | command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:7:23:7:44 | 'apply- ... + theme | mock-rule-07-command-execution.ts:6:25:6:60 | joplin. ... theme') | mock-rule-07-command-execution.ts:7:23:7:44 | 'apply- ... + theme | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:15:27:15:36 | note.title | mock-rule-07-command-execution.ts:14:24:14:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:15:27:15:36 | note.title | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:16:35:16:51 | ['-e', note.body] | mock-rule-07-command-execution.ts:14:24:14:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:16:35:16:51 | ['-e', note.body] | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:17:30:17:56 | [note.t ... ackup'] | mock-rule-07-command-execution.ts:14:24:14:54 | joplin. ... , '1']) | mock-rule-07-command-execution.ts:17:30:17:56 | [note.t ... ackup'] | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:20:24:20:29 | hidden | mock-rule-07-command-execution.ts:19:26:19:88 | joplin. ... mmand') | mock-rule-07-command-execution.ts:20:24:20:29 | hidden | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:23:41:23:54 | selected.title | mock-rule-07-command-execution.ts:22:28:22:58 | joplin. ... dNote() | mock-rule-07-command-execution.ts:23:41:23:54 | selected.title | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:34:32:34:46 | message.command | mock-rule-07-command-execution.ts:33:43:33:49 | message | mock-rule-07-command-execution.ts:34:32:34:46 | message.command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:42:27:42:41 | message.command | mock-rule-07-command-execution.ts:41:55:41:61 | message | mock-rule-07-command-execution.ts:42:27:42:41 | message.command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
+| mock-rule-07-command-execution.ts:70:56:70:62 | command | mock-rule-07-command-execution.ts:68:26:68:58 | joplin. ... dialog) | mock-rule-07-command-execution.ts:70:56:70:62 | command | Command Execution: Joplin or user-controlled data reaches an operating-system command or its argument list. Verify that the command is expected and cannot be manipulated into executing unintended programs or options. |
