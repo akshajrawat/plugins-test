@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as joplin from 'api';
+import joplin from 'api';
 import * as path from 'path';
 
 async function triggerRule() {
