@@ -1,5 +1,5 @@
 import * as https from 'node:https';
-import * as joplin from 'api';
+import joplin from 'api';
 import axios from 'axios';
 
 async function requestUrlExfiltration() {
