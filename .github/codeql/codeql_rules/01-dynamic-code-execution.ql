@@ -69,7 +69,12 @@ module DynamicCodeExecutionConfig implements DataFlow::ConfigSig {
         receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("node:https", "get") or
         receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("ws", "WebSocket") or
         receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "Worker") or
-        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "MessagePort")
+        receiver.(DataFlow::InvokeNode).getCalleeNode().getALocalSource() = DataFlow::moduleMember("worker_threads", "MessagePort") or
+        (
+          receiver.(DataFlow::PropRead).getPropertyName() in ["port1", "port2"] and
+          receiver.(DataFlow::PropRead).getBase().(DataFlow::InvokeNode).getCalleeNode().getALocalSource() =
+            DataFlow::moduleMember("worker_threads", "MessageChannel")
+        )
       ) and
       cb = onCall.getArgument(1).getAFunctionValue() and
       source = cb.getParameter(0)

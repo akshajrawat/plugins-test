@@ -2,12 +2,13 @@ import * as http from 'http';
 import * as https from 'https';
 import * as nodeHttp from 'node:http';
 import * as vm from 'vm';
-import * as joplin from 'api';
+import joplin from 'api';
 import axios from 'axios';
 import got from 'got';
 import superagent from 'superagent';
 import { WebSocket } from 'ws';
-import { MessagePort, Worker } from 'worker_threads';
+import { MessageChannel, Worker } from 'worker_threads';
+import { ModelType } from 'api/types';
 
 async function remoteRequestSources(url: string) {
     const res = await fetch(url);
@@ -50,13 +51,15 @@ function httpStreamSources(url: string) {
         });
     }).end();
 
-    nodeHttp.get(url).on('data', (chunk: any) => {
-        setTimeout(chunk);
+    nodeHttp.get(url, response => {
+        response.on('data', chunk => {
+            setTimeout(chunk.toString());
+        });
     });
 }
 
 async function persistedDataSource() {
-    const stored = await joplin.data.userDataGet(['notes', '1'], 'payload');
+    const stored = await joplin.data.userDataGet<string>(ModelType.Note, '1', 'payload');
     setInterval(stored);
 }
 
@@ -73,7 +76,7 @@ function eventSources(url: string, panel: string, contentScriptId: string) {
         setTimeout(message);
     });
 
-    new MessagePort().on('message', message => {
+    new MessageChannel().port1.on('message', message => {
         setInterval(message);
     });
 
