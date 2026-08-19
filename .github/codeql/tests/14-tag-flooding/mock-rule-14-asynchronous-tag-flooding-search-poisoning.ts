@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { appendFile as appendFilePromise } from 'node:fs/promises';
-import * as joplin from 'api';
+import joplin from 'api';
 
 function createFolder() {
     joplin.data.post(['folders'], null, { title: 'spam' });
@@ -63,6 +63,6 @@ function safeCases() {
     clearInterval(interval);
 
     while (true) {
-        joplin.data.post(['tags', 'tag-1', 'unsupported-route'], null, {});
+        joplin.data.put(['tags', 'tag-1'], null, { title: 'updated' });
     }
 }

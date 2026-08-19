@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 const deleteLoopNote = (id: string) => {
     joplin.data.delete(['notes', id]);
@@ -24,7 +24,8 @@ function repeatDelete() {
 }
 
 async function dialogDoesNotSuppressFinding() {
-    await joplin.views.dialogs.open('confirmation-dialog');
+    const dialog = await joplin.views.dialogs.create('confirmation-dialog');
+    await joplin.views.dialogs.open(dialog);
     joplin.data.delete(['folders', 'still-reported']);
 }
 

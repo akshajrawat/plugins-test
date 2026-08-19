@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function updateNote(noteId: string) {
     await joplin.data.put(['notes', noteId], null, { body: 'changed' });
@@ -39,11 +39,11 @@ function safeCases() {
     });
 
     joplin.workspace.onNoteChange(async (event: any) => {
-        await joplin.data.put(['folders', event.id], null, { title: 'not a note' });
-        await joplin.data.delete(['notes', event.id, 'unsupported-sub-route']);
+        await joplin.data.put(['folders', 'unrelated-folder'], null, { title: 'not a note' });
+        await joplin.data.delete(['tags', 'tag-id', 'notes', event.id]);
         await joplin.data.put(['notes', event.id], null, { deleted_time: 0 });
         await joplin.data.put(['notes', event.id], null, { is_conflict: false });
-        await joplin.commands.execute('focus');
+        await joplin.commands.execute('focusElement', 'noteBody');
 
         async function unusedMutation() {
             await joplin.data.put(['notes', event.id], null, { body: 'never executed' });

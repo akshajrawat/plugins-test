@@ -11,7 +11,6 @@ import {
     nativeImage,
     net,
     protocol,
-    remote,
     safeStorage,
     screen,
     session,
@@ -45,9 +44,6 @@ function triggerRule() {
     rendererElectron['ipcRenderer'].send('another-channel');
 
     window.require('electron').session.defaultSession.clearCache();
-
-    // Rule 16, not Rule 16b, owns this access.
-    remote.getCurrentWindow();
 }
 
 function safeCases(rectangle: Rectangle) {

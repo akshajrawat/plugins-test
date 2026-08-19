@@ -1,4 +1,4 @@
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule(panel: string, dialog: string) {
     await joplin.views.dialogs.setHtml(dialog, '<form><input type = password name="account-password"></form>');

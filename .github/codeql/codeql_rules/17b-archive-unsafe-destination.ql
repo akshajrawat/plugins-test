@@ -56,6 +56,7 @@ predicate isSystemOrUntrustedPathSource(DataFlow::Node source) {
   source = DataFlow::moduleMember(
     ["electron", "electron/main", "electron/renderer", "electron/common"], "app"
   ).getAMethodCall("getPath") or
+  source = DataFlow::moduleMember("@electron/remote", "app").getAMethodCall("getPath") or
   source = Joplin::settings().getAMethodCall(["value", "values"]) or
   Joplin::isJoplinMessageSource(source) or
   source instanceof RemoteFlowSource or

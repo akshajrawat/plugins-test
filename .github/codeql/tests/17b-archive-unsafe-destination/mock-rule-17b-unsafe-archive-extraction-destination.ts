@@ -1,7 +1,7 @@
-import * as electron from 'electron';
+import { app } from '@electron/remote';
 import * as os from 'node:os';
 import * as path from 'node:path';
-import * as joplin from 'api';
+import joplin from 'api';
 
 async function triggerRule(panel: string) {
     await joplin.fs.archiveExtract('plugin.zip', '/etc/extract-output');
@@ -9,10 +9,10 @@ async function triggerRule(panel: string) {
     await joplin.fs.archiveExtract('plugin.zip', process.cwd());
     await joplin.fs.archiveExtract('plugin.zip', process.env.EXTRACT_DIR as string);
     await joplin.fs.archiveExtract('plugin.zip', process.argv[2]);
-    await joplin.fs.archiveExtract('plugin.zip', __filename);
+    await joplin.fs.archiveExtract('plugin.zip', path.dirname(__filename));
     await joplin.fs.archiveExtract('plugin.zip', os.homedir());
     await joplin.fs.archiveExtract('plugin.zip', os.tmpdir());
-    await joplin.fs.archiveExtract('plugin.zip', electron.app.getPath('userData'));
+    await joplin.fs.archiveExtract('plugin.zip', app.getPath('userData'));
     await joplin.fs.archiveExtract('plugin.zip', 'relative-output');
     await joplin.fs.archiveExtract('plugin.zip', 'C:/Windows/output');
     await joplin.fs.archiveExtract('plugin.zip', 'C:\\Windows\\output');

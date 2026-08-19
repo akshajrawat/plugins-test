@@ -1,5 +1,5 @@
 import * as childProcess from 'child_process';
-import * as joplin from 'api';
+import joplin from 'api';
 import { ModelType } from 'api/types';
 
 async function triggerRule() {

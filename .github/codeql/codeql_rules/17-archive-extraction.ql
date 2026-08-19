@@ -50,12 +50,30 @@ predicate isArchiveWriteStream(DataFlow::CallNode stream, DataFlow::Node path) {
   )
 }
 
+predicate isWebReadableConversion(DataFlow::Node stream, DataFlow::Node content) {
+  exists(DataFlow::MethodCallNode fromWeb |
+    fromWeb = stream.getALocalSource() and
+    fromWeb.getMethodName() = "fromWeb" and
+    fromWeb.getReceiver().getALocalSource() =
+      DataFlow::moduleMember(["stream", "node:stream"], "Readable") and
+    content = fromWeb.getArgument(0)
+  )
+}
+
+predicate getArchiveStreamContent(DataFlow::Node stream, DataFlow::Node content) {
+  isWebReadableConversion(stream, content) or
+  (
+    not exists(DataFlow::Node converted | isWebReadableConversion(stream, converted)) and
+    content = stream
+  )
+}
+
 predicate isArchiveStreamWrite(DataFlow::Node content, DataFlow::Node path) {
   exists(DataFlow::MethodCallNode pipe, DataFlow::CallNode output |
     pipe.getMethodName() = "pipe" and
     isArchiveWriteStream(output, path) and
     pipe.getArgument(0).getALocalSource() = output.getALocalSource() and
-    content = pipe.getReceiver()
+    getArchiveStreamContent(pipe.getReceiver(), content)
   )
   or
   exists(DataFlow::CallNode pipeline, DataFlow::CallNode output, string moduleName |
@@ -63,7 +81,7 @@ predicate isArchiveStreamWrite(DataFlow::Node content, DataFlow::Node path) {
     pipeline = DataFlow::moduleMember(moduleName, "pipeline").getACall() and
     output.getALocalSource() = pipeline.getArgument(1).getALocalSource() and
     isArchiveWriteStream(output, path) and
-    content = pipeline.getArgument(0)
+    getArchiveStreamContent(pipeline.getArgument(0), content)
   )
 }
 
