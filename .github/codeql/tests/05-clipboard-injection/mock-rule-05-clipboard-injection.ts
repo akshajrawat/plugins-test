@@ -1,6 +1,6 @@
 import * as http from 'http';
 import * as nodeHttps from 'node:https';
-import * as joplin from 'api';
+import joplin from 'api';
 import axios from 'axios';
 import got from 'got';
 import superagent from 'superagent';
@@ -36,7 +36,7 @@ async function remoteRequestSources(url: string) {
     });
 
     superagent.post(url).end(async (_error: Error | null, response: any) => {
-        await joplin.clipboard.writeImage(response.body);
+        await joplin.clipboard.writeImage(response.text);
     });
 }
 
