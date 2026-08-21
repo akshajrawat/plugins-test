@@ -2,7 +2,7 @@
 	"manifest_version": 1,
 	"id": "com.akshajrawat.submit-flow-test",
 	"app_min_version": "3.7",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"name": "Submit Flow Test",
 	"description": "A simple plugin for testing the complete Joplin plugin submission flow.",
 	"author": "Akshaj Rawat",
@@ -13,7 +13,7 @@
 	"screenshots": [],
 	"icons": {},
 	"promo_tile": {},
-	"_publish_hash": "sha256:923442f6060dd32c4b14684ae38059f7a282223ce37399c04f9c0f6d2ac84639",
-	"_publish_commit": "master:153842911e9bf0d3a944cccae324c25b74c0fc3c",
+	"_publish_hash": "sha256:1ad3acdb002262f1b15907bf4eea46207dbc28c0bc59dada8fb4ff4459a0868f",
+	"_publish_commit": "master:e1c8ac8da5de90bb01eb1a8df915c422a28091c5",
 	"_approved": true
 }
