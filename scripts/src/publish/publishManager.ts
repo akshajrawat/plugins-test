@@ -7,8 +7,14 @@ import { normalizeRepositoryUrl } from '../utils/payload';
 import { statusTemplate, failureTemplate } from './publishTemplates';
 import { parsePayloadFromContext, parseSummary, commitHashFromPublishCommit, parseBoolean, toPublishPayload } from './validationUtils';
 import { parseIssuePayload } from '../utils/payload';
-import { hasCompletedScanReport } from './scanUtils';
+import { completedScanReportFor } from './scanUtils';
 import { fileExists, readJsonFromFile, writeJsonFile, sha256File, escapeMarkdownUrl, escapeMarkdownText, escapeInlineCode } from '../utils/utils';
+import {
+    readScanArtifact,
+    replaceApprovedBaseline,
+    validateScanArtifact,
+} from '../code-scan/approvedFindings';
+import type { ExpectedScanArtifact } from '../code-scan/approvedFindings';
 
 export const acknowledgePublishInitialization = async ({ github, context, core }: GithubContext) => {
     const runUrl = runUrlFor(context);
@@ -45,7 +51,8 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
 
     const payload = await toPublishPayload(validation.payload);
 
-    if (!(await hasCompletedScanReport({ github, context }, payload))) {
+    const scanReport = await completedScanReportFor({ github, context }, payload);
+    if (!scanReport) {
         const scanError = 'No completed security scan report was found for this exact repository URL and commit hash. Re-run the scan before approving this submission.';
         const template = await failureTemplate('Plugin Publish Rejected', scanError, runUrl);
         await updateComment(github, context, commentId, template);
@@ -64,6 +71,8 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
     core.setOutput('repository_url', payload.repository_url);
     core.setOutput('repo_name', payload.repo_name);
     core.setOutput('commit_hash', payload.commit_hash);
+    core.setOutput('scan_run_id', scanReport.runId.toString());
+    core.setOutput('scan_artifact_name', scanReport.artifactName);
     core.setOutput('comment_id', commentId.toString());
     core.setOutput('should_proceed', 'true');
 
@@ -73,9 +82,79 @@ export const acknowledgePublishInitialization = async ({ github, context, core }
         repository_url: payload.repository_url,
         repo_name: payload.repo_name,
         commit_hash: payload.commit_hash,
+        scan_run_id: scanReport.runId,
+        scan_artifact_name: scanReport.artifactName,
         comment_id: commentId.toString(),
         should_proceed: true,
     };
+};
+
+const expectedScanArtifact = async (
+    artifactManifestFile: string,
+    repositoryUrl: string,
+    commitHash: string,
+    issueNumber: string | number,
+    scanRunId: string | number,
+): Promise<ExpectedScanArtifact> => {
+    const manifest = await readJsonFromFile(artifactManifestFile);
+    if (typeof manifest.id !== 'string' || !manifest.id) {
+        throw new Error('Artifact manifest is missing a valid plugin ID.');
+    }
+
+    const parsedIssueNumber = Number(issueNumber);
+    const parsedRunId = Number(scanRunId);
+    if (!Number.isInteger(parsedIssueNumber) || parsedIssueNumber < 1) throw new Error('Approval issue number is invalid.');
+    if (!Number.isInteger(parsedRunId) || parsedRunId < 1) throw new Error('Security scan run ID is invalid.');
+
+    return {
+        pluginId: manifest.id,
+        repositoryUrl,
+        commitHash,
+        issueNumber: parsedIssueNumber,
+        runId: parsedRunId,
+    };
+};
+
+export const validateDownloadedScanArtifact = async (
+    scanArtifactFile: string,
+    artifactManifestFile: string,
+    repositoryUrl: string,
+    commitHash: string,
+    issueNumber: string | number,
+    scanRunId: string | number,
+) => {
+    const artifact = await readScanArtifact(scanArtifactFile);
+    const expected = await expectedScanArtifact(
+        artifactManifestFile,
+        repositoryUrl,
+        commitHash,
+        issueNumber,
+        scanRunId,
+    );
+    validateScanArtifact(artifact, expected);
+    return { plugin_id: expected.pluginId, finding_count: artifact.findings.length };
+};
+
+export const replaceApprovedScanFindings = async (
+    registryRoot: string,
+    scanArtifactFile: string,
+    artifactManifestFile: string,
+    repositoryUrl: string,
+    commitHash: string,
+    issueNumber: string | number,
+    scanRunId: string | number,
+    approvedBy: string,
+    approvedAt: string,
+) => {
+    const artifact = await readScanArtifact(scanArtifactFile);
+    const expected = await expectedScanArtifact(
+        artifactManifestFile,
+        repositoryUrl,
+        commitHash,
+        issueNumber,
+        scanRunId,
+    );
+    return await replaceApprovedBaseline(registryRoot, artifact, expected, approvedBy, approvedAt);
 };
 
 export const updatePublishPhase = async (

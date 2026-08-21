@@ -21,6 +21,8 @@ jobs:
       repository_url: ${{ steps.init.outputs.repository_url }}
       repo_name: ${{ steps.init.outputs.repo_name }}
       commit_hash: ${{ steps.init.outputs.commit_hash }}
+      scan_run_id: ${{ steps.init.outputs.scan_run_id }}
+      scan_artifact_name: ${{ steps.init.outputs.scan_artifact_name }}
       comment_id: ${{ steps.init.outputs.comment_id || steps.ack.outputs.comment_id }}
       should_proceed: ${{ steps.init.outputs.should_proceed }}
 
@@ -152,6 +154,7 @@ jobs:
     if: ${{ always() && needs.initialize-publish.outputs.should_proceed == 'true' }}
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
       issues: write
     steps:
@@ -203,6 +206,15 @@ jobs:
           name: plugin-artifacts
           path: plugin-artifacts
 
+      - name: Download approved security scan findings
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.initialize-publish.outputs.scan_artifact_name }}
+          path: security-scan-findings
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.initialize-publish.outputs.scan_run_id }}
+
       - name: Locate plugin artifacts
         id: artifacts
         run: |
@@ -218,6 +230,28 @@ jobs:
           echo "jpl_file=$jpl_file" >> "$GITHUB_OUTPUT"
           echo "manifest_file=$manifest_file" >> "$GITHUB_OUTPUT"
 
+      - name: Validate exact security scan artifact
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/dist/publish/publishManager.js
+          SCAN_ARTIFACT_FILE: ${{ github.workspace }}/security-scan-findings/security-scan-findings.json
+          MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
+          EXPECTED_REPOSITORY_URL: ${{ needs.initialize-publish.outputs.repository_url }}
+          EXPECTED_COMMIT_HASH: ${{ needs.initialize-publish.outputs.commit_hash }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          SCAN_RUN_ID: ${{ needs.initialize-publish.outputs.scan_run_id }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.validateDownloadedScanArtifact(
+              process.env.SCAN_ARTIFACT_FILE,
+              process.env.MANIFEST_FILE,
+              process.env.EXPECTED_REPOSITORY_URL,
+              process.env.EXPECTED_COMMIT_HASH,
+              process.env.ISSUE_NUMBER,
+              process.env.SCAN_RUN_ID
+            );
+
       - name: Update phase - Registry publish
         uses: actions/github-script@v7
         env:
@@ -229,7 +263,7 @@ jobs:
             await publish.updatePublishPhase({github, context}, process.env.COMMENT_ID, 4, "Publishing plugin files into the registry.");
 
       - name: Install publish CLI
-        run: npm install -g @akshajrawatt/plugin-repo-cli@1.0.5
+        run: npm install -g @joplin/plugin-repo-cli@3.7.1
 
       - name: Execute publish CLI command
         id: publish_cli
@@ -288,6 +322,32 @@ jobs:
               process.env.EXPECTED_VERSION,
               process.env.EXPECTED_REPOSITORY_URL,
               process.env.EXPECTED_COMMIT_HASH
+            );
+
+      - name: Replace approved findings baseline
+        uses: actions/github-script@v7
+        env:
+          PUBLISH_MANAGER_PATH: ${{ github.workspace }}/plugins-test/scripts/dist/publish/publishManager.js
+          SCAN_ARTIFACT_FILE: ${{ github.workspace }}/security-scan-findings/security-scan-findings.json
+          MANIFEST_FILE: ${{ github.workspace }}/${{ steps.artifacts.outputs.manifest_file }}
+          EXPECTED_REPOSITORY_URL: ${{ needs.initialize-publish.outputs.repository_url }}
+          EXPECTED_COMMIT_HASH: ${{ needs.initialize-publish.outputs.commit_hash }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          SCAN_RUN_ID: ${{ needs.initialize-publish.outputs.scan_run_id }}
+          APPROVED_BY: ${{ github.actor }}
+        with:
+          script: |
+            const publish = require(process.env.PUBLISH_MANAGER_PATH);
+            return await publish.replaceApprovedScanFindings(
+              `${process.env.GITHUB_WORKSPACE}/plugins-test`,
+              process.env.SCAN_ARTIFACT_FILE,
+              process.env.MANIFEST_FILE,
+              process.env.EXPECTED_REPOSITORY_URL,
+              process.env.EXPECTED_COMMIT_HASH,
+              process.env.ISSUE_NUMBER,
+              process.env.SCAN_RUN_ID,
+              process.env.APPROVED_BY,
+              new Date().toISOString()
             );
 
       - name: Capture registry file changes
@@ -373,7 +433,7 @@ jobs:
         with:
           script: |
             const publish = require(process.env.PUBLISH_MANAGER_PATH);
-            await publish.updatePublishPhase({github, context}, process.env.COMMENT_ID, 6, "Committing registry, README, plugin files, and stats changes.");
+            await publish.updatePublishPhase({github, context}, process.env.COMMENT_ID, 6, "Committing registry, approved findings, README, plugin files, and stats changes.");
 
       - name: Commit and push changes
         working-directory: plugins-test
@@ -382,6 +442,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add README.md manifests.json manifestOverrides.json stats.json plugins
+          git add -A -- .github/codeql/approved-findings
 
           if git diff --cached --quiet; then
             echo "No registry changes to commit."

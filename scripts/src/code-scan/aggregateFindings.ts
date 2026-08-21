@@ -126,14 +126,14 @@ const main = async () => {
         }
 
         if (allFindings.length === 0) {
-            await appendStepSummary('## CodeQL regression scan passed\n\nNo findings were reported across all tested plugins.');
+            await appendStepSummary('## CodeQL regression scan passed\n\nNo unapproved findings were reported across all tested plugins.');
             process.exit(0);
         }
 
         const table = [
-            '## CodeQL regression findings',
+            '## Unapproved CodeQL regression findings',
             '',
-            `Found ${allFindings.length} finding${allFindings.length === 1 ? '' : 's'} across the tested safe plugins.`,
+            `Found ${allFindings.length} unapproved finding${allFindings.length === 1 ? '' : 's'} across the tested safe plugins.`,
             '',
             findingsTable(allFindings),
         ].join('\n');

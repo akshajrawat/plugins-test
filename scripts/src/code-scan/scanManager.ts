@@ -14,6 +14,7 @@ import type {
 import { updateComment, failWithIssueComment } from '../utils/github';
 import { parseIssuePayload } from '../utils/payload';
 import { fileExists } from '../utils/utils';
+import { assertValidPluginId } from './approvedFindings';
 
 const canonicalRepositoryUrl = (url: string) => {
     return url.trim().replace(/\/+$/, '').replace(/\.git$/i, '');
@@ -299,6 +300,17 @@ export const validateTargetRepository = async (
                 );
             }
 
+            try {
+                assertValidPluginId(manifest.id);
+            } catch (error) {
+                return await failWithIssueComment(
+                    { github, context, core },
+                    commentId,
+                    'Security Scan Rejected',
+                    error instanceof Error ? error.message : String(error),
+                );
+            }
+
             if (manifest.version !== version) {
                 return await failWithIssueComment(
                     { github, context, core },
@@ -405,6 +417,7 @@ export const validateTargetRepository = async (
         );
     }
 
+    core.setOutput('plugin_id', manifest.id);
     core.setOutput('handled_failure', 'false');
 
     return { handled_failure: false };
@@ -417,6 +430,11 @@ export const generateFinalReport = async (
     repoUrl: string,
     commitHash: string,
     analysisOutcome: string,
+    pluginId: string,
+    sourceRoot: string,
+    baselineRoot: string,
+    artifactPath: string,
+    artifactName: string,
 ) => {
     const comment = await github.rest.issues.getComment({
         owner: context.repo.owner,
@@ -427,19 +445,48 @@ export const generateFinalReport = async (
 
     const report = await renderFinalReport({
         sarifPath,
+        sourceRoot,
+        baselineRoot,
+        artifactPath,
+        artifactName,
+        pluginId,
         repoUrl,
         commitHash,
         runUrl: runUrlFor(context),
+        issueNumber: context.issue.number,
+        runId: context.runId,
         analysisOutcome,
         isUpdate: metadata.isUpdate,
     });
 
     await updateComment(github, context, commentId, report.body);
     core.setOutput('handled_failure', (!report.ok).toString());
+    core.setOutput('scan_succeeded', report.ok.toString());
 
     if (!report.ok) {
         core.setFailed(report.error ?? 'The security scan did not complete successfully.');
     }
 
     return { handled_failure: !report.ok };
+};
+
+export const markScanArtifactReady = async (
+    { github, context, core }: GithubContext,
+    commentId: string,
+) => {
+    const comment = await github.rest.issues.getComment({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        comment_id: parseInt(commentId, 10),
+    });
+    const body = comment.data.body ?? '';
+    const readyBody = body.replace('"artifactReady":false', '"artifactReady":true');
+
+    if (readyBody === body) {
+        throw new Error('The completed scan report does not contain pending artifact metadata.');
+    }
+
+    await updateComment(github, context, commentId, readyBody);
+    core.setOutput('artifact_ready', 'true');
+    return { artifact_ready: true };
 };

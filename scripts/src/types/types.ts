@@ -43,9 +43,16 @@ export interface ReportMetadata {
 
 export interface FinalReportInput {
     sarifPath: string;
+    sourceRoot: string;
+    baselineRoot: string;
+    artifactPath: string;
+    artifactName: string;
+    pluginId: string;
     repoUrl: string;
     commitHash: string;
     runUrl: string;
+    issueNumber: number;
+    runId: number;
     analysisOutcome: string;
     isUpdate?: boolean;
 }
@@ -66,6 +73,9 @@ export interface SarifArtifactLocation {
 
 export interface SarifRegion {
     startLine?: number;
+    startColumn?: number;
+    endLine?: number;
+    endColumn?: number;
 }
 
 export interface SarifPhysicalLocation {
@@ -77,10 +87,26 @@ export interface SarifLocation {
     physicalLocation?: SarifPhysicalLocation;
 }
 
+export interface SarifThreadFlowLocation {
+    location?: SarifLocation;
+}
+
+export interface SarifThreadFlow {
+    locations?: SarifThreadFlowLocation[];
+}
+
+export interface SarifCodeFlow {
+    threadFlows?: SarifThreadFlow[];
+}
+
 export interface SarifResult {
-    ruleId: string;
+    ruleId?: string;
+    rule?: {
+        id?: string;
+    };
     message?: SarifMessage;
     locations?: SarifLocation[];
+    codeFlows?: SarifCodeFlow[];
 }
 
 export interface SarifRuleDescription {
