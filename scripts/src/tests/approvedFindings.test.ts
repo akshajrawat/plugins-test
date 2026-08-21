@@ -3,8 +3,8 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
-import type { SarifReport, SarifResult } from '../src/types/types';
-import type { PublishPayload } from '../src/types/publishTypes';
+import type { SarifReport, SarifResult } from '../types/types';
+import type { PublishPayload } from '../types/publishTypes';
 import {
     baselinePathFor,
     classifyFindings,
@@ -13,9 +13,9 @@ import {
     readApprovedBaseline,
     replaceApprovedBaseline,
     validateScanArtifact,
-} from '../src/code-scan/approvedFindings';
-import { renderFinalReport } from '../src/code-scan/scanReport';
-import { scanReportMetadataForPayload } from '../src/publish/scanUtils';
+} from '../code-scan/approvedFindings';
+import { renderFinalReport } from '../code-scan/scanReport';
+import { scanReportMetadataForPayload } from '../publish/scanUtils';
 
 const pluginId = 'org.example.backup';
 const repositoryUrl = 'https://github.com/example/backup-plugin';
