@@ -3,29 +3,29 @@
   "pluginId": "com.akshajrawat.submit-flow-test",
   "repositoryUrl": "https://github.com/akshajrawat/joplin-test-plugin-",
   "approvedScan": {
-    "commitHash": "661392f21d8d6c286383c2a477fb07f78d2a6c37",
-    "issueNumber": 74,
-    "runId": 32444754568,
+    "commitHash": "153842911e9bf0d3a944cccae324c25b74c0fc3c",
+    "issueNumber": 77,
+    "runId": 32447017900,
     "approvedBy": "akshajrawat",
-    "approvedAt": "2026-08-21T04:07:43.757Z"
+    "approvedAt": "2026-08-21T04:40:11.241Z"
   },
   "findings": [
     {
-      "fingerprint": "sha256:362ce071a6e59eb2e79a58899a2bb1809ea84d24040b913be2cc1fe257a43686",
+      "fingerprint": "sha256:4fc34547ce3d4628fc74d8bef45ce9c9b03b562f2a6f914efb79852a877d8ca6",
       "ruleId": "js/joplin/command-execution-structural",
       "file": "src/index.ts",
       "container": "reviewedCommandExample",
-      "statementHash": "sha256:7a1097c9f996eba391da1ecfc02e3b75975b504f858e72342cf4395ec06f2cd0",
+      "statementHash": "sha256:af7a00cc4452171ca62ec86342feed47fc4663e35c56a15b7299ee2b604836aa",
       "flowHash": null,
       "lineHint": 6,
       "columnHint": 11
     },
     {
-      "fingerprint": "sha256:7e184055acaf6121bd7095ee3b21773e024b8c63c83082fa50c1c20dbf29025d",
+      "fingerprint": "sha256:0d6b2b22465139edda74fef76e0656abc487f28b5f963189cad5d938eba56215",
       "ruleId": "js/joplin/command-execution-structural",
       "file": "src/index.ts",
       "container": "newCommandExample",
-      "statementHash": "sha256:38f050f0fa029561a2322c65935fa4a5b09a2d2046cc6b1859dae9b89f2d16d1",
+      "statementHash": "sha256:f581ed1eaa15309a6cf292ea602b1fe1905d791657b157d47218d10e7dda1842",
       "flowHash": null,
       "lineHint": 10,
       "columnHint": 11
