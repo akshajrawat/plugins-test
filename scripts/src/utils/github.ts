@@ -50,3 +50,27 @@ export const failWithIssueComment = async (
 
     return { should_proceed: false };
 };
+
+export const rejectWithIssueComment = async (
+    githubContext: GithubContext,
+    commentId: string | number | undefined,
+    message: string,
+) => {
+    const result = await failWithIssueComment(
+        githubContext,
+        commentId,
+        'Security Scan Rejected',
+        message,
+    );
+
+    const { github, context } = githubContext;
+    await github.rest.issues.update({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        issue_number: context.issue.number,
+        state: 'closed',
+        state_reason: 'not_planned',
+    });
+
+    return result;
+};

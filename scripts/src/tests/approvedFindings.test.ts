@@ -16,6 +16,7 @@ import {
 } from '../code-scan/approvedFindings';
 import { renderFinalReport } from '../code-scan/scanReport';
 import { scanReportMetadataForPayload } from '../publish/scanUtils';
+import { rejectWithIssueComment } from '../utils/github';
 
 const pluginId = 'org.example.backup';
 const repositoryUrl = 'https://github.com/example/backup-plugin';
@@ -284,4 +285,55 @@ test('final report separates current review from earlier approvals and exposes e
         assert.equal(scanReportMetadataForPayload(readyReportBody, { ...payload, commit_hash: 'b'.repeat(40) }, 10), null);
         assert.equal(scanReportMetadataForPayload(readyReportBody, payload, 11), null);
     });
+});
+
+test('submission rejection reports the reason and closes the issue as not planned', async () => {
+    const updatedComments: Record<string, unknown>[] = [];
+    const updatedIssues: Record<string, unknown>[] = [];
+    const outputs: Record<string, string> = {};
+    let failureMessage = '';
+    const github = {
+        rest: {
+            issues: {
+                updateComment: async (input: Record<string, unknown>) => {
+                    updatedComments.push(input);
+                },
+                update: async (input: Record<string, unknown>) => {
+                    updatedIssues.push(input);
+                },
+            },
+        },
+    };
+    const context = {
+        repo: { owner: 'joplin', repo: 'plugins-test' },
+        issue: { number: 74 },
+        runId: 123,
+        serverUrl: 'https://github.com',
+    };
+    const core = {
+        setOutput: (name: string, value: string) => {
+            outputs[name] = value;
+        },
+        setFailed: (message: string) => {
+            failureMessage = message;
+        },
+    };
+
+    const result = await rejectWithIssueComment(
+        { github, context, core },
+        456,
+        'The submitted version is not greater than the published version.',
+    );
+
+    assert.deepEqual(result, { should_proceed: false });
+    assert.equal(outputs.handled_failure, 'true');
+    assert.equal(failureMessage, 'The submitted version is not greater than the published version.');
+    assert.match(String(updatedComments[0].body), /# Security Scan Rejected/);
+    assert.deepEqual(updatedIssues, [{
+        owner: 'joplin',
+        repo: 'plugins-test',
+        issue_number: 74,
+        state: 'closed',
+        state_reason: 'not_planned',
+    }]);
 });

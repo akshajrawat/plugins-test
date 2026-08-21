@@ -11,7 +11,7 @@ import type {
     GithubApiContext,
     GithubContext,
 } from '../types/types';
-import { updateComment, failWithIssueComment } from '../utils/github';
+import { updateComment, failWithIssueComment, rejectWithIssueComment } from '../utils/github';
 import { parseIssuePayload } from '../utils/payload';
 import { fileExists } from '../utils/utils';
 import { assertValidPluginId } from './approvedFindings';
@@ -107,20 +107,11 @@ const closeOwnershipMismatchIssue = async (
 Expected: ${registeredUrl}
 Provided: ${repositoryUrl}`;
 
-    await failWithIssueComment(
+    await rejectWithIssueComment(
         { github, context, core },
         commentId,
-        'Security Scan Rejected',
         rejectMsg,
     );
-
-    await github.rest.issues.update({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        issue_number: context.issue.number,
-        state: 'closed',
-    });
-
 };
 
 const isInside = (parent: string, child: string) => {
@@ -159,10 +150,9 @@ export const initialize = async ({ github, context, core }: GithubContext) => {
     const titleError = validateTitle(context.payload.issue.title, plugin_name, version);
 
     if (titleError) {
-        return await failWithIssueComment(
+        return await rejectWithIssueComment(
             { github, context, core },
             initialCommentId,
-            'Security Scan Rejected',
             titleError,
         );
     }
@@ -261,10 +251,9 @@ export const validateTargetRepository = async (
             pkg = JSON.parse(packageContent);
 
             if (pkg.name !== plugin_name) {
-                return await failWithIssueComment(
+                return await rejectWithIssueComment(
                     { github, context, core },
                     commentId,
-                    'Security Scan Rejected',
                     `The plugin name in the issue payload (${plugin_name}) does not match the name in the repository's package.json (${pkg.name || 'unknown'}).`,
                 );
             }
@@ -277,10 +266,9 @@ export const validateTargetRepository = async (
             );
         }
     } else {
-        return await failWithIssueComment(
+        return await rejectWithIssueComment(
             { github, context, core },
             commentId,
-            'Security Scan Rejected',
             'Could not find package.json in the target repository root.',
         );
     }
@@ -292,10 +280,9 @@ export const validateTargetRepository = async (
 
             const manifestError = repositorySubmissionManifestError(manifest);
             if (manifestError) {
-                return await failWithIssueComment(
+                return await rejectWithIssueComment(
                     { github, context, core },
                     commentId,
-                    'Security Scan Rejected',
                     manifestError,
                 );
             }
@@ -303,19 +290,17 @@ export const validateTargetRepository = async (
             try {
                 assertValidPluginId(manifest.id);
             } catch (error) {
-                return await failWithIssueComment(
+                return await rejectWithIssueComment(
                     { github, context, core },
                     commentId,
-                    'Security Scan Rejected',
                     error instanceof Error ? error.message : String(error),
                 );
             }
 
             if (manifest.version !== version) {
-                return await failWithIssueComment(
+                return await rejectWithIssueComment(
                     { github, context, core },
                     commentId,
-                    'Security Scan Rejected',
                     `The plugin version in the issue payload (${version}) does not match the version in manifest.json (${manifest.version || 'unknown'}).`,
                 );
             }
@@ -327,10 +312,9 @@ export const validateTargetRepository = async (
                 const normalizedPayloadUrl = normalizeUrl(repository_url);
 
                 if (normalizedManifestUrl && normalizedPayloadUrl && normalizedManifestUrl !== normalizedPayloadUrl) {
-                    return await failWithIssueComment(
+                    return await rejectWithIssueComment(
                         { github, context, core },
                         commentId,
-                        'Security Scan Rejected',
                         `The repository URL in the issue payload (${repository_url}) does not match the repository URL in the manifest.json (${rawManifestUrl}).`,
                     );
                 }
@@ -342,10 +326,9 @@ export const validateTargetRepository = async (
                     const migrationError = legacyRepositoryMigrationError(manifest.id, existingPlugin);
 
                     if (migrationError) {
-                        return await failWithIssueComment(
+                        return await rejectWithIssueComment(
                             { github, context, core },
                             commentId,
-                            'Security Scan Rejected',
                             migrationError,
                         );
                     }
@@ -380,10 +363,9 @@ export const validateTargetRepository = async (
                     }
 
                     if (!isGreater) {
-                        return await failWithIssueComment(
+                        return await rejectWithIssueComment(
                             { github, context, core },
                             commentId,
-                            'Security Scan Rejected',
                             `This is an update job, but the plugin version in the manifest (${newVersion}) is not greater than the currently published version (${oldVersion}). Please bump the version number before submitting.`,
                         );
                     }
@@ -409,10 +391,9 @@ export const validateTargetRepository = async (
             );
         }
     } else {
-        return await failWithIssueComment(
+        return await rejectWithIssueComment(
             { github, context, core },
             commentId,
-            'Security Scan Rejected',
             'Could not find src/manifest.json in the target repository. Submissions must follow the generator-joplin structure (src/manifest.json).',
         );
     }
