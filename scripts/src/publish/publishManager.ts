@@ -14,7 +14,7 @@ import {
     replaceApprovedBaseline,
     validateScanArtifact,
 } from '../code-scan/approvedFindings';
-import type { ExpectedScanArtifact } from '../code-scan/approvedFindings';
+import type { ExpectedScanArtifact } from '../types/approvedFindings';
 
 export const acknowledgePublishInitialization = async ({ github, context, core }: GithubContext) => {
     const runUrl = runUrlFor(context);
@@ -115,7 +115,7 @@ const expectedScanArtifact = async (
     };
 };
 
-export const validateDownloadedScanArtifact = async (
+const loadScanArtifactPair = async (
     scanArtifactFile: string,
     artifactManifestFile: string,
     repositoryUrl: string,
@@ -125,6 +125,25 @@ export const validateDownloadedScanArtifact = async (
 ) => {
     const artifact = await readScanArtifact(scanArtifactFile);
     const expected = await expectedScanArtifact(
+        artifactManifestFile,
+        repositoryUrl,
+        commitHash,
+        issueNumber,
+        scanRunId,
+    );
+    return { artifact, expected };
+};
+
+export const validateDownloadedScanArtifact = async (
+    scanArtifactFile: string,
+    artifactManifestFile: string,
+    repositoryUrl: string,
+    commitHash: string,
+    issueNumber: string | number,
+    scanRunId: string | number,
+) => {
+    const { artifact, expected } = await loadScanArtifactPair(
+        scanArtifactFile,
         artifactManifestFile,
         repositoryUrl,
         commitHash,
@@ -146,8 +165,8 @@ export const replaceApprovedScanFindings = async (
     approvedBy: string,
     approvedAt: string,
 ) => {
-    const artifact = await readScanArtifact(scanArtifactFile);
-    const expected = await expectedScanArtifact(
+    const { artifact, expected } = await loadScanArtifactPair(
+        scanArtifactFile,
         artifactManifestFile,
         repositoryUrl,
         commitHash,

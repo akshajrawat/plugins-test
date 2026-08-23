@@ -1,6 +1,15 @@
 import { appendFile, readFile, readdir, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import type { Finding } from '../types/regressionTypes';
+import {
+    regressionScanArtifactSchemaVersion,
+    type RegressionFinding,
+    type RegressionScanArtifact,
+} from '../types/regressionTypes';
+import { assertValidPluginId } from './approvedFindings';
+
+interface AggregatedFinding extends RegressionFinding {
+    plugin: string;
+}
 
 const requiredEnvironmentValue = (name: string) => {
     const value = process.env[name];
@@ -8,30 +17,80 @@ const requiredEnvironmentValue = (name: string) => {
     return value;
 };
 
-const isFinding = (value: unknown): value is Finding => {
+const isSafeRelativeFile = (file: string) => {
+    return file.length > 0
+        && !file.includes('\\')
+        && !file.startsWith('/')
+        && file.split('/').every(part => part.length > 0 && part !== '.' && part !== '..');
+};
+
+const isRegressionFinding = (value: unknown): value is RegressionFinding => {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
 
     const finding = value as Record<string, unknown>;
-    return typeof finding.plugin === 'string'
-        && typeof finding.ruleId === 'string'
-        && typeof finding.file === 'string'
-        && typeof finding.line === 'string';
+    return typeof finding.ruleId === 'string' && finding.ruleId.length > 0
+        && typeof finding.file === 'string' && isSafeRelativeFile(finding.file)
+        && Number.isInteger(finding.line) && (finding.line as number) > 0
+        && typeof finding.container === 'string' && finding.container.length > 0
+        && typeof finding.fingerprint === 'string'
+        && /^sha256:[a-f0-9]{64}$/.test(finding.fingerprint);
+};
+
+const parseRegressionArtifact = (value: unknown, source: string): RegressionScanArtifact => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error(`${source} must contain an object.`);
+    }
+
+    const artifact = value as Record<string, unknown>;
+    if (
+        artifact.schemaVersion !== regressionScanArtifactSchemaVersion
+        || typeof artifact.plugin !== 'string' || !artifact.plugin.trim()
+        || typeof artifact.pluginId !== 'string'
+        || typeof artifact.repositoryUrl !== 'string' || !artifact.repositoryUrl.trim()
+        || !Array.isArray(artifact.requiringReview) || !artifact.requiringReview.every(isRegressionFinding)
+        || !Array.isArray(artifact.approvedEarlier) || !artifact.approvedEarlier.every(isRegressionFinding)
+    ) {
+        throw new Error(`${source} is not a valid regression scan artifact.`);
+    }
+
+    assertValidPluginId(artifact.pluginId);
+    const requiringReview = artifact.requiringReview as RegressionFinding[];
+    const approvedEarlier = artifact.approvedEarlier as RegressionFinding[];
+    const approvedFingerprints = new Set(approvedEarlier.map(finding => finding.fingerprint));
+    if (requiringReview.some(finding => approvedFingerprints.has(finding.fingerprint))) {
+        throw new Error(`${source} contains a fingerprint in both finding categories.`);
+    }
+
+    return artifact as unknown as RegressionScanArtifact;
 };
 
 const markdownTableCell = (value: string) => {
     return value.replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
 };
 
-const findingsTable = (findings: Finding[]) => {
-    const rows = findings.map(finding => {
-        return `| ${markdownTableCell(finding.plugin)} | ${markdownTableCell(finding.ruleId)} | ${markdownTableCell(finding.file)} | ${markdownTableCell(finding.line)} |`;
+const findingsTable = (findings: AggregatedFinding[]) => {
+    const sorted = [...findings].sort((a, b) => {
+        return a.plugin.localeCompare(b.plugin)
+            || a.ruleId.localeCompare(b.ruleId)
+            || a.file.localeCompare(b.file)
+            || a.line - b.line
+            || a.fingerprint.localeCompare(b.fingerprint);
+    });
+    const rows = sorted.map(finding => {
+        return `| ${markdownTableCell(finding.plugin)} | ${markdownTableCell(finding.ruleId)} | ${markdownTableCell(finding.file)} | ${finding.line} | ${markdownTableCell(finding.container)} | ${finding.fingerprint} |`;
     });
 
     return [
-        '| Plugin | Rule ID | File | Line |',
-        '| --- | --- | --- | ---: |',
+        '| Plugin | Rule ID | File | Line | Container | Fingerprint |',
+        '| --- | --- | --- | ---: | --- | --- |',
         ...rows,
     ].join('\n');
+};
+
+const findingsSection = (heading: string, findings: AggregatedFinding[]) => {
+    return findings.length > 0
+        ? `### ${heading}\n\n${findingsTable(findings)}`
+        : `### ${heading}\n\n_None._`;
 };
 
 const appendStepSummary = async (content: string, summaryPath = process.env.GITHUB_STEP_SUMMARY) => {
@@ -41,40 +100,65 @@ const appendStepSummary = async (content: string, summaryPath = process.env.GITH
     await appendFile(summaryPath, `${content.trimEnd()}\n\n`, 'utf8');
 };
 
+const findJsonFiles = async (dir: string): Promise<string[]> => {
+    let files: string[] = [];
+    for (const item of await readdir(dir)) {
+        const fullPath = join(dir, item);
+        if ((await stat(fullPath)).isDirectory()) {
+            files = files.concat(await findJsonFiles(fullPath));
+        } else if (item === 'findings.json') {
+            files.push(fullPath);
+        }
+    }
+    return files;
+};
+
+const withPlugin = (plugin: string, findings: RegressionFinding[]): AggregatedFinding[] => {
+    return findings.map(finding => ({ plugin, ...finding }));
+};
+
+const summaryBody = (
+    heading: string,
+    pluginCount: number,
+    requiringReview: AggregatedFinding[],
+    approvedEarlier: AggregatedFinding[],
+) => {
+    const totalFindings = requiringReview.length + approvedEarlier.length;
+    return [
+        `## ${heading}`,
+        '',
+        `Scanned ${pluginCount} plugin${pluginCount === 1 ? '' : 's'} and classified ${totalFindings} CodeQL finding${totalFindings === 1 ? '' : 's'}.`,
+        '',
+        `- Findings requiring review: ${requiringReview.length}`,
+        `- Approved earlier: ${approvedEarlier.length}`,
+        '',
+        findingsSection('Findings Requiring Review', requiringReview),
+        '',
+        findingsSection('Approved Earlier', approvedEarlier),
+    ].join('\n');
+};
+
 const main = async () => {
     try {
         const artifactsDir = process.env.ARTIFACTS_DIR || resolve('findings');
         const expectedPluginCount = Number.parseInt(requiredEnvironmentValue('EXPECTED_PLUGIN_COUNT'), 10);
         const scanResult = requiredEnvironmentValue('SCAN_RESULT');
         const downloadOutcome = requiredEnvironmentValue('DOWNLOAD_OUTCOME');
-        const allFindings: Finding[] = [];
+        const requiringReview: AggregatedFinding[] = [];
+        const approvedEarlier: AggregatedFinding[] = [];
         const incompleteReasons: string[] = [];
+        const plugins = new Set<string>();
+        const pluginIds = new Set<string>();
 
         if (!Number.isInteger(expectedPluginCount) || expectedPluginCount < 1) {
             throw new Error(`Invalid EXPECTED_PLUGIN_COUNT: ${process.env.EXPECTED_PLUGIN_COUNT}`);
         }
-
         if (scanResult !== 'success') {
             incompleteReasons.push(`The scan matrix result was ${scanResult}, not success.`);
         }
-
         if (downloadOutcome !== 'success') {
             incompleteReasons.push(`The findings artifact download result was ${downloadOutcome}, not success.`);
         }
-
-        // Search recursively for findings.json files
-        const findJsonFiles = async (dir: string): Promise<string[]> => {
-            let files: string[] = [];
-            for (const item of await readdir(dir)) {
-                const fullPath = join(dir, item);
-                if ((await stat(fullPath)).isDirectory()) {
-                    files = files.concat(await findJsonFiles(fullPath));
-                } else if (item === 'findings.json') {
-                    files.push(fullPath);
-                }
-            }
-            return files;
-        };
 
         let jsonFiles: string[] = [];
         try {
@@ -83,64 +167,56 @@ const main = async () => {
             const details = error instanceof Error ? error.message : String(error);
             incompleteReasons.push(`Could not read the findings artifacts: ${details}`);
         }
-
         if (jsonFiles.length !== expectedPluginCount) {
             incompleteReasons.push(`Expected ${expectedPluginCount} findings artifacts, but found ${jsonFiles.length}.`);
         }
 
         for (const file of jsonFiles) {
             try {
-                const parsed: unknown = JSON.parse(await readFile(file, 'utf8'));
-                if (!Array.isArray(parsed) || !parsed.every(isFinding)) {
-                    throw new Error('The file must contain an array of valid findings.');
+                const artifact = parseRegressionArtifact(JSON.parse(await readFile(file, 'utf8')), file);
+                if (plugins.has(artifact.plugin)) {
+                    throw new Error(`Duplicate artifact for plugin ${artifact.plugin}.`);
+                }
+                if (pluginIds.has(artifact.pluginId)) {
+                    throw new Error(`Duplicate artifact for plugin ID ${artifact.pluginId}.`);
                 }
 
-                const data = parsed as Finding[];
-                allFindings.push(...data);
+                plugins.add(artifact.plugin);
+                pluginIds.add(artifact.pluginId);
+                requiringReview.push(...withPlugin(artifact.plugin, artifact.requiringReview));
+                approvedEarlier.push(...withPlugin(artifact.plugin, artifact.approvedEarlier));
             } catch (error) {
                 const details = error instanceof Error ? error.message : String(error);
                 incompleteReasons.push(`Could not parse ${file}: ${details}`);
             }
         }
 
+        if (plugins.size !== expectedPluginCount) {
+            incompleteReasons.push(`Expected ${expectedPluginCount} unique plugin results, but validated ${plugins.size}.`);
+        }
+
         if (incompleteReasons.length > 0) {
-            const summary = [
+            const body = [
                 '## CodeQL regression scan incomplete',
                 '',
                 'The regression result cannot be considered clean because not every configured plugin produced a valid result.',
                 '',
                 ...incompleteReasons.map(reason => `- ${reason}`),
-            ];
-
-            if (allFindings.length > 0) {
-                summary.push(
-                    '',
-                    `### Findings collected before failure (${allFindings.length})`,
-                    '',
-                    findingsTable(allFindings),
-                );
-            }
-
-            await appendStepSummary(summary.join('\n'));
+                '',
+                summaryBody('Partial regression findings', plugins.size, requiringReview, approvedEarlier),
+            ].join('\n');
+            await appendStepSummary(body);
             process.exit(1);
         }
 
-        if (allFindings.length === 0) {
-            await appendStepSummary('## CodeQL regression scan passed\n\nNo unapproved findings were reported across all tested plugins.');
-            process.exit(0);
-        }
-
-        const table = [
-            '## Unapproved CodeQL regression findings',
-            '',
-            `Found ${allFindings.length} unapproved finding${allFindings.length === 1 ? '' : 's'} across the tested safe plugins.`,
-            '',
-            findingsTable(allFindings),
-        ].join('\n');
-
-        await appendStepSummary(table);
-        process.exit(1);
-
+        const passed = requiringReview.length === 0;
+        await appendStepSummary(summaryBody(
+            passed ? 'CodeQL regression scan passed' : 'CodeQL regression scan failed',
+            plugins.size,
+            requiringReview,
+            approvedEarlier,
+        ));
+        process.exit(passed ? 0 : 1);
     } catch (error) {
         console.error('Aggregation failed:', error);
         process.exit(1);

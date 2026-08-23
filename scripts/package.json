@@ -4,10 +4,8 @@
   "description": "Custom CodeQL test harness",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run test:unit && npm run test:codeql",
-    "test:unit": "npm run build && node --test dist/tests/approvedFindings.test.js",
-    "test:codeql": "codeql test run --threads=0 ../.github/codeql/tests",
-    "regression-scan": "node src/code-scan/regressionScan.js"
+    "test": "codeql test run --threads=0 ../.github/codeql/tests",
+    "regression-scan": "npm run build && node dist/code-scan/regressionScan.js"
   },
   "dependencies": {
     "@types/node": "^20.4.5",

@@ -16,7 +16,7 @@ import {
     readApprovedBaseline,
     writeScanArtifact,
 } from './approvedFindings';
-import type { FingerprintedSarifResult } from './approvedFindings';
+import type { FingerprintedSarifResult } from '../types/approvedFindings';
 
 const phaseCount = 5;
 const targetPluginPathMarker = '/target-plugin/';

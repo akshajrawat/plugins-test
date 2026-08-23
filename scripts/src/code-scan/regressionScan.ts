@@ -1,7 +1,13 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { Finding } from '../types/regressionTypes';
+import type { FingerprintedSarifResult } from '../types/approvedFindings';
+import {
+    regressionScanArtifactSchemaVersion,
+    type RegressionFinding,
+    type RegressionScanArtifact,
+} from '../types/regressionTypes';
 import type { SarifReport } from '../types/types';
+import { normalizeRepositoryUrl } from '../utils/payload';
 import { classifyFindings, fingerprintSarifResults, readApprovedBaseline } from './approvedFindings';
 
 const requiredEnvironmentValue = (name: string) => {
@@ -24,9 +30,13 @@ export const parseSarif = async (resultsSarif: string) => {
     return parsed as SarifReport;
 };
 
-export const findingsFrom = (report: SarifReport) => {
-    return (report.runs ?? []).flatMap(run => run.results ?? []);
-};
+const regressionFindingFrom = (finding: FingerprintedSarifResult): RegressionFinding => ({
+    ruleId: finding.identity.ruleId,
+    file: finding.identity.file,
+    line: finding.identity.lineHint,
+    container: finding.identity.container,
+    fingerprint: finding.identity.fingerprint,
+});
 
 export const main = async () => {
     try {
@@ -41,20 +51,23 @@ export const main = async () => {
         if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
             throw new Error(`Invalid plugin manifest: ${manifestPath}`);
         }
+
         const pluginId = (manifest as Record<string, unknown>).id;
         if (typeof pluginId !== 'string' || !pluginId) throw new Error(`Plugin manifest is missing id: ${manifestPath}`);
 
         const fingerprinted = await fingerprintSarifResults(report, sourceRoot);
         const baseline = await readApprovedBaseline(registryRoot, pluginId, pluginRepositoryUrl);
-        const { requiringReview } = classifyFindings(fingerprinted, baseline);
-        const extractedFindings: Finding[] = requiringReview.map(finding => ({
+        const { requiringReview, approvedEarlier } = classifyFindings(fingerprinted, baseline);
+        const artifact: RegressionScanArtifact = {
+            schemaVersion: regressionScanArtifactSchemaVersion,
             plugin: pluginName,
-            ruleId: finding.identity.ruleId,
-            file: finding.identity.file,
-            line: finding.identity.lineHint.toString(),
-        }));
+            pluginId,
+            repositoryUrl: normalizeRepositoryUrl(pluginRepositoryUrl),
+            requiringReview: requiringReview.map(regressionFindingFrom),
+            approvedEarlier: approvedEarlier.map(regressionFindingFrom),
+        };
 
-        await writeFile('findings.json', JSON.stringify(extractedFindings, null, 2));
+        await writeFile('findings.json', `${JSON.stringify(artifact, null, 2)}\n`, 'utf8');
         process.exit(0);
     } catch (error) {
         console.error(`CodeQL regression scan failed:`, error);

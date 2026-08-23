@@ -2,53 +2,19 @@ import { createHash } from 'node:crypto';
 import { access, lstat, mkdir, readFile, realpath, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import ts from 'typescript';
+import type {
+    ApprovedFindingsBaseline,
+    ExpectedScanArtifact,
+    FindingIdentity,
+    FingerprintedSarifResult,
+    ScanFindingsArtifact,
+} from '../types/approvedFindings';
 import type { SarifLocation, SarifReport, SarifResult } from '../types/types';
 import { normalizeRepositoryUrl } from '../utils/payload';
 
 export const approvedFindingsSchemaVersion = 1;
 export const approvedFindingsDirectory = '.github/codeql/approved-findings';
 export const scanFindingsArtifactName = 'security-scan-findings';
-
-export interface FindingIdentity {
-    fingerprint: string;
-    ruleId: string;
-    file: string;
-    container: string;
-    statementHash: string;
-    flowHash: string | null;
-    lineHint: number;
-    columnHint: number;
-}
-
-export interface FingerprintedSarifResult {
-    result: SarifResult;
-    identity: FindingIdentity;
-}
-
-export interface ScanFindingsArtifact {
-    schemaVersion: 1;
-    pluginId: string;
-    repositoryUrl: string;
-    commitHash: string;
-    issueNumber: number;
-    runId: number;
-    generatedAt: string;
-    findings: FindingIdentity[];
-}
-
-export interface ApprovedFindingsBaseline {
-    schemaVersion: 1;
-    pluginId: string;
-    repositoryUrl: string;
-    approvedScan: {
-        commitHash: string;
-        issueNumber: number;
-        runId: number;
-        approvedBy: string;
-        approvedAt: string;
-    };
-    findings: FindingIdentity[];
-}
 
 interface ParsedSource {
     sourceFile: ts.SourceFile;
@@ -309,7 +275,7 @@ class SourceResolver {
     private readonly cache = new Map<string, ParsedSource>();
     private realRootPromise: Promise<string> | null = null;
 
-    public constructor(private readonly sourceRoot: string) {}
+    public constructor(private readonly sourceRoot: string) { }
 
     private realRoot() {
         this.realRootPromise ??= realpath(this.sourceRoot);
@@ -621,14 +587,6 @@ export const classifyFindings = (
 
     return { requiringReview, approvedEarlier };
 };
-
-export interface ExpectedScanArtifact {
-    pluginId: string;
-    repositoryUrl: string;
-    commitHash: string;
-    issueNumber: number;
-    runId: number;
-}
 
 export const validateScanArtifact = (artifact: ScanFindingsArtifact, expected: ExpectedScanArtifact) => {
     assertValidPluginId(expected.pluginId);

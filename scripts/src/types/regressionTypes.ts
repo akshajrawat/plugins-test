@@ -1,31 +1,18 @@
-export interface Finding {
-    plugin: string;
+export const regressionScanArtifactSchemaVersion = 1;
+
+export interface RegressionFinding {
     ruleId: string;
     file: string;
-    line: string;
+    line: number;
+    container: string;
+    fingerprint: string;
 }
 
-export interface RegressionSarifLocation {
-    physicalLocation?: {
-        artifactLocation?: {
-            uri?: string;
-        };
-        region?: {
-            startLine?: number;
-        };
-    };
-}
-
-export interface RegressionSarifResult {
-    ruleId?: string;
-    rule?: {
-        id?: string;
-    };
-    locations?: RegressionSarifLocation[];
-}
-
-export interface RegressionSarifReport {
-    runs?: Array<{
-        results?: RegressionSarifResult[];
-    }>;
+export interface RegressionScanArtifact {
+    schemaVersion: typeof regressionScanArtifactSchemaVersion;
+    plugin: string;
+    pluginId: string;
+    repositoryUrl: string;
+    requiringReview: RegressionFinding[];
+    approvedEarlier: RegressionFinding[];
 }
